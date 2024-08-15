@@ -24,8 +24,9 @@ double click the .sln file that is geneated.
 develop your game, you are good to go.
 
 # Linux and MacOS Users
-CD into the folder
-run ./build/premake5 gmake2
+CD into the build folder
+run ./premake5 gmake2
+CD back to the root
 run make
 you are good to go
 
