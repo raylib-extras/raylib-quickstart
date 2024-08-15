@@ -1,0 +1,70 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build debug",
+            "type": "process",
+            "command": "make",
+            "windows": {
+                "command": "mingw32-make.exe",
+                "args": [
+                    "SHELL=cmd"
+                ],
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "dependsOn":["UpdateMake"]
+        },
+        {
+            "label": "build release",
+            "type": "process",
+            "command": "make",
+            "windows": {
+                "command": "mingw32-make.exe",
+                "args": [
+                    "SHELL=cmd",
+                    "config=release_x64"
+                ],
+            },
+            "linux": {
+                "args": [
+                    "config=release_x64"
+                ],
+            },
+            "osx": {
+                "args": [
+                ],
+            },
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "dependsOn":["UpdateMake"]
+        },
+        {
+            "label": "UpdateMake",
+            "type": "process",
+            "command": "./build/premake5",
+            "args": [
+                "gmake2"
+            ],
+            "windows": {
+                "command": "./build/premake5.exe"
+            },
+            "linux": {
+                "command": "./build/premake5"
+            },
+            "osx": {
+                "command": "./build/premake5.osx"
+            },
+            "group": "build"
+        }
+    ]
+}
