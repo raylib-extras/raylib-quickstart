@@ -8,9 +8,10 @@ Press F5 to build, and you are good to go.
 # Windows Users
 There are two compiler toolchains avialble for windows, MinGW-W64 (a free compiler using GCC), and Microsoft Visual Studio
 ## Using MinGW-W64
-Double click the premake-mingw.bat file.
-cd into the folder in your terminal
-run make 
+* Double click the premake-mingw.bat file.
+* cd into the folder in your terminal
+* run make
+* you are good to go
 
 ### Note on MinGW-64 versions
 Make sure you have a modern version of MinGW-W64 (not mingw).
@@ -19,16 +20,20 @@ https://github.com/skeeto/w64devkit/releases
 or the version installed with the raylib installer, just make sure to add the C:\raylib\w64devkit\bin to your path if you used the raylib installer
 
 ## Microsoft Visual Studio
-Run the premake-VisualStudio.bat
-double click the .sln file that is geneated.
-develop your game, you are good to go.
+* Run the premake-VisualStudio.bat
+* double click the .sln file that is geneated.
+* develop your game
+* you are good to go.
 
 # Linux and MacOS Users
-CD into the build folder
-run ./premake5 gmake2
-CD back to the root
-run make
-you are good to go
+* CD into the build folder
+* run ./premake5 gmake2
+* CD back to the root
+* run make
+* you are good to go
+
+# Output files
+The built code will be in the bin dir
 
 # Building for other OpenGL targets
 If you need to build for a different OpenGL version than the default (OpenGL 3.3) you can specify an openGL version in your premake command line. Just modify the bat file or add the following to your command line
