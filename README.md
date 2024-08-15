@@ -1,4 +1,4 @@
-# Raylib-Quikstart
+# Raylib-Quickstart
 Work in process quickstart for raylib using premake
 
 # VSCode Users
