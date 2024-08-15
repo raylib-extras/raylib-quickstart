@@ -44,7 +44,7 @@ extern "C" {            // Prevents name mangling of functions
     /// </summary>
     /// <param name="folderName">The name of the resources dir to look for</param>
     /// <returns>True if a dir with the name was found, false if no change was made to the working dir</returns>
-    inline bool SearchAndSetResourceDir(const char* folderName)
+    inline static bool SearchAndSetResourceDir(const char* folderName)
     {
         // check the working dir
         if (DirectoryExists(folderName))

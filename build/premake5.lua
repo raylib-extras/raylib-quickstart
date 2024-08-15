@@ -56,9 +56,9 @@ end
 workspaceName = 'MyGame'
 baseName = path.getbasename(path.getdirectory(os.getcwd()));
 
-if (baseName ~= 'raylib-quickstart') then
+--if (baseName ~= 'raylib-quickstart') then
     workspaceName = baseName
-end
+--end
 
 if (os.isdir('build_files') == false) then
     os.mkdir('build_files')

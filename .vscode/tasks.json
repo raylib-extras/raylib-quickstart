@@ -51,18 +51,21 @@
         {
             "label": "UpdateMake",
             "type": "process",
-            "command": "./build/premake5",
+            "command": "./premake5",
+            "options": {
+                "cwd": "${workspaceFolder}/build/"
+            },
             "args": [
                 "gmake2"
             ],
             "windows": {
-                "command": "./build/premake5.exe"
+                "command": "./premake5.exe"
             },
             "linux": {
-                "command": "./build/premake5"
+                "command": "./premake5"
             },
             "osx": {
-                "command": "./build/premake5.osx"
+                "command": "./premake5.osx"
             },
             "group": "build"
         }
