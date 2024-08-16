@@ -2,8 +2,11 @@
 Work in process quickstart for raylib using premake
 
 # VSCode Users
-Download the quickstart, rename the folder to your game name, and open it in VSCode.
-Press F5 to build, and you are good to go.
+* Download the quickstart
+* Rename the folder to your game name
+* Open the folder in VSCode.
+* Press F5 to build
+* You are good to go.
 
 # Windows Users
 There are two compiler toolchains avialble for windows, MinGW-W64 (a free compiler using GCC), and Microsoft Visual Studio
