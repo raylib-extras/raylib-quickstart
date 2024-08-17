@@ -1,7 +1,13 @@
 # Raylib-Quickstart
-Work in process quickstart for raylib using premake
+A simple cross platform template for raylib.
 
-# VSCode Users
+## Supported Platforms
+Quickstart supports the main 3 desktop platforms
+* Windows
+* Linux
+* MacOS
+
+# VSCode Users (all platforms)
 * Download the quickstart
 * Rename the folder to your game name
 * Open the folder in VSCode.
@@ -11,19 +17,27 @@ Work in process quickstart for raylib using premake
 # Windows Users
 There are two compiler toolchains avialble for windows, MinGW-W64 (a free compiler using GCC), and Microsoft Visual Studio
 ## Using MinGW-W64
-* Double click the premake-mingw.bat file.
+* Double click the build-MinGW-W64.bat file.
 * cd into the folder in your terminal
 * run make
-* you are good to go
+* You are good to go
 
 ### Note on MinGW-64 versions
 Make sure you have a modern version of MinGW-W64 (not mingw).
 The best place to get it is from the W64devkit from
 https://github.com/skeeto/w64devkit/releases
-or the version installed with the raylib installer, just make sure to add the C:\raylib\w64devkit\bin to your path if you used the raylib installer
+or the version installed with the raylib installer
+#### If you have installed rayib from the installer
+Make sure you have added the path
+
+ C:\raylib\w64devkit\bin 
+
+To your path environment varialbe so that the compiler that came with raylib can be found..
+
+DO NOT INSALL ANOTHER MinGW-W64 from another source such as msys2, you don't need it.
 
 ## Microsoft Visual Studio
-* Run the premake-VisualStudio.bat
+* Run the build-VisualStudio2022.bat
 * double click the .sln file that is geneated.
 * develop your game
 * you are good to go.
@@ -37,6 +51,9 @@ or the version installed with the raylib installer, just make sure to add the C:
 
 # Output files
 The built code will be in the bin dir
+
+# Working directories and the resources folder
+The example uses a utility function from path_utils.h that will find the resources dir and set it as the current working directory. This is very useful when starting out. If you wish to manage your own working directory you can simply remove the call to the function and the header.
 
 # Building for other OpenGL targets
 If you need to build for a different OpenGL version than the default (OpenGL 3.3) you can specify an openGL version in your premake command line. Just modify the bat file or add the following to your command line
