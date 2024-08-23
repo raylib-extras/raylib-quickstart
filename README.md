@@ -42,9 +42,16 @@ DO NOT INSALL ANOTHER MinGW-W64 from another source such as msys2, you don't nee
 * develop your game
 * you are good to go.
 
-# Linux and MacOS Users
+# Linux Users
 * CD into the build folder
 * run ./premake5 gmake2
+* CD back to the root
+* run make
+* you are good to go
+
+# MacOS Users
+* CD into the build folder
+* run ./premake5.osx gmake2
 * CD back to the root
 * run make
 * you are good to go
