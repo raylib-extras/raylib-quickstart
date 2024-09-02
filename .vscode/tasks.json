@@ -65,7 +65,7 @@
                 "command": "./premake5"
             },
             "osx": {
-                "command": "./premake5.osx"
+                "command": "premake5.osx"
             },
             "group": "build"
         }
