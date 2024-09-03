@@ -26,6 +26,7 @@
               "miDebuggerPath": "gdb.exe",
             },
             "osx": {
+              "program": "${workspaceFolder}/bin/Debug/${workspaceFolderBaseName}",
               "MIMode": "lldb"
             },
             "linux": {
