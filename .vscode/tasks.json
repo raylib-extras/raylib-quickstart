@@ -40,6 +40,34 @@
             },
             "osx": {
                 "args": [
+                    "config=release_ARM64"
+                ],
+            },
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "dependsOn":["UpdateMake"]
+        },
+        {
+            "label": "Clean",
+            "type": "process",
+            "command": "make",
+            "windows": {
+                "command": "mingw32-make.exe",
+                "args": [
+                    "SHELL=cmd",
+                    "clean"
+                ],
+            },
+            "linux": {
+                "args": [
+                    "clean"
+                ],
+            },
+            "osx": {
+                "args": [
+                    "clean"
                 ],
             },
             "group": "build",
