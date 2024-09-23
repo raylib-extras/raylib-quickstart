@@ -155,6 +155,7 @@ workspace (workspaceName)
         includedirs {raylib_dir .. "/src" }
         includedirs {raylib_dir .."/src/external" }
         includedirs { raylib_dir .."/src/external/glfw/include" }
+        flags { "ShadowedVariables"}
         platform_defines()
 
         filter "action:vs*"
@@ -176,6 +177,7 @@ workspace (workspaceName)
             links {"OpenGL.framework", "Cocoa.framework", "IOKit.framework", "CoreFoundation.framework", "CoreAudio.framework", "CoreVideo.framework", "AudioToolbox.framework"}
 
         filter{}
+		
 
     project "raylib"
         kind "StaticLib"
