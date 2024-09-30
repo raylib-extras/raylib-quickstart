@@ -1,6 +1,6 @@
 # Raylib-Quickstart
 A simple cross platform template for setting up a project with the bleeding edge raylib code.
-Works wiht C or C++.
+Works with C or C++.
 
 ## Supported Platforms
 Quickstart supports the main 3 desktop platforms
