@@ -131,6 +131,7 @@ workspace (workspaceName)
         location "build_files/"
         targetdir "../bin/%{cfg.buildcfg}"
 
+
         filter "action:vs*"
             debugdir "$(SolutionDir)"
 
@@ -151,6 +152,9 @@ workspace (workspaceName)
         includedirs { "../include" }
 
         links {"raylib"}
+
+        cdialect "C99"
+        cppdialect "C++17"
 
         includedirs {raylib_dir .. "/src" }
         includedirs {raylib_dir .."/src/external" }
