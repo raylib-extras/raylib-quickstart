@@ -30,7 +30,7 @@ For a C++ project simply rename the file to .cpp and re-run the build script
 
 int main ()
 {
-	// Tell the window to use v-sync and work on high DPI displays
+	// Tell the window to use vsync and work on high DPI displays
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
 
 	// Create the window and OpenGL context
@@ -48,7 +48,7 @@ int main ()
 		// drawing
 		BeginDrawing();
 
-		// Setup the back-buffer for drawing (clear color and depth buffers)
+		// Setup the back buffer for drawing (clear color and depth buffers)
 		ClearBackground(BLACK);
 
 		// draw some text using the default font
