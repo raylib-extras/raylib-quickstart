@@ -30,7 +30,7 @@ For a C++ project simply rename the file to .cpp and re-run the build script
 
 int main ()
 {
-	// Tell the window to use vysnc and work on high DPI displays
+	// Tell the window to use vsync and work on high DPI displays
 	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
 
 	// Create the window and OpenGL context
@@ -48,7 +48,7 @@ int main ()
 		// drawing
 		BeginDrawing();
 
-		// Setup the backbuffer for drawing (clear color and depth buffers)
+		// Setup the back buffer for drawing (clear color and depth buffers)
 		ClearBackground(BLACK);
 
 		// draw some text using the default font
@@ -65,7 +65,7 @@ int main ()
 	// unload our texture so it can be cleaned up
 	UnloadTexture(wabbit);
 
-	// destory the window and cleanup the OpenGL context
+	// destroy the window and cleanup the OpenGL context
 	CloseWindow();
 	return 0;
 }
