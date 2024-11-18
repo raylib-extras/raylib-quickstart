@@ -143,10 +143,10 @@ workspace (workspaceName)
 
         vpaths 
         {
-            ["Header Files/*"] = { "../include/**.h",  "../include/**.hpp", "../src/**.h", "../src/**.hpp"},
-            ["Source Files/*"] = {"../src/**.c", "src/**.cpp"},
+            ["Header Files/*"] = { "../include/**.h",  "../include/**.hpp", "../include/**.hh", "../src/**.h", "../src/**.hpp", "../src/**.hh"},
+            ["Source Files/*"] = {"../src/**.c", "src/**.cpp", "src/**.cc"},
         }
-        files {"../src/**.c", "../src/**.cpp", "../src/**.h", "../src/**.hpp", "../include/**.h", "../include/**.hpp"}
+        files {"../src/**.c", "../src/**.cpp", "../src/**.cc", "../src/**.h", "../src/**.hpp", "../src/**.hh", "../include/**.h", "../include/**.hpp", "../include/**.hh"}
     
         includedirs { "../src" }
         includedirs { "../include" }
