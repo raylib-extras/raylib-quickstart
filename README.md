@@ -16,7 +16,7 @@ Quickstart supports the main 3 desktop platforms
 * You are good to go.
 
 # Windows Users
-There are two compiler toolchains avialble for windows, MinGW-W64 (a free compiler using GCC), and Microsoft Visual Studio
+There are two compiler toolchains available for windows, MinGW-W64 (a free compiler using GCC), and Microsoft Visual Studio
 ## Using MinGW-W64
 * Double click the build-MinGW-W64.bat file.
 * cd into the folder in your terminal
