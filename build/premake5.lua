@@ -42,7 +42,11 @@ function build_externals()
 end
 
 function platform_defines()
-    defines{"PLATFORM_DESKTOP"}
+    filter {"configurations:Debug or Release"}
+        defines{"PLATFORM_DESKTOP"}
+
+    filter {"configurations:Debug_RGFW or Release_RGFW"}
+        defines{"PLATFORM_DESKTOP_RGFW"}
 
     filter {"options:graphics=opengl43"}
         defines{"GRAPHICS_API_OPENGL_43"}
@@ -99,7 +103,7 @@ end
 
 workspace (workspaceName)
     location "../"
-    configurations { "Debug", "Release"}
+    configurations { "Debug", "Release", "Debug_RGFW", "Release_RGFW"}
     platforms { "x64", "x86", "ARM64"}
 
     defaultplatform ("x64")
@@ -171,7 +175,7 @@ workspace (workspaceName)
 
         filter "system:windows"
             defines{"_WIN32"}
-            links {"winmm", "gdi32"}
+            links {"winmm", "gdi32", "opengl32"}
             libdirs {"../bin/%{cfg.buildcfg}"}
 
         filter "system:linux"
