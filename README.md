@@ -3,7 +3,7 @@ A simple cross platform template for setting up a project with the bleeding edge
 Works with C or C++.
 
 ## Supported Platforms
-Quickstart supports the main 3 desktop platforms
+Quickstart supports the main 3 desktop platforms:
 * Windows
 * Linux
 * MacOS
@@ -11,15 +11,15 @@ Quickstart supports the main 3 desktop platforms
 # VSCode Users (all platforms)
 * Download the quickstart
 * Rename the folder to your game name
-* Open the folder in VSCode.
+* Open the folder in VSCode
 * Press F5 to build
-* You are good to go.
+* You are good to go
 
 # Windows Users
 There are two compiler toolchains available for windows, MinGW-W64 (a free compiler using GCC), and Microsoft Visual Studio
 ## Using MinGW-W64
 * Double click the build-MinGW-W64.bat file.
-* cd into the folder in your terminal
+* CD into the folder in your terminal
 * run make
 * You are good to go
 
@@ -28,20 +28,20 @@ Make sure you have a modern version of MinGW-W64 (not mingw).
 The best place to get it is from the W64devkit from
 https://github.com/skeeto/w64devkit/releases
 or the version installed with the raylib installer
-#### If you have installed rayib from the installer
+#### If you have installed raylib from the installer
 Make sure you have added the path
 
- C:\raylib\w64devkit\bin 
+C:\raylib\w64devkit\bin
 
-To your path environment varialbe so that the compiler that came with raylib can be found..
+To your path environment variable so that the compiler that came with raylib can be found.
 
-DO NOT INSALL ANOTHER MinGW-W64 from another source such as msys2, you don't need it.
+DO NOT INSTALL ANOTHER MinGW-W64 from another source such as msys2, you don't need it.
 
 ## Microsoft Visual Studio
-* Run the build-VisualStudio2022.bat
-* double click the .sln file that is geneated.
+* Run `build-VisualStudio2022.bat`
+* double click the `.sln` file that is generated
 * develop your game
-* you are good to go.
+* you are good to go
 
 # Linux Users
 * CD into the build folder
@@ -70,7 +70,7 @@ Simply rename src/main.c to src/main.cpp and re-run the steps above and do a cle
 Simply remove src/main.c and replace it with your code, and re-run the steps above and do a clean build.
 
 # Building for other OpenGL targets
-If you need to build for a different OpenGL version than the default (OpenGL 3.3) you can specify an openGL version in your premake command line. Just modify the bat file or add the following to your command line
+If you need to build for a different OpenGL version than the default (OpenGL 3.3) you can specify an OpenGL version in your premake command line. Just modify the bat file or add the following to your command line
 
 ## For OpenGL 1.1
 --graphics=opengl11
