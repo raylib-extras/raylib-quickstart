@@ -40,7 +40,7 @@
             },
             "osx": {
                 "args": [
-                    "config=release_ARM64"
+                    "config=release_arm64"
                 ],
             },
             "group": "build",
