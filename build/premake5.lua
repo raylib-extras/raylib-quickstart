@@ -7,7 +7,9 @@ newoption
 		{ "opengl11", "OpenGL 1.1"},
 		{ "opengl21", "OpenGL 2.1"},
 		{ "opengl33", "OpenGL 3.3"},
-		{ "opengl43", "OpenGL 4.3"}
+		{ "opengl43", "OpenGL 4.3"},
+		{ "openges2", "OpenGL ES2"},
+		{ "openges3", "OpenGL ES3"}
 	},
 	default = "opengl33"
 }
