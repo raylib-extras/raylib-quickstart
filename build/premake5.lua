@@ -86,7 +86,9 @@ function platform_defines()
     filter{}
 end
 
- raylib_dir = "external/raylib-master"
+-- if you don't want to download raylib, then set this to false, and set the raylib dir to where you want raylib to be pulled from, must be full sources.
+downloadRaylib = true
+raylib_dir = "external/raylib-master"
 
 workspaceName = 'MyGame'
 baseName = path.getbasename(path.getdirectory(os.getcwd()));
@@ -102,6 +104,7 @@ end
 if (os.isdir('external') == false) then
     os.mkdir('external')
 end
+
 
 workspace (workspaceName)
     location "../"
@@ -128,7 +131,9 @@ workspace (workspaceName)
 
     targetdir "bin/%{cfg.buildcfg}/"
 
+if (downloadRaylib) then
     build_externals()
+	end
 
     startproject(workspaceName)
 
