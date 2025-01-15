@@ -1,5 +1,5 @@
 cd build
 premake5.exe gmake2
 cd ..
-make SHELL=CMD clean
+mingw32-make SHELL=CMD clean
 pause
