@@ -9,6 +9,8 @@ Quickstart supports the main 3 desktop platforms:
 * MacOS
 
 # VSCode Users (all platforms)
+*Note* You must have a compiler toolchain installed in addition to vscode.
+
 * Download the quickstart
 * Rename the folder to your game name
 * Open the folder in VSCode
