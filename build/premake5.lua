@@ -113,11 +113,11 @@ workspace (workspaceName)
 
     defaultplatform ("x64")
 
-    filter "configurations:Debug"
+    filter "configurations:Debug or Debug_RGFW"
         defines { "DEBUG" }
         symbols "On"
 
-    filter "configurations:Release"
+    filter "configurations:Release or Release_RGFW"
         defines { "NDEBUG" }
         optimize "On"
 
@@ -142,11 +142,11 @@ if (downloadRaylib) then
         location "build_files/"
         targetdir "../bin/%{cfg.buildcfg}"
 
-        filter {"system:windows", "configurations:Release", "action:gmake*"}
+        filter {"system:windows", "configurations:Release or Release_RGFW", "action:gmake*"}
             kind "WindowedApp"
             buildoptions { "-Wl,--subsystem,windows" }
 
-        filter {"system:windows", "configurations:Release", "action:vs*"}
+        filter {"system:windows", "configurations:Release or Release_RGFW", "action:vs*"}
             kind "WindowedApp"
             entrypoint "mainCRTStartup"
 
