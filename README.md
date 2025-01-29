@@ -8,7 +8,7 @@ Quickstart supports the main 3 desktop platforms:
 * Linux
 * MacOS
 
-# Naming prrojects
+# Naming projects
 Do not name your game project 'raylib', it will conflict with the raylib library.
 
 # VSCode Users (all platforms)
