@@ -17,7 +17,7 @@ Quickstart supports the main 3 desktop platforms:
 * Download the quickstart
 * Rename the folder to your game name
 * Open the folder in VSCode
-* Press F5 to build
+* Run the build task ( CTRL+SHIFT+B or F5 )
 * You are good to go
 
 # Windows Users
