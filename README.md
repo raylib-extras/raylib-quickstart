@@ -93,7 +93,7 @@ If you need to build for a different OpenGL version than the default (OpenGL 3.3
 `--graphics=opengles3`
 
 # License
-Copyright (c) 2020-2024 Jeffery Myers
+Copyright (c) 2020-2025 Jeffery Myers
 
 This software is provided "as-is", without any express or implied warranty. In no event 
 will the authors be held liable for any damages arising from the use of this software.
