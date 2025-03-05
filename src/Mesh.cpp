@@ -27,6 +27,8 @@ namespace mesh3d {
     }
 
     void Mesh::Update(float dt) {
+		if (dt <= 0.0f) return;
+
         for (auto& spring : springs) {
             spring.ApplySpringForce(); // hook law
         }

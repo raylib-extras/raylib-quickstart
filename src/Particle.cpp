@@ -7,7 +7,7 @@ void Particle::ApplyForce(Vector3 f) {
 }
 
 void Particle::Update(float dt) {
-    if (isFixed) return;
+    if (isFixed || dt <= 0.0f) return;
 
     Vector3 acceleration = { force.x / mass, force.y / mass, force.z / mass };
 
