@@ -159,9 +159,22 @@ if (downloadRaylib) then
         {
             ["Header Files/*"] = { "../include/**.h",  "../include/**.hpp", "../src/**.h", "../src/**.hpp"},
             ["Source Files/*"] = {"../src/**.c", "src/**.cpp"},
+			["Widows Resoruce Files/*"] = {"../src/**.rc", "src/**.ico"},
         }
+		
         files {"../src/**.c", "../src/**.cpp", "../src/**.h", "../src/**.hpp", "../include/**.h", "../include/**.hpp"}
-    
+        
+		filter {"system:windows"}
+            files {"../src/*.rc", "../src/*.ico"}
+			
+		filter {"system:windows","action:gmake*", "files:**.rc"}
+			buildmessage 'Compiling Windows Resources %[%{file.relpath}]'
+
+		   buildcommands {
+			  'windres.exe "%[%{!file.relpath}]" "%[%{!cfg.objdir}/%{file.basename}.out]" '
+		   }
+        filter{}
+		
         includedirs { "../src" }
         includedirs { "../include" }
 
