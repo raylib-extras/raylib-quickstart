@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-set(CMAKR_C_STANDARD 23)    # you can change this to whatever you want
-set(CMAKE_CXX_STANDARD 23)  # this too
+set(CMAKE_C_STANDARD 23)    # you can change this to whatever you want
 
 project(RaylibQuickstart)
 
@@ -34,10 +33,9 @@ endif()
 include(cmake/CPM.cmake)
 CPMAddPackage("gh:raysan5/raylib#master")
 
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
+file(GLOB SOURCES CONFIGURE_DEPENDS
 	src/*.c
-	src/*.cpp
-	# add additional folders here to compile all of their contents recursively
+	# add additional folders here to compile all of their contents
 )
 
 if(WIN32)
@@ -50,6 +48,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${RESOURCE_FILE})
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${raylib_SOURCE_DIR}/src)
+target_include_directories(${PROJECT_NAME} PRIVATE 
+	${raylib_SOURCE_DIR}/src
+	${CMAKE_SOURCE_DIR}/include
+)
 
 target_link_libraries(${PROJECT_NAME} raylib)

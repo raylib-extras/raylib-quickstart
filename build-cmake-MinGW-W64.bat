@@ -1,2 +1,2 @@
-cmake -Bbuild -G "MinGW Makefiles" -S.
-cmake --build build
+cmake -Bcmake-build -G "MinGW Makefiles" -S.
+cmake --build cmake-build

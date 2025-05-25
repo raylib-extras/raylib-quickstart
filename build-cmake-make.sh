@@ -1,2 +1,2 @@
-cmake -Bbuild -G "Unix Makefiles" -S.
-cmake --build build
+cmake -Bcmake-build -G "Unix Makefiles" -S.
+cmake --build cmake-build

@@ -22,7 +22,14 @@ Do not name your game project 'raylib', it will conflict with the raylib library
 * Run the build task ( CTRL+SHIFT+B or F5 )
 * You are good to go
 
-# Building using premake
+# Building the project
+
+You can use two main build systems to build your project.
+
+Provided with this repo are CMakeLists.txt for CMake builds, and premake executables in the premake folder.
+
+You can use either one of them, it doesn't really matter.
+
 ## Windows Users
 
 There are two compiler toolchains available for windows, MinGW-W64 (a free compiler using GCC), and Microsoft Visual Studio
@@ -67,18 +74,29 @@ DO NOT INSTALL ANOTHER MinGW-W64 from another source such as msys2, you don't ne
 * run `make`
 * you are good to go
 
-# Building using CMake
-## Windows users
-### Using MinGW-W64
+## Building with CMake
+
+First you need to make sure to get the CMake executable - you can use either of the following:
+* Download from [the official website](https://cmake.org/download/)
+* Install it with your platform's specific package manager:
+  * On Windows - winget (comes pre-installed) or [scoop](https://scoop.sh/)
+  * On MacOS - [Homebrew](https://brew.sh/)
+  * On Ubuntu/Debian-based Linux - apt-get (comes pre-installed)
+  * On Arch-based Linux - pacman (comes pre-installed)
+
+It is also recommended to edit the project name in CMakeLists.txt.
+
+### Windows users
+#### Using MinGW-W64
 * Run `build-cmake-MinGW-W64.bat`
 
-### Microsoft Visual Studio
+#### Microsoft Visual Studio
 * Run `build-cmake-VisualStudio2022.bat`
 
-## Other platforms
+### Other platforms
 * Make sure you have either `ninja` or `make`.
+* Both are build programs which can be installed using your pakcage manager, as mentioned before.
 * Depending on the build program, run either `build-cmake-ninja.sh` or `build-cmake-make.sh`
-
 
 # Output files
 The built code will be in the bin dir

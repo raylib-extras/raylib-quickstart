@@ -402,4 +402,4 @@ Makefile
 /*.sln
 
 # CMake Build folder
-build/
+cmake-build/
