@@ -22,18 +22,6 @@ Do not name your game project 'raylib', it will conflict with the raylib library
 * Run the build task ( CTRL+SHIFT+B or F5 )
 * You are good to go
 
-# Building using CMake
-## Windows users
-### Using MinGW-W64
-* Run `build-cmake-MinGW-W64.bat`
-
-### Microsoft Visual Studio
-* Run `build-cmake-VisualStudio2022.bat`
-
-## Other platforms
-* Make sure you have either `ninja` or `make`.
-* Depending on the build program, run either `build-cmake-ninja.sh` or `build-cmake-make.sh`
-
 # Building using premake
 ## Windows Users
 
@@ -78,6 +66,19 @@ DO NOT INSTALL ANOTHER MinGW-W64 from another source such as msys2, you don't ne
 * CD back to the root
 * run `make`
 * you are good to go
+
+# Building using CMake
+## Windows users
+### Using MinGW-W64
+* Run `build-cmake-MinGW-W64.bat`
+
+### Microsoft Visual Studio
+* Run `build-cmake-VisualStudio2022.bat`
+
+## Other platforms
+* Make sure you have either `ninja` or `make`.
+* Depending on the build program, run either `build-cmake-ninja.sh` or `build-cmake-make.sh`
+
 
 # Output files
 The built code will be in the bin dir
