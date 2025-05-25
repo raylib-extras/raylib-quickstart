@@ -400,3 +400,6 @@ build_files
 raylib-master
 Makefile
 /*.sln
+
+# CMake Build folder
+build/
