@@ -46,6 +46,8 @@ else()
 	set(RESOURCE_FILE)
 endif()
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+
 add_executable(${PROJECT_NAME} ${SOURCES} ${RESOURCE_FILE})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${raylib_SOURCE_DIR}/src)
