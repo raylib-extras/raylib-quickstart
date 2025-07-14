@@ -84,7 +84,7 @@
                 "cwd": "${workspaceFolder}/build/"
             },
             "args": [
-                "gmake2"
+                "gmake"
             ],
             "windows": {
                 "command": "./premake5.exe"
