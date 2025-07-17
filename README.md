@@ -25,6 +25,8 @@ There are two compiler toolchains available for windows, MinGW-W64 (a free compi
 ## Using MinGW-W64
 * Double click the `build-MinGW-W64.bat` file
 * CD into the folder in your terminal
+  * if you are usiing the W64devkit and have not added it to your system path environment variable, you must use the W64devkit.exe terminal, not CMD.exe
+  * If you want to use cmd.exe or any other terminal, please make sure that gcc/mingw-W64 is in your path environment variable.
 * run `make`
 * You are good to go
 
