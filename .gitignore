@@ -400,3 +400,8 @@ build_files
 raylib-master
 Makefile
 /*.sln
+
+# Vi and Vim
+*.swp
+*.swo
+*.swn
