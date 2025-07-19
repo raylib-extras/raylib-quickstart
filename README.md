@@ -2,14 +2,41 @@
 A simple cross platform template for setting up a project with the bleeding edge raylib code.
 Works with C or C++.
 
-## Supported Platforms
+## Table of contents
+
+- [Raylib-Quickstart](#raylib-quickstart)
+- [Table of Contents](#table-of-contents)
+- [Supported Platforms](#supported-platforms)
+- [Naming projects](#naming-projects)
+- [VSCode Users (all platforms)](#vscode-users-all-platforms)
+- [Windows Users](#windows-users)
+	- [MinGW-W64](#using-mingw-w64)
+		- [If you have installed raylib from the installer](#if-you-have-installed-raylib-from-the-installer)
+		- [Note on MinGW-64 versions](#note-on-migw-64-versions)
+	- [Microsoft Visual Studio](#microsoft-visual-studio)
+- [Linux Users](#linux-users)
+- [MacOS Users](#macos-users)
+- [Output files](#output-files)
+- [Working directories and the resources folder](#working-directories-and-the-resources-folder)
+- [Changing to C++](#changing-to-c)
+- [Using your own code](#using-your-own-code)
+- [Building for other OpenGL targets](#building-for-other-opengl-targets)
+	- [For OpenGL 1.1](#for-opengl-11)
+	- [For OpenGL 2.1](#for-opengl-21)
+	- [For OpenGL 4.3](#for-opengl-43)
+	- [For OpenGLES 2.0](#for-opengles-20)
+	- [For OpenGLES 3.0](#for-opengles-30)
+- [License](#license)
+
+
+# Supported Platforms
 Quickstart supports the main 3 desktop platforms:
 * Windows
 * Linux
 * MacOS
 
 # Naming projects
-Do not name your game project 'raylib', it will conflict with the raylib library.
+Do <ins>***NOT***</ins> name your game project `raylib`, it will conflict with the raylib library.
 
 # VSCode Users (all platforms)
 *Note* You must have a compiler toolchain installed in addition to vscode.
@@ -23,26 +50,26 @@ Do not name your game project 'raylib', it will conflict with the raylib library
 # Windows Users
 There are two compiler toolchains available for windows, MinGW-W64 (a free compiler using GCC), and Microsoft Visual Studio
 ## Using MinGW-W64
+
 * Double click the `build-MinGW-W64.bat` file
-* CD into the folder in your terminal
-  * if you are usiing the W64devkit and have not added it to your system path environment variable, you must use the W64devkit.exe terminal, not CMD.exe
-  * If you want to use cmd.exe or any other terminal, please make sure that gcc/mingw-W64 is in your path environment variable.
-* run `make`
 * You are good to go
 
-### Note on MinGW-64 versions
-Make sure you have a modern version of MinGW-W64 (not mingw).
-The best place to get it is from the W64devkit from
-https://github.com/skeeto/w64devkit/releases
-or the version installed with the raylib installer
-#### If you have installed raylib from the installer
-Make sure you have added the path
+### If you have installed raylib from the installer
+Make sure you have added the path  
+`C:\raylib\w64devkit\bin`  
+to your PATH environment variable so that the compiler that came with raylib can be found.  
 
-`C:\raylib\w64devkit\bin`
-
-To your path environment variable so that the compiler that came with raylib can be found.
+To make sure you've done it correctly, run `where sh` in `cmd.exe`.  
+You should see something like `C:\raylib\w64devkit\bin\sh.exe`.  
 
 DO NOT INSTALL ANOTHER MinGW-W64 from another source such as msys2, you don't need it.
+
+### Note on MinGW-64 versions
+Please make sure you have a recent version of MinGW-W64.  
+The older versions from mingw.org <ins>***will not work***</ins>.  
+We recommend the W64Devkit. It has everything needed to build raylib.  
+It can be downloaded from here https://github.com/skeeto/w64devkit/releases
+
 
 ## Microsoft Visual Studio
 * Run `build-VisualStudio2022.bat`
