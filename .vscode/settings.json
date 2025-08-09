@@ -7,5 +7,12 @@
 		"**/.DS_Store": true,
 		"**/*.o": true,
 		"**/*.exe": true,
+	},
+	"makefile.configureOnOpen": false,
+	"files.associations": {
+		"*.h": "c",
+		"*.bison": "yacc",
+		"*.cgen": "c",
+		"*.m": "c"
 	}
 }
