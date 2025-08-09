@@ -34,7 +34,14 @@ int abs(int i) {
 fixed_t fixed_sin(angle_t ang) { return sin_table[ang]; }
 fixed_t fixed_cos(angle_t ang) { return sin_table[ang + (angle_factor / 4)]; }
 
-fixed_t fixed_nudge(fixed_t *fix, fixed_t goal) {
+int int_sq(int x) { return x * x; }
+fixed_t fixed_sq(fixed_t fix) {
+  // ((fix / fixed_factor) * (fix / fixed_factor)) * fixed_factor
+  // but with more precision for smaller fixed numbers.
+  return fix * fix / fixed_factor;
+}
+
+fixed_t fixed_nudge(fixed_t* fix, fixed_t goal) {
   if (*fix > goal) {
     --*fix;
   } else if (*fix < goal) {

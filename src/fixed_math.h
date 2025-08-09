@@ -22,7 +22,10 @@ int abs(int i);
 fixed_t fixed_sin(angle_t ang);
 fixed_t fixed_cos(angle_t ang);
 
-fixed_t fixed_nudge(fixed_t *fix, fixed_t goal);
+int int_sq(int x);
+fixed_t fixed_sq(fixed_t fix);
+
+fixed_t fixed_nudge(fixed_t* fix, fixed_t goal);
 fixed_t fixed_lerp(fixed_t a, fixed_t b, fixed_t n);
 
 fixed_pair fixed_norm(fixed_t dx, fixed_t dy);

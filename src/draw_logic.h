@@ -1,0 +1,10 @@
+#pragma once
+
+#include <raylib.h>
+
+#include "gd.h"
+
+void DrawCheckerboard(GameData* GD);
+void DrawProjs(GameData* GD);
+void DrawShapes(GameData* GD);
+void DrawPlayer(GameData* GD);

@@ -1,6 +1,6 @@
 {
   "BasedOnStyle": "Google",
-  "PointerAlignment": "Right",
+  "PointerAlignment": "Left",
   "DerivePointerAlignment": false,
   "ColumnLimit": 0
 }
