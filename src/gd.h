@@ -1,5 +1,6 @@
 #pragma once
 
+#include <raylib.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -38,6 +39,8 @@ typedef struct Shape {
   int sqdist_to_player;
   int sides;
   int size;
+  Color fg;
+  Color bg;
   int despawn_timer;
 } Shape;
 

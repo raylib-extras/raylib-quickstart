@@ -38,8 +38,8 @@ void DrawShapes(GameData* GD) {
                             fixed_whole(GD->shapes[i].y - GD->camera.y) + render_h / 2};
 
       // shape
-      Color fg = (GD->shapes[i].ticks_since_damaged >= 4) ? YELLOW : WHITE;
-      Color bg = (GD->shapes[i].ticks_since_damaged >= 4) ? GOLD : PINK;
+      Color fg = (GD->shapes[i].ticks_since_damaged >= 4) ? GD->shapes[i].fg : WHITE;
+      Color bg = (GD->shapes[i].ticks_since_damaged >= 4) ? GD->shapes[i].bg : PINK;
       DrawPoly(render_pos, GD->shapes[i].sides, GD->shapes[i].size, GD->ticks, fg);
       DrawPolyLinesEx(render_pos, GD->shapes[i].sides, GD->shapes[i].size, GD->ticks, 2.0f, bg);
 

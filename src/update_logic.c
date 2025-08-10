@@ -11,10 +11,27 @@ void SpawnNewShapes(GameData* GD) {
       GD->shapes[i].y = GD->player.y + fixed_new(GetRandomValue(-render_h, render_h), 0);
       GD->shapes[i].move_speed = fixed_new(GetRandomValue(1, 8), 0) / 60;
       GD->shapes[i].angle = GetRandomValue(0, angle_factor - 1);
-      GD->shapes[i].hp = 20;
-      GD->shapes[i].max_hp = 20;
-      GD->shapes[i].sides = GetRandomValue(3, 6);
-      GD->shapes[i].size = 8;
+      int rand = GetRandomValue(0, 7);
+      if (rand < 5) {
+        GD->shapes[i].max_hp = 20;
+        GD->shapes[i].sides = 3;
+        GD->shapes[i].size = 8;
+        GD->shapes[i].fg = YELLOW;
+        GD->shapes[i].bg = GOLD;
+      } else if (rand < 7) {
+        GD->shapes[i].max_hp = 40;
+        GD->shapes[i].sides = 4;
+        GD->shapes[i].size = 12;
+        GD->shapes[i].fg = PINK;
+        GD->shapes[i].bg = RED;
+      } else {
+        GD->shapes[i].max_hp = 100;
+        GD->shapes[i].sides = 5;
+        GD->shapes[i].size = 24;
+        GD->shapes[i].fg = PURPLE;
+        GD->shapes[i].bg = VIOLET;
+      }
+      GD->shapes[i].hp = GD->shapes[i].max_hp;
       GD->shapes[i].despawn_timer = GetRandomValue(1200, 1800);
       // printf("Spawned shape %d\n", i);
       break;
@@ -56,7 +73,7 @@ void UpdateShapes(GameData* GD) {
     // absorption
     if (GD->shapes[i].sqdist_to_player < int_sq(GD->player.size - 4)) {
       GD->player.size += 1;
-      GD->shapes[i].exists = false;
+      GD->shapes[i].hp -= 10;
     } else if (GD->shapes[i].sqdist_to_player < int_sq(GD->player.size + 8)) {
       angle_t target_angle = angle_from_line(GD->shapes[i].x, GD->shapes[i].y, GD->player.x, GD->player.y);
       GD->shapes[i].angle = target_angle;
@@ -67,6 +84,9 @@ void UpdateShapes(GameData* GD) {
 void UpdatePlayer(GameData* GD) {
   // player shrinking
   if (GD->ticks % 120 == 0 && GD->player.size > 10) {
+    --GD->player.size;
+  }
+  if (GD->ticks % 15 == 0 && GD->player.size > 40) {
     --GD->player.size;
   }
 
