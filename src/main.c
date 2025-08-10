@@ -14,7 +14,6 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include "fixed_math.h"
 #include "gd.h"
 #include "raylib.h"
-#include "raymath.h"
 #include "resource_dir.h"  // utility header for SearchAndSetResourceDir
 #include "update_logic.h"
 
@@ -22,41 +21,43 @@ int main() {
   SetTraceLogLevel(LOG_WARNING);
   SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
   InitWindow(window_w, window_h, "raygame");
-  SetTargetFPS(60);
+  SetTargetFPS(target_fps);
 
   // Utility function from resource_dir.h to find the resources folder and set
   // it as the current working directory so we can load from it
   SearchAndSetResourceDir("resources");
 
-  GameData GD = {
+  GameData game_data = {
       .player = {
           .size = 15,
           .sight_range = render_h / 2,
-          .turn_speed = 2}};
+          .turn_speed = 2},
+      .font = LoadFontEx("Kitchen Sink.ttf", 8, NULL, 0)};
+  GameData* GD = &game_data;
   RenderTexture2D canvas = LoadRenderTexture(render_w, render_h);
 
   while (!WindowShouldClose()) {
     // ------[Game Logic]------
-    SpawnNewShapes(&GD);
-    UpdateShapes(&GD);
-    UpdatePlayer(&GD);
-    SpawnNewProjs(&GD);
-    UpdateProjs(&GD);
+    SpawnNewShapes(GD);
+    UpdateShapes(GD);
+    UpdatePlayer(GD);
+    SpawnNewProjs(GD);
+    UpdateProjs(GD);
 
     // update camera
-    GD.camera.x = GD.player.x - render_w / 2;
-    GD.camera.y = GD.player.y - render_h / 2;
+    GD->camera.x = GD->player.x - render_w / 2;
+    GD->camera.y = GD->player.y - render_h / 2;
 
     // ------[Drawing]------
     BeginTextureMode(canvas);
     ClearBackground(WHITE);
 
-    DrawCheckerboard(&GD);
-    DrawProjs(&GD);
-    DrawShapes(&GD);
-    DrawPlayer(&GD);
+    DrawCheckerboard(GD);
+    DrawProjs(GD);
+    DrawShapes(GD);
+    DrawPlayer(GD);
 
-    DrawFPS(0, 0);
+    DrawPrintf(0, 0, BLACK, "%d FPS", GetFPS());
 
     EndTextureMode();
     BeginDrawing();
@@ -64,7 +65,7 @@ int main() {
                    (Rectangle){0, 0, window_w, window_h}, (Vector2){0, 0}, 0.0f, WHITE);
     EndDrawing();
 
-    ++GD.ticks;
+    ++GD->ticks;
   }
 
   // cleanup

@@ -33,39 +33,36 @@ void DrawShapes(GameData* GD) {
     if (!GD->shapes[i].exists) {
       continue;
     }
-    if (GD->shapes[i].despawn_timer > 120 || GD->shapes[i].despawn_timer % 16 < 8) {
-      Vector2 render_pos = {fixed_whole(GD->shapes[i].x - GD->camera.x) + render_w / 2,
-                            fixed_whole(GD->shapes[i].y - GD->camera.y) + render_h / 2};
+    Vector2 render_pos = {fixed_whole(GD->shapes[i].x - GD->camera.x) + render_w / 2,
+                          fixed_whole(GD->shapes[i].y - GD->camera.y) + render_h / 2};
+    // shape
+    Color fg = (GD->shapes[i].ticks_since_damaged >= 4) ? GD->shapes[i].fg : WHITE;
+    Color bg = (GD->shapes[i].ticks_since_damaged >= 4) ? GD->shapes[i].bg : PINK;
+    DrawPoly(render_pos, GD->shapes[i].sides, GD->shapes[i].size, GD->ticks, fg);
+    DrawPolyLinesEx(render_pos, GD->shapes[i].sides, GD->shapes[i].size, GD->ticks, 2.0f, bg);
 
-      // shape
-      Color fg = (GD->shapes[i].ticks_since_damaged >= 4) ? GD->shapes[i].fg : WHITE;
-      Color bg = (GD->shapes[i].ticks_since_damaged >= 4) ? GD->shapes[i].bg : PINK;
-      DrawPoly(render_pos, GD->shapes[i].sides, GD->shapes[i].size, GD->ticks, fg);
-      DrawPolyLinesEx(render_pos, GD->shapes[i].sides, GD->shapes[i].size, GD->ticks, 2.0f, bg);
-
-      // healthbar
-      if (GD->shapes[i].hp < GD->shapes[i].max_hp) {
-        int bar_width = GD->shapes[i].max_hp / 2;
-        int filled_width = bar_width * GD->shapes[i].hp / GD->shapes[i].max_hp;
-        Color color = GREEN;
-        if (filled_width <= bar_width / 2) {
-          color = YELLOW;
-        }
-        if (filled_width <= bar_width / 4) {
-          color = RED;
-        }
-        DrawRectangle(render_pos.x - bar_width / 2, render_pos.y + GD->shapes[i].size + 2, bar_width, 3, BLACK);
-        DrawRectangle(render_pos.x - bar_width / 2, render_pos.y + GD->shapes[i].size + 2, filled_width, 3, color);
+    // healthbar
+    if (GD->shapes[i].hp < GD->shapes[i].max_hp) {
+      int bar_width = GD->shapes[i].max_hp / 2;
+      int filled_width = bar_width * GD->shapes[i].hp / GD->shapes[i].max_hp;
+      Color color = GREEN;
+      if (filled_width <= bar_width / 2) {
+        color = YELLOW;
       }
-
-      // debug info
-      DrawPrintf(render_pos.x, render_pos.y, 10, BLACK, "[%d]", i);
-      DrawLine(render_pos.x,
-               render_pos.y,
-               render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].angle) * 16),
-               render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].angle) * 16),
-               RED);
+      if (filled_width <= bar_width / 4) {
+        color = RED;
+      }
+      DrawRectangle(render_pos.x - bar_width / 2, render_pos.y + GD->shapes[i].size + 2, bar_width, 3, BLACK);
+      DrawRectangle(render_pos.x - bar_width / 2, render_pos.y + GD->shapes[i].size + 2, filled_width, 3, color);
     }
+
+    // debug info
+    DrawPrintf(render_pos.x, render_pos.y, BLACK, "[%d]", i);
+    DrawLine(render_pos.x,
+             render_pos.y,
+             render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].angle) * 16),
+             render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].angle) * 16),
+             RED);
   }
 }
 

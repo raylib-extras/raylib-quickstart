@@ -9,13 +9,13 @@
 #define LENGTHOF(arr) (sizeof((arr)) / sizeof((arr)[0]))
 
 #ifdef NDEBUG
-#define DrawPrintf(x, y, font_size, color, text, ...)
+#define DrawPrintf(x, y, color, text, ...)
 #else
-#define DrawPrintf(x, y, font_size, color, text, ...)              \
-  do {                                                             \
-    char out[100];                                                 \
-    snprintf(out, LENGTHOF(out), text __VA_OPT__(, ) __VA_ARGS__); \
-    DrawText(out, x, y, font_size, color);                         \
+#define DrawPrintf(x, y, color, text, ...)                                 \
+  do {                                                                     \
+    char out[100];                                                         \
+    snprintf(out, LENGTHOF(out), text __VA_OPT__(, ) __VA_ARGS__);         \
+    DrawTextEx(GD->font, out, (Vector2){(float)x, (float)y}, 8, 0, color); \
   } while (0)
 #endif
 
@@ -24,6 +24,8 @@ extern const int render_h;
 extern const int window_scale;
 extern const int window_w;
 extern const int window_h;
+
+extern const int target_fps;
 
 typedef struct Shape {
   bool exists;
@@ -41,7 +43,8 @@ typedef struct Shape {
   int size;
   Color fg;
   Color bg;
-  int despawn_timer;
+  bool marked_for_despawn;
+  int i_frames;
 } Shape;
 
 typedef struct Proj {
@@ -74,8 +77,11 @@ typedef struct GameData {
   } camera;
 
   Shape shapes[40];
+  int shape_count;
+
   Proj projs[40];
 
   int ticks;
+  Font font;
 
 } GameData;
