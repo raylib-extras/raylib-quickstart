@@ -27,13 +27,10 @@ int main() {
   // it as the current working directory so we can load from it
   SearchAndSetResourceDir("resources");
 
-  GameData game_data = {
-      .player = {
-          .size = 15,
-          .sight_range = render_h / 2,
-          .turn_speed = 2},
-      .font = LoadFontEx("Kitchen Sink.ttf", 8, NULL, 0)};
+  GameData game_data = {};
   GameData* GD = &game_data;
+  InitGameData(GD);
+
   RenderTexture2D canvas = LoadRenderTexture(render_w, render_h);
 
   while (!WindowShouldClose()) {
@@ -43,6 +40,7 @@ int main() {
     UpdatePlayer(GD);
     SpawnNewProjs(GD);
     UpdateProjs(GD);
+    UpdatePickups(GD);
 
     // update camera
     GD->camera.x = GD->player.x - render_w / 2;
@@ -56,8 +54,15 @@ int main() {
     DrawProjs(GD);
     DrawShapes(GD);
     DrawPlayer(GD);
+    DrawPickups(GD);
 
-    DrawPrintf(0, 0, BLACK, "%d FPS", GetFPS());
+    DrawPrintf(0, 0, BLACK, "%d FPS\nSpeed : %d\nSight : %d\nTurn  : %d\nDelay : %d (%d)\nDamage: %d\nSpread: %d",
+               GetFPS(), GD->player.max_speed,
+               GD->player.sight_range,
+               GD->player.turn_speed,
+               GD->player.reload_delay, fixed_factor * fixed_factor / target_fps / GD->player.reload_delay,
+               GD->player.damage,
+               GD->player.shot_spread);
 
     EndTextureMode();
     BeginDrawing();

@@ -23,8 +23,8 @@ void DrawProjs(GameData* GD) {
     }
     Vector2 render_pos = {fixed_whole(GD->projs[i].x - GD->camera.x) + render_w / 2,
                           fixed_whole(GD->projs[i].y - GD->camera.y) + render_h / 2};
-    DrawPoly(render_pos, 4, 8, GD->ticks + i * 15, GRAY);
-    DrawPolyLinesEx(render_pos, 4, 8, GD->ticks + i * 15, 2.0f, BLACK);
+    DrawPoly(render_pos, 4, GD->projs[i].size, GD->ticks + i * 15, GRAY);
+    DrawPolyLinesEx(render_pos, 4, GD->projs[i].size, GD->ticks + i * 15, 2.0f, BLACK);
   }
 }
 
@@ -57,12 +57,12 @@ void DrawShapes(GameData* GD) {
     }
 
     // debug info
-    DrawPrintf(render_pos.x, render_pos.y, BLACK, "[%d]", i);
-    DrawLine(render_pos.x,
-             render_pos.y,
-             render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].angle) * 16),
-             render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].angle) * 16),
-             RED);
+    // DrawPrintf(render_pos.x, render_pos.y, BLACK, "[%d]", i);
+    // DrawLine(render_pos.x,
+    //          render_pos.y,
+    //          render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].angle) * 16),
+    //          render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].angle) * 16),
+    //          RED);
   }
 }
 
@@ -76,4 +76,17 @@ void DrawPlayer(GameData* GD) {
            render_pos.x + fixed_whole(fixed_cos(GD->player.angle) * 16),
            render_pos.y + fixed_whole(fixed_sin(GD->player.angle) * 16),
            GREEN);
+}
+
+void DrawPickups(GameData* GD) {
+  for (int p = 0; p < LENGTHOF(GD->pickups); ++p) {
+    if (!GD->pickups[p].exists) {
+      continue;
+    }
+    Vector2 render_pos = {fixed_whole(GD->pickups[p].x - GD->camera.x) + render_w / 2,
+                          fixed_whole(GD->pickups[p].y - GD->camera.y) + render_h / 2};
+    DrawPoly(render_pos, 4, 12, 0, WHITE);
+    DrawPolyLinesEx(render_pos, 4, 12, 0, 2.0f, SKYBLUE);
+    DrawPrintf(render_pos.x, render_pos.y, BLACK, "%d", GD->pickups[p].type);
+  }
 }

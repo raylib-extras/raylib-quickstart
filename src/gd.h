@@ -37,6 +37,7 @@ typedef struct Shape {
 
   int hp;
   int max_hp;
+  int regen;
   int ticks_since_damaged;
   int sqdist_to_player;
   int sides;
@@ -44,6 +45,7 @@ typedef struct Shape {
   Color fg;
   Color bg;
   bool marked_for_despawn;
+  bool spawn_pickup_on_despawn;
   int i_frames;
 } Shape;
 
@@ -60,15 +62,39 @@ typedef struct Proj {
   int despawn_timer;
 } Proj;
 
+typedef enum ItemType {
+  ITEM_SPEED_UPGRADE,
+  ITEM_FIRE_RATE_UPGRADE,
+  ITEM_TURN_SPEED_UPGRADE,
+  ITEM_DAMAGE_UPGRADE,
+  ITEM_COUNT
+} ItemType;
+
+typedef struct Pickup {
+  bool exists;
+
+  fixed_t x;
+  fixed_t y;
+  ItemType type;
+} Pickup;
+
 typedef struct GameData {
   struct {
     fixed_t x;
     fixed_t y;
     fixed_t move_speed;
     angle_t angle;
+
     int size;
+    fixed_t max_speed;
     int sight_range;
     int turn_speed;
+    fixed_t reload_delay;
+    fixed_t reload_progress;
+    int damage;
+    int shot_spread;
+
+    ItemType item_counts[ITEM_COUNT];
   } player;
 
   struct {
@@ -80,6 +106,9 @@ typedef struct GameData {
   int shape_count;
 
   Proj projs[40];
+
+  Pickup pickups[40];
+  int pickups_spawned;
 
   int ticks;
   Font font;

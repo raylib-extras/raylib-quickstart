@@ -34,6 +34,26 @@ int abs(int i) {
 fixed_t fixed_sin(angle_t ang) { return sin_table[ang]; }
 fixed_t fixed_cos(angle_t ang) { return sin_table[ang + (angle_factor / 4)]; }
 
+void clamp(int* val, int min, int max) {
+  if (*val < min) {
+    *val = min;
+    return;
+  }
+  if (*val > max) {
+    *val = max;
+  }
+}
+
+void fixed_clamp(fixed_t* val, fixed_t min, fixed_t max) {
+  if (*val < min) {
+    *val = min;
+    return;
+  }
+  if (*val > max) {
+    *val = max;
+  }
+}
+
 int int_sq(int x) { return x * x; }
 fixed_t fixed_sq(fixed_t fix) {
   // ((fix / fixed_factor) * (fix / fixed_factor)) * fixed_factor
