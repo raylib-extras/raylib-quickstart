@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "fixed_math.h"
+#include "item_types.h"
 
 #define LENGTHOF(arr) (sizeof((arr)) / sizeof((arr)[0]))
 
@@ -40,12 +41,14 @@ typedef struct Shape {
   int regen;
   int ticks_since_damaged;
   int sqdist_to_player;
+  angle_t angle_to_player;
   int sides;
   int size;
   Color fg;
   Color bg;
   bool marked_for_despawn;
   bool spawn_pickup_on_despawn;
+  bool spawn_children_on_despawn;
   int i_frames;
 } Shape;
 
@@ -61,14 +64,6 @@ typedef struct Proj {
   int size;
   int despawn_timer;
 } Proj;
-
-typedef enum ItemType {
-  ITEM_SPEED_UPGRADE,
-  ITEM_FIRE_RATE_UPGRADE,
-  ITEM_TURN_SPEED_UPGRADE,
-  ITEM_DAMAGE_UPGRADE,
-  ITEM_COUNT
-} ItemType;
 
 typedef struct Pickup {
   bool exists;
@@ -93,6 +88,9 @@ typedef struct GameData {
     fixed_t reload_progress;
     int damage;
     int shot_spread;
+    fixed_t shot_speed;
+    fixed_t shot_count;
+    fixed_t shot_progress;
 
     ItemType item_counts[ITEM_COUNT];
   } player;

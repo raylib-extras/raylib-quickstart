@@ -1,5 +1,8 @@
 #include "draw_logic.h"
 
+#include <string.h>
+#include <strings.h>
+
 void DrawCheckerboard(GameData* GD) {
   const int grid_size = 256;
   for (int y = -grid_size; y < window_h; ++y) {
@@ -43,7 +46,7 @@ void DrawShapes(GameData* GD) {
 
     // healthbar
     if (GD->shapes[i].hp < GD->shapes[i].max_hp) {
-      int bar_width = GD->shapes[i].max_hp / 2;
+      int bar_width = GD->shapes[i].max_hp / 20;
       int filled_width = bar_width * GD->shapes[i].hp / GD->shapes[i].max_hp;
       Color color = GREEN;
       if (filled_width <= bar_width / 2) {
@@ -58,11 +61,11 @@ void DrawShapes(GameData* GD) {
 
     // debug info
     // DrawPrintf(render_pos.x, render_pos.y, BLACK, "[%d]", i);
-    // DrawLine(render_pos.x,
-    //          render_pos.y,
-    //          render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].angle) * 16),
-    //          render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].angle) * 16),
-    //          RED);
+    DrawLine(render_pos.x,
+             render_pos.y,
+             render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].angle) * 16),
+             render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].angle) * 16),
+             RED);
   }
 }
 
@@ -87,6 +90,6 @@ void DrawPickups(GameData* GD) {
                           fixed_whole(GD->pickups[p].y - GD->camera.y) + render_h / 2};
     DrawPoly(render_pos, 4, 12, 0, WHITE);
     DrawPolyLinesEx(render_pos, 4, 12, 0, 2.0f, SKYBLUE);
-    DrawPrintf(render_pos.x, render_pos.y, BLACK, "%d", GD->pickups[p].type);
+    DrawPrintf(render_pos.x - 3 * strlen(item_strs[GD->pickups[p].type]), render_pos.y, BLACK, "%s", item_strs[GD->pickups[p].type]);
   }
 }

@@ -21,36 +21,40 @@ int ClaimEmptyShapeSlot(GameData* GD) {
 void SetShapeStats(Shape* shape, int sides) {
   switch (sides) {
     case 3: {
-      shape->max_hp = 20;
+      shape->max_hp = 200;
       shape->regen = 0;
       shape->sides = 3;
       shape->size = 8;
       shape->fg = YELLOW;
       shape->bg = GOLD;
+      shape->spawn_children_on_despawn = false;
     } break;
     case 4: {
-      shape->max_hp = 40;
+      shape->max_hp = 400;
       shape->regen = 4;
       shape->sides = 4;
       shape->size = 12;
       shape->fg = PINK;
       shape->bg = RED;
+      shape->spawn_children_on_despawn = true;
     } break;
     case 5: {
-      shape->max_hp = 100;
+      shape->max_hp = 1000;
       shape->regen = 12;
       shape->sides = 5;
       shape->size = 24;
       shape->fg = PURPLE;
       shape->bg = VIOLET;
+      shape->spawn_children_on_despawn = true;
     } break;
     case 6: {
-      shape->max_hp = 500;
+      shape->max_hp = 5000;
       shape->regen = 50;
       shape->sides = 6;
       shape->size = 40;
       shape->fg = GREEN;
       shape->bg = LIME;
+      shape->spawn_children_on_despawn = true;
     } break;
     default: {
       TraceLog(LOG_ERROR, "Bad Shape side count of %d", sides);
@@ -88,46 +92,65 @@ void SpawnPickup(GameData* GD, int s) {
     GD->pickups[p].x = GD->shapes[s].x;
     GD->pickups[p].y = GD->shapes[s].y;
     GD->pickups[p].type = GetRandomValue(0, ITEM_COUNT - 1);
+    if (GD->player.item_counts[GD->pickups[p].type] >= 8) {
+      GD->pickups[p].exists = false;
+    }
     return;
   }
 }
 
 void UpdatePlayerStats(GameData* GD) {
-  GD->player.size = 15;
+  GD->player.size = 12;
   GD->player.max_speed = fixed_new(1, 128);
   GD->player.reload_delay = fixed_new(0, 128);
   GD->player.sight_range = render_h / 2;
   GD->player.turn_speed = 2;
-  GD->player.damage = 4;
+  GD->player.damage = 45;
   GD->player.shot_spread = 1;
+  GD->player.shot_speed = fixed_new(2, 0);
+  GD->player.shot_count = fixed_new(1, 0);
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GD->player.item_counts[i]; ++x) {
       switch (i) {
-        case ITEM_SPEED_UPGRADE:
-          GD->player.max_speed += fixed_new(0, 128);
+        case ITEM_SPEED_UP:
+          GD->player.max_speed += fixed_new(0, 64);
           break;
-        case ITEM_FIRE_RATE_UPGRADE:
+        case ITEM_FIRE_RATE_UP:
           GD->player.reload_delay = GD->player.reload_delay * 80 / 100;
+          GD->player.damage = GD->player.damage * 95 / 100;
           GD->player.shot_spread += 2;
           break;
-        case ITEM_TURN_SPEED_UPGRADE:
+        case ITEM_TURN_SPEED_UP:
           ++GD->player.turn_speed;
           break;
-        case ITEM_DAMAGE_UPGRADE:
-          GD->player.damage += 2;
+        case ITEM_DAMAGE_UP:
+          GD->player.damage = GD->player.damage * 125 / 100;
           GD->player.reload_delay = GD->player.reload_delay * 105 / 100;
           break;
+        case ITEM_ACCURACY_UP:
+          GD->player.shot_spread -= 2;
+          break;
+        case ITEM_SHOT_SPEED_UP:
+          GD->player.shot_speed += fixed_new(0, 128);
+          break;
+        case ITEM_SHOT_COUNT_UP:
+          GD->player.shot_count += fixed_new(0, 64);
+          GD->player.shot_spread += 2;
+        default:
+          TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
       }
     }
   }
 
   clamp(&GD->player.size, 10, 50);
-  fixed_clamp(&GD->player.max_speed, fixed_new(1, 0), fixed_new(5, 0));
+  fixed_clamp(&GD->player.max_speed, fixed_new(1, 0), fixed_new(4, 0));
   fixed_clamp(&GD->player.reload_delay, fixed_new(0, 8), fixed_new(5, 0));
   // clamp(&GD->player.sight_range);
   clamp(&GD->player.turn_speed, 1, 64);
-  clamp(&GD->player.damage, 1, 999);
+  clamp(&GD->player.damage, 10, 1000);
   clamp(&GD->player.shot_spread, 0, 32);
+  fixed_clamp(&GD->player.shot_speed, fixed_new(0, 128), fixed_new(8, 0));
+  fixed_clamp(&GD->player.shot_count, fixed_new(1, 0), fixed_new(8, 0));
 }
 
 void SpawnNewShapes(GameData* GD) {
@@ -181,21 +204,20 @@ void UpdateShapes(GameData* GD) {
       GD->shapes[s].marked_for_despawn = true;
     }
     ++GD->shapes[s].ticks_since_damaged;
-    if (GD->shapes[s].ticks_since_damaged > 240 && GD->ticks % 30 == 0 && GD->shapes[s].hp < GD->shapes[s].max_hp) {
-      ++GD->shapes[s].hp;
-    }
     if (GD->shapes[s].i_frames > 0) {
       --GD->shapes[s].i_frames;
     }
     if (GD->ticks % 60 < GD->shapes[s].regen && (GD->shapes[s].hp < GD->shapes[s].max_hp)) {
-      GD->shapes[s].hp += 1;
+      GD->shapes[s].hp += 10;
     }
 
-    // despawn timer
+    // despawning
     if (GD->shapes[s].marked_for_despawn) {
       // printf("Despawned shape %d\n", i);
       if (GD->shapes[s].sides > 3) {
-        SpawnChildShapes(GD, s);
+        if (GD->shapes[s].spawn_children_on_despawn) {
+          SpawnChildShapes(GD, s);
+        }
       } else {
         if (GD->shapes[s].spawn_pickup_on_despawn) {
           SpawnPickup(GD, s);
@@ -215,13 +237,16 @@ void UpdateShapes(GameData* GD) {
 
     // update sqdist_to_player
     {
-      int dx = abs(fixed_whole(GD->shapes[s].x) - fixed_whole(GD->player.x));
-      int dy = abs(fixed_whole(GD->shapes[s].y) - fixed_whole(GD->player.y));
+      int dx = fixed_whole(GD->player.x) - fixed_whole(GD->shapes[s].x);
+      int dy = fixed_whole(GD->player.y) - fixed_whole(GD->shapes[s].y);
       GD->shapes[s].sqdist_to_player = int_sq(dx) + int_sq(dy);
+      GD->shapes[s].angle_to_player = angle_from_slope(dx, dy);
+      GD->shapes[s].angle = GD->shapes[s].angle_to_player;
     }
     // player distance-related despawning
     if (GD->shapes[s].sqdist_to_player > int_sq(render_h)) {
       GD->shapes[s].marked_for_despawn = true;
+      GD->shapes[s].spawn_children_on_despawn = false;
     }
 
     if (GD->ticks % 10 == 0) {
@@ -267,14 +292,6 @@ void UpdateShapes(GameData* GD) {
 }
 
 void UpdatePlayer(GameData* GD) {
-  // player shrinking
-  if (GD->ticks % 120 == 0 && GD->player.size > 10) {
-    --GD->player.size;
-  }
-  if (GD->ticks % 15 == 0 && GD->player.size > 40) {
-    --GD->player.size;
-  }
-
   // player movement
   GD->player.move_speed = GD->player.max_speed;
   if (IsKeyDown(KEY_A)) GD->player.x -= GD->player.move_speed;
@@ -327,6 +344,11 @@ void SpawnNewProjs(GameData* GD) {
   GD->player.reload_progress += fixed_factor * fixed_factor / target_fps / GD->player.reload_delay;
   while (GD->player.reload_progress >= fixed_factor) {
     GD->player.reload_progress -= fixed_factor;
+    GD->player.shot_progress += GD->player.shot_count;
+  }
+  bool first_shot_in_volley = true;
+  while (GD->player.shot_progress >= fixed_new(1, 0)) {
+    GD->player.shot_progress -= fixed_new(1, 0);
     for (int p = 0; p < LENGTHOF(GD->projs); ++p) {
       if (GD->projs[p].exists) {
         continue;
@@ -334,11 +356,20 @@ void SpawnNewProjs(GameData* GD) {
       GD->projs[p].exists = true;
       GD->projs[p].x = GD->player.x;
       GD->projs[p].y = GD->player.y;
-      GD->projs[p].move_speed = fixed_new(240, 0) / target_fps;
-      GD->projs[p].angle = GD->player.angle + GetRandomValue(-GD->player.shot_spread, GD->player.shot_spread);
-      GD->projs[p].size = 4 + (GD->player.damage / 3);
-      GD->projs[p].damage = GD->player.damage;
-      GD->projs[p].despawn_timer = 120;
+      if (first_shot_in_volley) {
+        GD->projs[p].move_speed = GD->player.shot_speed;
+        GD->projs[p].angle = GD->player.angle + GetRandomValue(-GD->player.shot_spread, GD->player.shot_spread);
+        GD->projs[p].size = 6 + (GD->player.damage / 40);
+        GD->projs[p].damage = GD->player.damage;
+        GD->projs[p].despawn_timer = 120;
+        first_shot_in_volley = false;
+      } else {
+        GD->projs[p].move_speed = GD->player.shot_speed * GetRandomValue(50, 90) / 100;
+        GD->projs[p].angle = GD->player.angle + GetRandomValue(-GD->player.shot_spread * 2, GD->player.shot_spread * 2);
+        GD->projs[p].size = 4 + (GD->player.damage / 40);
+        GD->projs[p].damage = GD->player.damage;
+        GD->projs[p].despawn_timer = 120;
+      }
       // printf("Spawned proj %d\n", i);
       break;
     }
@@ -377,7 +408,7 @@ void UpdateProjs(GameData* GD) {
       if (sqdist < int_sq(GD->shapes[s].size + GD->projs[p].size)) {
         GD->projs[p].despawn_timer = 0;
         GD->shapes[s].hp -= GD->projs[p].damage;
-        if (GD->shapes[s].hp <= 0 && GetRandomValue(0, (GD->pickups_spawned <= 7 ?: 7)) == 0) {
+        if (GD->shapes[s].hp <= 0 && GetRandomValue(0, (GD->pickups_spawned <= 5 ?: 5)) == 0) {
           GD->shapes[s].spawn_pickup_on_despawn = true;
           ++GD->pickups_spawned;
         }
