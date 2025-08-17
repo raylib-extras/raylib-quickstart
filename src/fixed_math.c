@@ -25,12 +25,6 @@ fixed_t fixed_abs(fixed_t fix) {
   }
   return fix;
 };
-int abs(int i) {
-  if (i < 0) {
-    return -i;
-  }
-  return i;
-};
 fixed_t fixed_sin(angle_t ang) { return sin_table[ang]; }
 fixed_t fixed_cos(angle_t ang) { return sin_table[ang + (angle_factor / 4)]; }
 
@@ -61,13 +55,26 @@ fixed_t fixed_sq(fixed_t fix) {
   return fix * fix / fixed_factor;
 }
 
-fixed_t fixed_nudge(fixed_t* fix, fixed_t goal) {
-  if (*fix > goal) {
-    --*fix;
-  } else if (*fix < goal) {
-    ++*fix;
+void nudge(int* num, int target, int delta) {
+  if (*num + target < delta) {
+    *num += delta;
+  } else if (*num - target < delta) {
+    *num -= delta;
+  } else {
+    *num = target;
   }
-};
+}
+
+void fixed_nudge(fixed_t* fix, fixed_t target, fixed_t delta) {
+  if (*fix + delta < target) {
+    *fix += delta;
+  } else if (*fix - delta > target) {
+    *fix -= delta;
+  } else {
+    *fix = target;
+  }
+}
+
 fixed_t fixed_lerp(fixed_t a, fixed_t b, fixed_t n) { return a + (((b - a) * n) >> fixed_bits); }
 
 fixed_pair fixed_norm(fixed_t dx, fixed_t dy) {

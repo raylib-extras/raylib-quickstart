@@ -12,11 +12,13 @@
 #ifdef NDEBUG
 #define DrawPrintf(x, y, color, text, ...)
 #else
-#define DrawPrintf(x, y, color, text, ...)                                 \
-  do {                                                                     \
-    char out[256];                                                         \
-    snprintf(out, LENGTHOF(out), text __VA_OPT__(, ) __VA_ARGS__);         \
-    DrawTextEx(GD->font, out, (Vector2){(float)x, (float)y}, 8, 0, color); \
+#define DrawPrintf(x, y, color, text, ...)                                               \
+  do {                                                                                   \
+    char out[256];                                                                       \
+    if (snprintf(out, LENGTHOF(out), text __VA_OPT__(, ) __VA_ARGS__) > LENGTHOF(out)) { \
+      TraceLog(LOG_WARNING, "DrawPrintf output truncated");                              \
+    }                                                                                    \
+    DrawTextEx(GD->font, out, (Vector2){(float)x, (float)y}, 8, 0, color);               \
   } while (0)
 #endif
 

@@ -2,6 +2,7 @@
 
 #include <limits.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 typedef int32_t fixed_t;
 typedef uint8_t angle_t;  // [0, TAU)
@@ -17,8 +18,9 @@ extern const int angle_factor;
 fixed_t fixed_new(int32_t whole, uint8_t part);
 int32_t fixed_whole(fixed_t fix);
 uint8_t fixed_part(fixed_t fix);
+
 fixed_t fixed_abs(fixed_t fix);
-int abs(int i);
+
 fixed_t fixed_sin(angle_t ang);
 fixed_t fixed_cos(angle_t ang);
 
@@ -28,7 +30,8 @@ void fixed_clamp(fixed_t* val, fixed_t min, fixed_t max);
 int int_sq(int x);
 fixed_t fixed_sq(fixed_t fix);
 
-fixed_t fixed_nudge(fixed_t* fix, fixed_t goal);
+void nudge(int* num, int target, int delta);
+void fixed_nudge(fixed_t* fix, fixed_t target, fixed_t delta);
 fixed_t fixed_lerp(fixed_t a, fixed_t b, fixed_t n);
 
 fixed_pair fixed_norm(fixed_t dx, fixed_t dy);
