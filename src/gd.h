@@ -14,7 +14,7 @@
 #else
 #define DrawPrintf(x, y, color, text, ...)                                 \
   do {                                                                     \
-    char out[100];                                                         \
+    char out[256];                                                         \
     snprintf(out, LENGTHOF(out), text __VA_OPT__(, ) __VA_ARGS__);         \
     DrawTextEx(GD->font, out, (Vector2){(float)x, (float)y}, 8, 0, color); \
   } while (0)
@@ -30,25 +30,31 @@ extern const int target_fps;
 
 typedef struct Shape {
   bool exists;
+  bool marked_for_despawn;
+  bool spawn_pickup_on_despawn;
+  bool spawn_children_on_despawn;
+
+  int sides;
+  int size;
+  Color fg;
+  Color bg;
 
   fixed_t x;
   fixed_t y;
+  fixed_t max_move_speed;
   fixed_t move_speed;
-  angle_t angle;
+  angle_t move_angle;
+
+  fixed_t kb_speed;
+  angle_t kb_angle;
+
+  int sqdist_to_player;
+  angle_t angle_to_player;
 
   int hp;
   int max_hp;
   int regen;
   int ticks_since_damaged;
-  int sqdist_to_player;
-  angle_t angle_to_player;
-  int sides;
-  int size;
-  Color fg;
-  Color bg;
-  bool marked_for_despawn;
-  bool spawn_pickup_on_despawn;
-  bool spawn_children_on_despawn;
   int i_frames;
 } Shape;
 
@@ -63,6 +69,7 @@ typedef struct Proj {
   int damage;
   int size;
   int despawn_timer;
+  fixed_t kb;
 } Proj;
 
 typedef struct Pickup {
@@ -81,7 +88,7 @@ typedef struct GameData {
     angle_t angle;
 
     int size;
-    fixed_t max_speed;
+    fixed_t max_move_speed;
     int sight_range;
     int turn_speed;
     fixed_t reload_delay;
@@ -92,7 +99,12 @@ typedef struct GameData {
     fixed_t shot_count;
     fixed_t shot_progress;
 
+    fixed_t shot_kb;
+
     ItemType item_counts[ITEM_COUNT];
+
+    int dps;
+    int damage_history[60];
   } player;
 
   struct {

@@ -36,3 +36,4 @@ fixed_pair fixed_norm(fixed_t dx, fixed_t dy);
 angle_t angle_from_slope(fixed_t dx, fixed_t dy);
 angle_t angle_from_line(fixed_t ax, fixed_t ay, fixed_t bx, fixed_t by);
 int angle_diff(angle_t src, angle_t dst);
+void angle_rotate_towards(angle_t* ang, angle_t target, int turn_speed);

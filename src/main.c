@@ -56,14 +56,16 @@ int main() {
     DrawPlayer(GD);
     DrawPickups(GD);
 
-    DrawPrintf(0, 0, BLACK, "%d FPS\nSpeed : %d\nSight : %d\nTurn  : %d\nDelay : %d (%d)\nDamage: %d\nSpread: %d\nShotSp: %d",
-               GetFPS(), GD->player.max_speed,
+    DrawPrintf(0, 0, BLACK, "%d FPS\nSpeed : %d\nSight : %d\nTurn  : %d\nDelay : %d (%d)\nDamage: %d\nSpread: %d\nShotSp: %d\nKB    : %d\nDPS   : %d",
+               GetFPS(), GD->player.max_move_speed,
                GD->player.sight_range,
                GD->player.turn_speed,
                GD->player.reload_delay, fixed_factor * fixed_factor / target_fps / GD->player.reload_delay,
                GD->player.damage,
                GD->player.shot_spread,
-               GD->player.shot_speed);
+               GD->player.shot_speed,
+               GD->player.shot_kb,
+               GD->player.dps);
 
     EndTextureMode();
     BeginDrawing();

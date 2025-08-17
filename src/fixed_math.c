@@ -89,3 +89,14 @@ angle_t angle_from_line(fixed_t ax, fixed_t ay, fixed_t bx, fixed_t by) {
 int angle_diff(angle_t src, angle_t dst) {
   return (int8_t)((int)dst - (int)src);
 }
+
+void angle_rotate_towards(angle_t* ang, angle_t target, int turn_speed) {
+  int diff = angle_diff(*ang, target);
+  if (diff > turn_speed) {
+    *ang += turn_speed;
+  } else if (diff < -turn_speed) {
+    *ang -= turn_speed;
+  } else {
+    *ang += diff;
+  }
+}
