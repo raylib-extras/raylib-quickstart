@@ -96,3 +96,15 @@ void DrawPickups(GameData* GD) {
     DrawPrintf(render_pos.x - 3 * strlen(item_strs[GD->pickups[p].type]), render_pos.y, BLACK, "%s", item_strs[GD->pickups[p].type]);
   }
 }
+
+void DrawTextFx(GameData* GD) {
+  for (int t = 0; t < LENGTHOF(GD->text_fx); ++t) {
+    if (!GD->text_fx[t].exists) {
+      continue;
+    }
+    Vector2 render_pos = {fixed_whole(GD->text_fx[t].x - GD->camera.x) + render_w / 2,
+                          fixed_whole(GD->text_fx[t].y - GD->camera.y) + render_h / 2};
+    // DrawPrintf(render_pos.x - 3 * strlen(GD->text_fx[t].text), render_pos.y + 1, WHITE, "%s", GD->text_fx[t].text);
+    DrawPrintf(render_pos.x - 3 * strlen(GD->text_fx[t].text), render_pos.y, BLACK, "%s", GD->text_fx[t].text);
+  }
+}

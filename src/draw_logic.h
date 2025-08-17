@@ -9,3 +9,4 @@ void DrawProjs(GameData* GD);
 void DrawShapes(GameData* GD);
 void DrawPlayer(GameData* GD);
 void DrawPickups(GameData* GD);
+void DrawTextFx(GameData* GD);

@@ -16,3 +16,5 @@ void SpawnNewProjs(GameData* GD);
 void UpdateProjs(GameData* GD);
 
 void UpdatePickups(GameData* GD);
+
+void UpdateTextFx(GameData* GD);

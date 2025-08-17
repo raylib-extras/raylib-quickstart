@@ -10,7 +10,7 @@ int ClaimEmptyShapeSlot(GameData* GD) {
   for (int i = 0; i < LENGTHOF(GD->shapes); ++i) {
     if (!GD->shapes[i].exists) {
       ++GD->shape_count;
-      memset(&GD->shapes[i], 0, sizeof(Shape));
+      GD->shapes[i] = (Shape){0};
       GD->shapes[i].exists = true;
       return i;
     }
@@ -89,7 +89,6 @@ void SpawnChildShapes(GameData* GD, int parent) {
 }
 
 void SpawnPickup(GameData* GD, int s) {
-  const int x = _Generic(s, char: 5, float: 3, default: 4);
   for (int p = 0; p < LENGTHOF(GD->pickups); ++p) {
     if (GD->pickups[p].exists) {
       continue;
@@ -201,6 +200,24 @@ int CompareShapes(const void* p, const void* q) {
   return (a->y - b->y);
 }
 
+int GetTextFxSlot(GameData* GD) {
+  int oldest_idx = 0;
+  for (int t = 0; t < LENGTHOF(GD->text_fx); ++t) {
+    if (!GD->text_fx[t].exists) {
+      GD->text_fx[t].exists = true;
+      return t;
+    }
+    if (GD->text_fx[t].despawn_timer < GD->text_fx[oldest_idx].despawn_timer) {
+      oldest_idx = t;
+    }
+  }
+
+  // force-override oldest text effect if there were no slots available
+  GD->text_fx[oldest_idx] = (TextFx){0};
+  GD->text_fx[oldest_idx].exists = true;
+  return oldest_idx;
+}
+
 void InitGameData(GameData* GD) {
   UpdatePlayerStats(GD);
   GD->font = LoadFontEx("Kitchen Sink.ttf", 8, NULL, 0);
@@ -237,7 +254,7 @@ void UpdateShapes(GameData* GD) {
           SpawnPickup(GD, s);
         }
       }
-      memset(&GD->shapes[s], 0, sizeof(Shape));
+      GD->shapes[s] = (Shape){0};
       GD->shapes[s].exists = false;
       --GD->shape_count;
       continue;
@@ -433,17 +450,29 @@ void UpdateProjs(GameData* GD) {
       int dy = abs(fixed_whole(GD->shapes[s].y) - fixed_whole(GD->projs[p].y));
       int sqdist = int_sq(dx) + int_sq(dy);
       if (sqdist < int_sq(GD->shapes[s].size + GD->projs[p].size)) {
-        GD->projs[p].despawn_timer = 0;
+        // damage the shape
         GD->shapes[s].hp -= GD->projs[p].damage;
+        GD->shapes[s].ticks_since_damaged = 0;
+        GD->shapes[s].kb_angle = GD->projs[p].angle;
+        GD->shapes[s].kb_speed = GD->projs[p].kb * GD->shapes[s].max_move_speed / fixed_factor;
+
+        // make text fx
+        int t = GetTextFxSlot(GD);
+        GD->text_fx[t].x = GD->shapes[s].x;
+        GD->text_fx[t].y = GD->shapes[s].y;
+        GD->text_fx[t].despawn_timer = 60;
+        snprintf(GD->text_fx[t].text, LENGTHOF(GD->text_fx[t].text), "-%d", GD->projs[p].damage);
+
+        // queue proj for despawn
+        GD->projs[p].despawn_timer = 0;
+
+        // do player dps tracking
         GD->player.dps += GD->projs[p].damage;
         GD->player.damage_history[GD->ticks % LENGTHOF(GD->player.damage_history)] += GD->projs[p].damage;
         if (GD->shapes[s].hp <= 0 && GetRandomValue(0, (GD->pickups_spawned <= 5 ? 1 : 5)) == 0) {
           GD->shapes[s].spawn_pickup_on_despawn = true;
           ++GD->pickups_spawned;
         }
-        GD->shapes[s].ticks_since_damaged = 0;
-        GD->shapes[s].kb_angle = GD->projs[p].angle;
-        GD->shapes[s].kb_speed = GD->projs[p].kb * GD->shapes[s].max_move_speed / fixed_factor;
       }
     }
   }
@@ -455,5 +484,18 @@ void UpdatePickups(GameData* GD) {
       continue;
     }
     // ...
+  }
+}
+
+void UpdateTextFx(GameData* GD) {
+  for (int t = 0; t < LENGTHOF(GD->text_fx); ++t) {
+    if (!GD->text_fx[t].exists) {
+      continue;
+    }
+    --GD->text_fx[t].despawn_timer;
+    GD->text_fx[t].y -= fixed_new(0, 128);
+    if (GD->text_fx[t].despawn_timer <= 0) {
+      GD->text_fx[t].exists = false;
+    }
   }
 }

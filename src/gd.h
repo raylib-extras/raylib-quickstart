@@ -30,6 +30,32 @@ extern const int window_h;
 
 extern const int target_fps;
 
+typedef struct Player {
+  fixed_t x;
+  fixed_t y;
+  fixed_t move_speed;
+  angle_t angle;
+
+  int size;
+  fixed_t max_move_speed;
+  int sight_range;
+  int turn_speed;
+  fixed_t reload_delay;
+  fixed_t reload_progress;
+  int damage;
+  int shot_spread;
+  fixed_t shot_speed;
+  fixed_t shot_count;
+  fixed_t shot_progress;
+
+  fixed_t shot_kb;
+
+  ItemType item_counts[ITEM_COUNT];
+
+  int dps;
+  int damage_history[60];
+} Player;
+
 typedef struct Shape {
   bool exists;
   bool marked_for_despawn;
@@ -82,32 +108,17 @@ typedef struct Pickup {
   ItemType type;
 } Pickup;
 
+typedef struct TextFx {
+  bool exists;
+
+  fixed_t x;
+  fixed_t y;
+  int despawn_timer;
+  char text[8];
+} TextFx;
+
 typedef struct GameData {
-  struct {
-    fixed_t x;
-    fixed_t y;
-    fixed_t move_speed;
-    angle_t angle;
-
-    int size;
-    fixed_t max_move_speed;
-    int sight_range;
-    int turn_speed;
-    fixed_t reload_delay;
-    fixed_t reload_progress;
-    int damage;
-    int shot_spread;
-    fixed_t shot_speed;
-    fixed_t shot_count;
-    fixed_t shot_progress;
-
-    fixed_t shot_kb;
-
-    ItemType item_counts[ITEM_COUNT];
-
-    int dps;
-    int damage_history[60];
-  } player;
+  Player player;
 
   struct {
     fixed_t x;
@@ -121,6 +132,8 @@ typedef struct GameData {
 
   Pickup pickups[40];
   int pickups_spawned;
+
+  TextFx text_fx[20];
 
   int ticks;
   Font font;

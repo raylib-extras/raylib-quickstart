@@ -37,10 +37,15 @@ int main() {
     // ------[Game Logic]------
     SpawnNewShapes(GD);
     UpdateShapes(GD);
+
     UpdatePlayer(GD);
+
     SpawnNewProjs(GD);
     UpdateProjs(GD);
+
     UpdatePickups(GD);
+
+    UpdateTextFx(GD);
 
     // update camera
     GD->camera.x = GD->player.x - render_w / 2;
@@ -55,6 +60,7 @@ int main() {
     DrawShapes(GD);
     DrawPlayer(GD);
     DrawPickups(GD);
+    DrawTextFx(GD);
 
     DrawPrintf(0, 0, BLACK, "%d FPS\nSpeed : %d\nSight : %d\nTurn  : %d\nDelay : %d (%d)\nDamage: %d\nSpread: %d\nShotSp: %d\nKB    : %d\nDPS   : %d",
                GetFPS(), GD->player.max_move_speed,
@@ -66,7 +72,6 @@ int main() {
                GD->player.shot_speed,
                GD->player.shot_kb,
                GD->player.dps);
-
     EndTextureMode();
     BeginDrawing();
     DrawTexturePro(canvas.texture, (Rectangle){0, 0, canvas.texture.width, -canvas.texture.height},
