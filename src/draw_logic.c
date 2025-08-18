@@ -75,8 +75,8 @@ void DrawShapes(GameData* GD) {
 void DrawPlayer(GameData* GD) {
   Vector2 render_pos = {fixed_whole(GD->player.x - GD->camera.x) + render_w / 2,
                         fixed_whole(GD->player.y - GD->camera.y) + render_h / 2};
-  DrawPoly(render_pos, 20, GD->player.size, 0, GRAY);
-  DrawPolyLinesEx(render_pos, 20, GD->player.size, 0, 2.0f, BLACK);
+  DrawPoly(render_pos, 20, GD->player.stats.size, 0, GRAY);
+  DrawPolyLinesEx(render_pos, 20, GD->player.stats.size, 0, 2.0f, BLACK);
   DrawLine(render_pos.x,
            render_pos.y,
            render_pos.x + fixed_whole(fixed_cos(GD->player.angle) * 16),

@@ -17,6 +17,16 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include "resource_dir.h"  // utility header for SearchAndSetResourceDir
 #include "update_logic.h"
 
+#define FIELD(obj, field) ((obj).field)
+#define PRINT_STAT(index, name)                                                                                                  \
+  do {                                                                                                                           \
+    if (FIELD(GD->player.stats, name) != FIELD(GD->player.prev_stats, name)) {                                                   \
+      DrawPrintf(0, (index) * 8, VIOLET, #name ": %d -> %d", FIELD(GD->player.prev_stats, name), FIELD(GD->player.stats, name)); \
+    } else {                                                                                                                     \
+      DrawPrintf(0, (index) * 8, BLACK, #name ": %d", FIELD(GD->player.stats, name));                                            \
+    }                                                                                                                            \
+  } while (0);
+
 int main() {
   SetTraceLogLevel(LOG_WARNING);
   SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
@@ -62,18 +72,18 @@ int main() {
     DrawPickups(GD);
     DrawTextFx(GD);
 
-    DrawPrintf(0, 0, BLACK, "%d FPS\nSpeed : %d\nSight : %d\nTurn  : %d\nDelay : %d (%d)\nDamage: %d\nSpread: %d\nShotSp: %d\nKB    : %d\nDPS   : %d\nPierce: %d",
-               GetFPS(),
-               GD->player.max_move_speed,
-               GD->player.sight_range,
-               GD->player.turn_speed,
-               GD->player.reload_delay, fixed_factor * fixed_factor / target_fps / GD->player.reload_delay,
-               GD->player.damage,
-               GD->player.shot_spread,
-               GD->player.shot_speed,
-               GD->player.shot_kb,
-               GD->player.dps,
-               GD->player.shot_pierce);
+    int i = 0;
+    PRINT_STAT(i++, damage);
+    PRINT_STAT(i++, max_move_speed);
+    PRINT_STAT(i++, reload_delay);
+    PRINT_STAT(i++, shot_count);
+    PRINT_STAT(i++, shot_kb);
+    PRINT_STAT(i++, shot_pierce);
+    PRINT_STAT(i++, shot_speed);
+    PRINT_STAT(i++, shot_spread);
+    PRINT_STAT(i++, sight_range);
+    PRINT_STAT(i++, size);
+    PRINT_STAT(i++, turn_speed);
     EndTextureMode();
     BeginDrawing();
     DrawTexturePro(canvas.texture, (Rectangle){0, 0, canvas.texture.width, -canvas.texture.height},

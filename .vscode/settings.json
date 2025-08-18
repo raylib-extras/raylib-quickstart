@@ -13,6 +13,7 @@
 		"*.h": "c",
 		"*.bison": "yacc",
 		"*.cgen": "c",
-		"*.m": "c"
+		"*.m": "c",
+		"typeinfo": "c"
 	}
 }

@@ -111,54 +111,56 @@ void SpawnPickup(GameData* GD, int s) {
 }
 
 void UpdatePlayerStats(GameData* GD) {
-  GD->player.size = 12;
-  GD->player.max_move_speed = fixed_new(1, 128);
-  GD->player.reload_delay = fixed_new(0, 128);
-  GD->player.sight_range = render_h / 2;
-  GD->player.turn_speed = 2;
-  GD->player.damage = 45;
-  GD->player.shot_spread = 1;
-  GD->player.shot_speed = fixed_new(2, 0);
-  GD->player.shot_count = fixed_new(1, 0);
-  GD->player.shot_kb = fixed_new(0, 0);
-  GD->player.shot_pierce = 1;
+  GD->player.stat_update_timer = 4 * target_fps;
+
+  GD->player.stats.damage = 45;
+  GD->player.stats.max_move_speed = fixed_new(1, 128);
+  GD->player.stats.reload_delay = fixed_new(0, 128);
+  GD->player.stats.shot_count = fixed_new(1, 0);
+  GD->player.stats.shot_kb = fixed_new(0, 0);
+  GD->player.stats.shot_pierce = 1;
+  GD->player.stats.shot_speed = fixed_new(2, 0);
+  GD->player.stats.shot_spread = 1;
+  GD->player.stats.sight_range = render_h / 2;
+  GD->player.stats.size = 12;
+  GD->player.stats.turn_speed = 2;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GD->player.item_counts[i]; ++x) {
       switch (i) {
         case ITEM_SPEED_UP:
-          GD->player.max_move_speed += fixed_new(0, 64);
+          GD->player.stats.max_move_speed += fixed_new(0, 64);
           break;
         case ITEM_FIRE_RATE_UP:
-          GD->player.reload_delay = GD->player.reload_delay * 80 / 100;
-          GD->player.shot_spread += 2;
+          GD->player.stats.reload_delay = GD->player.stats.reload_delay * 80 / 100;
+          GD->player.stats.shot_spread += 2;
           break;
         case ITEM_TURN_SPEED_UP:
-          ++GD->player.turn_speed;
+          ++GD->player.stats.turn_speed;
           break;
         case ITEM_DAMAGE_UP:
-          GD->player.damage = GD->player.damage * 125 / 100;
-          GD->player.reload_delay = GD->player.reload_delay * 105 / 100;
+          GD->player.stats.damage = GD->player.stats.damage * 125 / 100;
+          GD->player.stats.reload_delay = GD->player.stats.reload_delay * 105 / 100;
           break;
         case ITEM_ACCURACY_UP:
-          GD->player.shot_spread -= 2;
+          GD->player.stats.shot_spread -= 2;
           break;
         case ITEM_SHOT_SPEED_UP:
-          GD->player.shot_speed += fixed_new(0, 128);
-          GD->player.damage = GD->player.damage * 105 / 100;
-          GD->player.shot_kb += fixed_new(0, 16);
+          GD->player.stats.shot_speed += fixed_new(0, 128);
+          GD->player.stats.damage = GD->player.stats.damage * 105 / 100;
+          GD->player.stats.shot_kb += fixed_new(0, 16);
           break;
         case ITEM_SHOT_COUNT_UP:
-          GD->player.shot_count += fixed_new(0, 64);
-          GD->player.reload_delay = GD->player.reload_delay * 105 / 100;
-          GD->player.shot_spread += 2;
+          GD->player.stats.shot_count += fixed_new(0, 64);
+          GD->player.stats.reload_delay = GD->player.stats.reload_delay * 105 / 100;
+          GD->player.stats.shot_spread += 2;
           break;
         case ITEM_SHOT_KB_UP:
-          GD->player.shot_kb += fixed_new(0, 64);
+          GD->player.stats.shot_kb += fixed_new(0, 64);
           break;
         case ITEM_PIERCE_UP:
-          GD->player.shot_pierce += 1;
-          if (GD->player.shot_pierce < 4) {
-            GD->player.reload_delay = GD->player.reload_delay * 115 / 100;
+          GD->player.stats.shot_pierce += 1;
+          if (GD->player.stats.shot_pierce < 4) {
+            GD->player.stats.reload_delay = GD->player.stats.reload_delay * 115 / 100;
           }
           break;
         default:
@@ -167,16 +169,16 @@ void UpdatePlayerStats(GameData* GD) {
     }
   }
 
-  clamp(&GD->player.size, 10, 50);
-  fixed_clamp(&GD->player.max_move_speed, fixed_new(1, 0), fixed_new(4, 0));
-  fixed_clamp(&GD->player.reload_delay, fixed_new(0, 8), fixed_new(5, 0));
-  // clamp(&GD->player.sight_range);
-  clamp(&GD->player.turn_speed, 1, 64);
-  clamp(&GD->player.damage, 10, 1000);
-  clamp(&GD->player.shot_spread, 0, 32);
-  fixed_clamp(&GD->player.shot_speed, fixed_new(0, 128), fixed_new(8, 0));
-  fixed_clamp(&GD->player.shot_count, fixed_new(1, 0), fixed_new(8, 0));
-  fixed_clamp(&GD->player.shot_kb, fixed_new(0, 0), fixed_new(4, 0));
+  clamp(&GD->player.stats.damage, 10, 1000);
+  fixed_clamp(&GD->player.stats.max_move_speed, fixed_new(1, 0), fixed_new(4, 0));
+  fixed_clamp(&GD->player.stats.reload_delay, fixed_new(0, 8), fixed_new(5, 0));
+  fixed_clamp(&GD->player.stats.shot_count, fixed_new(1, 0), fixed_new(8, 0));
+  fixed_clamp(&GD->player.stats.shot_kb, fixed_new(0, 0), fixed_new(4, 0));
+  clamp(&GD->player.stats.shot_pierce, 1, 8);
+  fixed_clamp(&GD->player.stats.shot_speed, fixed_new(0, 128), fixed_new(8, 0));
+  clamp(&GD->player.stats.shot_spread, 0, 32);
+  clamp(&GD->player.stats.size, 10, 50);
+  clamp(&GD->player.stats.turn_speed, 1, 64);
 }
 
 void SpawnNewShapes(GameData* GD) {
@@ -330,10 +332,10 @@ void UpdateShapes(GameData* GD) {
     }
 
     // absorption
-    // if (GD->shapes[i].sqdist_to_player < int_sq(GD->player.size - 4)) {
-    //   GD->player.size += 1;
+    // if (GD->shapes[i].sqdist_to_player < int_sq(GD->player.stats.size - 4)) {
+    //   GD->player.stats.size += 1;
     //   GD->shapes[i].hp -= 10;
-    // } else if (GD->shapes[i].sqdist_to_player < int_sq(GD->player.size + 8)) {
+    // } else if (GD->shapes[i].sqdist_to_player < int_sq(GD->player.stats.size + 8)) {
     //   angle_t target_angle = angle_from_line(GD->shapes[i].x, GD->shapes[i].y, GD->player.x, GD->player.y);
     //   GD->shapes[i].angle = target_angle;
     // }
@@ -352,7 +354,7 @@ void UpdateShapes(GameData* GD) {
 
 void UpdatePlayer(GameData* GD) {
   // player movement
-  GD->player.move_speed = GD->player.max_move_speed;
+  GD->player.move_speed = GD->player.stats.max_move_speed;
   if (IsKeyDown(KEY_A)) GD->player.x -= GD->player.move_speed;
   if (IsKeyDown(KEY_D)) GD->player.x += GD->player.move_speed;
   if (IsKeyDown(KEY_S)) GD->player.y += GD->player.move_speed;
@@ -363,7 +365,7 @@ void UpdatePlayer(GameData* GD) {
   int closest_shape_idx = -1;
   for (int s = 0; s < LENGTHOF(GD->shapes); ++s) {
     if (GD->shapes[s].exists) {
-      if (GD->shapes[s].sqdist_to_player < int_sq(GD->player.sight_range) &&
+      if (GD->shapes[s].sqdist_to_player < int_sq(GD->player.stats.sight_range) &&
           GD->shapes[s].sqdist_to_player < closest_sqdist) {
         closest_shape_idx = s;
         closest_sqdist = GD->shapes[s].sqdist_to_player;
@@ -373,7 +375,7 @@ void UpdatePlayer(GameData* GD) {
   // rotate player towards closest shape
   if (closest_shape_idx != -1) {
     angle_t target_angle = angle_from_line(GD->player.x, GD->player.y, GD->shapes[closest_shape_idx].x, GD->shapes[closest_shape_idx].y);
-    angle_rotate_towards(&GD->player.angle, target_angle, GD->player.turn_speed);
+    angle_rotate_towards(&GD->player.angle, target_angle, GD->player.stats.turn_speed);
   }
 
   // collect pickups
@@ -384,25 +386,34 @@ void UpdatePlayer(GameData* GD) {
     int dx = abs(fixed_whole(GD->pickups[p].x) - fixed_whole(GD->player.x));
     int dy = abs(fixed_whole(GD->pickups[p].y) - fixed_whole(GD->player.y));
     int sqdist = int_sq(dx) + int_sq(dy);
-    if (sqdist < int_sq(GD->player.size)) {
+    if (sqdist < int_sq(GD->player.stats.size)) {
       GD->pickups[p].exists = false;
       ++GD->player.item_counts[GD->pickups[p].type];
       UpdatePlayerStats(GD);
     }
   }
 
+  // update dps calculation
   int next_entry = (GD->ticks + 1) % LENGTHOF(GD->player.damage_history);
   int curr_entry = (GD->ticks) % LENGTHOF(GD->player.damage_history);
   GD->player.dps -= GD->player.damage_history[next_entry];
   GD->player.damage_history[next_entry] = 0;
+
+  // update stat update timer
+  if (GD->player.stat_update_timer > 0) {
+    --GD->player.stat_update_timer;
+    if (GD->player.stat_update_timer == 0) {
+      GD->player.prev_stats = GD->player.stats;
+    }
+  }
 }
 
 void SpawnNewProjs(GameData* GD) {
   // spawn new projs
-  GD->player.reload_progress += fixed_factor * fixed_factor / target_fps / GD->player.reload_delay;
+  GD->player.reload_progress += fixed_factor * fixed_factor / target_fps / GD->player.stats.reload_delay;
   while (GD->player.reload_progress >= fixed_factor) {
     GD->player.reload_progress -= fixed_factor;
-    GD->player.shot_progress += GD->player.shot_count;
+    GD->player.shot_progress += GD->player.stats.shot_count;
   }
   bool first_shot_in_volley = true;
   while (GD->player.shot_progress >= fixed_new(1, 0)) {
@@ -412,24 +423,24 @@ void SpawnNewProjs(GameData* GD) {
         continue;
       }
       GD->projs[p].exists = true;
-      GD->projs[p].pierce = GD->player.shot_pierce;
+      GD->projs[p].pierce = GD->player.stats.shot_pierce;
       GD->projs[p].x = GD->player.x;
       GD->projs[p].y = GD->player.y;
       if (first_shot_in_volley) {
-        GD->projs[p].move_speed = GD->player.shot_speed;
-        GD->projs[p].angle = GD->player.angle + GetRandomValue(-GD->player.shot_spread, GD->player.shot_spread);
-        GD->projs[p].size = 6 + (GD->player.damage / 40);
-        GD->projs[p].damage = GD->player.damage;
+        GD->projs[p].move_speed = GD->player.stats.shot_speed;
+        GD->projs[p].angle = GD->player.angle + GetRandomValue(-GD->player.stats.shot_spread, GD->player.stats.shot_spread);
+        GD->projs[p].size = 6 + (GD->player.stats.damage / 40);
+        GD->projs[p].damage = GD->player.stats.damage;
         GD->projs[p].despawn_timer = 120;
-        GD->projs[p].kb = GD->player.shot_kb;
+        GD->projs[p].kb = GD->player.stats.shot_kb;
         first_shot_in_volley = false;
       } else {
-        GD->projs[p].move_speed = GD->player.shot_speed * GetRandomValue(50, 90) / 100;
-        GD->projs[p].angle = GD->player.angle + GetRandomValue(-GD->player.shot_spread * 2, GD->player.shot_spread * 2);
-        GD->projs[p].size = 6 + (GD->player.damage / 80);
-        GD->projs[p].damage = GD->player.damage / 2;
+        GD->projs[p].move_speed = GD->player.stats.shot_speed * GetRandomValue(50, 90) / 100;
+        GD->projs[p].angle = GD->player.angle + GetRandomValue(-GD->player.stats.shot_spread * 2, GD->player.stats.shot_spread * 2);
+        GD->projs[p].size = 6 + (GD->player.stats.damage / 80);
+        GD->projs[p].damage = GD->player.stats.damage / 2;
         GD->projs[p].despawn_timer = 120;
-        GD->projs[p].kb = GD->player.shot_kb / 2;
+        GD->projs[p].kb = GD->player.stats.shot_kb / 2;
       }
       // printf("Spawned proj %d\n", i);
       break;

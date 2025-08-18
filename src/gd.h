@@ -30,26 +30,32 @@ extern const int window_h;
 
 extern const int target_fps;
 
+typedef struct PlayerStats {
+  int damage;
+  fixed_t max_move_speed;
+  fixed_t reload_delay;
+  fixed_t shot_count;
+  fixed_t shot_kb;
+  int shot_pierce;
+  fixed_t shot_speed;
+  int shot_spread;
+  int sight_range;
+  int size;
+  int turn_speed;
+} PlayerStats;
+
 typedef struct Player {
   fixed_t x;
   fixed_t y;
   fixed_t move_speed;
   angle_t angle;
 
-  int size;
-  fixed_t max_move_speed;
-  int sight_range;
-  int turn_speed;
-  fixed_t reload_delay;
-  fixed_t reload_progress;
-  int damage;
-  int shot_spread;
-  fixed_t shot_speed;
-  fixed_t shot_count;
-  fixed_t shot_progress;
+  PlayerStats prev_stats;
+  PlayerStats stats;
+  int stat_update_timer;
 
-  fixed_t shot_kb;
-  int shot_pierce;
+  fixed_t reload_progress;
+  fixed_t shot_progress;
 
   ItemType item_counts[ITEM_COUNT];
 
@@ -139,7 +145,7 @@ typedef struct GameData {
   Pickup pickups[40];
   int pickups_spawned;
 
-  TextFx text_fx[10];
+  TextFx text_fx[15];
 
   int ticks;
   Font font;
