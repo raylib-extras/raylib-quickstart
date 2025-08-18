@@ -9,6 +9,7 @@ typedef enum ItemType {
   ITEM_SHOT_SPEED_UP,
   ITEM_SHOT_COUNT_UP,
   ITEM_SHOT_KB_UP,
+  ITEM_PIERCE_UP,
   ITEM_COUNT
 } ItemType;
 

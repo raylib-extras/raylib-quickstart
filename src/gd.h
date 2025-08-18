@@ -49,6 +49,7 @@ typedef struct Player {
   fixed_t shot_progress;
 
   fixed_t shot_kb;
+  int shot_pierce;
 
   ItemType item_counts[ITEM_COUNT];
 
@@ -61,6 +62,8 @@ typedef struct Shape {
   bool marked_for_despawn;
   bool spawn_pickup_on_despawn;
   bool spawn_children_on_despawn;
+
+  uint8_t id;
 
   int sides;
   int size;
@@ -95,9 +98,12 @@ typedef struct Proj {
   angle_t angle;
 
   int damage;
+  int pierce;
   int size;
   int despawn_timer;
   fixed_t kb;
+
+  uint8_t hit_shape_ids[16];
 } Proj;
 
 typedef struct Pickup {
@@ -125,7 +131,7 @@ typedef struct GameData {
     fixed_t y;
   } camera;
 
-  Shape shapes[40];
+  Shape shapes[80];
   int shape_count;
 
   Proj projs[40];
@@ -133,7 +139,7 @@ typedef struct GameData {
   Pickup pickups[40];
   int pickups_spawned;
 
-  TextFx text_fx[20];
+  TextFx text_fx[10];
 
   int ticks;
   Font font;

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+uint8_t next_free_id = 1;
 int ClaimEmptyShapeSlot(GameData* GD) {
   if (GD->shape_count >= LENGTHOF(GD->shapes)) {
     return -1;
@@ -12,6 +13,11 @@ int ClaimEmptyShapeSlot(GameData* GD) {
       ++GD->shape_count;
       GD->shapes[i] = (Shape){0};
       GD->shapes[i].exists = true;
+      GD->shapes[i].id = next_free_id;
+      ++next_free_id;
+      if (next_free_id == 0) {  // skip 0
+        ++next_free_id;
+      }
       return i;
     }
   }
@@ -115,6 +121,7 @@ void UpdatePlayerStats(GameData* GD) {
   GD->player.shot_speed = fixed_new(2, 0);
   GD->player.shot_count = fixed_new(1, 0);
   GD->player.shot_kb = fixed_new(0, 0);
+  GD->player.shot_pierce = 1;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GD->player.item_counts[i]; ++x) {
       switch (i) {
@@ -147,6 +154,12 @@ void UpdatePlayerStats(GameData* GD) {
           break;
         case ITEM_SHOT_KB_UP:
           GD->player.shot_kb += fixed_new(0, 64);
+          break;
+        case ITEM_PIERCE_UP:
+          GD->player.shot_pierce += 1;
+          if (GD->player.shot_pierce < 4) {
+            GD->player.reload_delay = GD->player.reload_delay * 115 / 100;
+          }
           break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
@@ -219,6 +232,9 @@ int GetTextFxSlot(GameData* GD) {
 }
 
 void InitGameData(GameData* GD) {
+  // for (int c = 0; c < LENGTHOF(GD->player.item_counts); ++c) {
+  //   GD->player.item_counts[c] = 6;
+  // }
   UpdatePlayerStats(GD);
   GD->font = LoadFontEx("Kitchen Sink.ttf", 8, NULL, 0);
 }
@@ -396,6 +412,7 @@ void SpawnNewProjs(GameData* GD) {
         continue;
       }
       GD->projs[p].exists = true;
+      GD->projs[p].pierce = GD->player.shot_pierce;
       GD->projs[p].x = GD->player.x;
       GD->projs[p].y = GD->player.y;
       if (first_shot_in_volley) {
@@ -409,8 +426,8 @@ void SpawnNewProjs(GameData* GD) {
       } else {
         GD->projs[p].move_speed = GD->player.shot_speed * GetRandomValue(50, 90) / 100;
         GD->projs[p].angle = GD->player.angle + GetRandomValue(-GD->player.shot_spread * 2, GD->player.shot_spread * 2);
-        GD->projs[p].size = 4 + (GD->player.damage / 40);
-        GD->projs[p].damage = GD->player.damage;
+        GD->projs[p].size = 6 + (GD->player.damage / 80);
+        GD->projs[p].damage = GD->player.damage / 2;
         GD->projs[p].despawn_timer = 120;
         GD->projs[p].kb = GD->player.shot_kb / 2;
       }
@@ -430,6 +447,7 @@ void UpdateProjs(GameData* GD) {
     --GD->projs[p].despawn_timer;
     if (GD->projs[p].despawn_timer <= 0) {
       // printf("Despawned proj %d\n", p);
+      GD->projs[p] = (Proj){0};
       GD->projs[p].exists = false;
       continue;
     }
@@ -449,30 +467,53 @@ void UpdateProjs(GameData* GD) {
       int dx = abs(fixed_whole(GD->shapes[s].x) - fixed_whole(GD->projs[p].x));
       int dy = abs(fixed_whole(GD->shapes[s].y) - fixed_whole(GD->projs[p].y));
       int sqdist = int_sq(dx) + int_sq(dy);
-      if (sqdist < int_sq(GD->shapes[s].size + GD->projs[p].size)) {
-        // damage the shape
-        GD->shapes[s].hp -= GD->projs[p].damage;
-        GD->shapes[s].ticks_since_damaged = 0;
-        GD->shapes[s].kb_angle = GD->projs[p].angle;
-        GD->shapes[s].kb_speed = GD->projs[p].kb * GD->shapes[s].max_move_speed / fixed_factor;
-
-        // make text fx
-        int t = GetTextFxSlot(GD);
-        GD->text_fx[t].x = GD->shapes[s].x;
-        GD->text_fx[t].y = GD->shapes[s].y;
-        GD->text_fx[t].despawn_timer = 60;
-        snprintf(GD->text_fx[t].text, LENGTHOF(GD->text_fx[t].text), "-%d", GD->projs[p].damage);
-
-        // queue proj for despawn
-        GD->projs[p].despawn_timer = 0;
-
-        // do player dps tracking
-        GD->player.dps += GD->projs[p].damage;
-        GD->player.damage_history[GD->ticks % LENGTHOF(GD->player.damage_history)] += GD->projs[p].damage;
-        if (GD->shapes[s].hp <= 0 && GetRandomValue(0, (GD->pickups_spawned <= 5 ? 1 : 5)) == 0) {
-          GD->shapes[s].spawn_pickup_on_despawn = true;
-          ++GD->pickups_spawned;
+      if (sqdist >= int_sq(GD->shapes[s].size + GD->projs[p].size)) {
+        continue;
+      }
+      // see if shape has been hit already
+      bool skip_this_shape = false;
+      for (int h = 0; h < LENGTHOF(GD->projs[p].hit_shape_ids); ++h) {
+        if (GD->projs[p].hit_shape_ids[h] == GD->shapes[s].id) {
+          // found shape in hit-shapes list
+          skip_this_shape = true;
+          break;
         }
+        if (GD->projs[p].hit_shape_ids[h] == 0) {
+          // reached end of hit-shapes list, add new shape
+          GD->projs[p].hit_shape_ids[h] = GD->shapes[s].id;
+          break;
+        }
+      }
+      if (skip_this_shape) {
+        continue;
+      }
+
+      // damage the shape
+      GD->shapes[s].hp -= GD->projs[p].damage;
+      GD->shapes[s].ticks_since_damaged = 0;
+      GD->shapes[s].kb_angle = GD->projs[p].angle;
+      GD->shapes[s].kb_speed = GD->projs[p].kb * GD->shapes[s].max_move_speed / fixed_factor;
+
+      // make text fx
+      int t = GetTextFxSlot(GD);
+      GD->text_fx[t].x = GD->shapes[s].x;
+      GD->text_fx[t].y = GD->shapes[s].y;
+      GD->text_fx[t].despawn_timer = 60;
+      snprintf(GD->text_fx[t].text, LENGTHOF(GD->text_fx[t].text), "-%d", GD->projs[p].damage);
+
+      // do player dps tracking
+      GD->player.dps += GD->projs[p].damage;
+      GD->player.damage_history[GD->ticks % LENGTHOF(GD->player.damage_history)] += GD->projs[p].damage;
+      if (GD->shapes[s].hp <= 0 && GetRandomValue(0, (GD->pickups_spawned <= 5 ? 1 : 5)) == 0) {
+        GD->shapes[s].spawn_pickup_on_despawn = true;
+        ++GD->pickups_spawned;
+      }
+
+      // queue proj for despawn
+      GD->projs[p].pierce -= 1;
+      if (GD->projs[p].pierce <= 0) {
+        GD->projs[p].despawn_timer = 0;
+        break;
       }
     }
   }

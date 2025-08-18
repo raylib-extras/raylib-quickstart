@@ -9,4 +9,5 @@ const char* const item_strs[] = {
     "+SSpd",
     "+SCnt",
     "+KB",
+    "+Pierce",
     "ERROR"};
