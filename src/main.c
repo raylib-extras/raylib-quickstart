@@ -38,28 +38,49 @@ int main() {
   SearchAndSetResourceDir("resources");
 
   GameData game_data = {};
+
   GameData* GD = &game_data;
   InitGameData(GD);
+
+  GameData save_state = game_data;
+  int game_speed = 1;
 
   RenderTexture2D canvas = LoadRenderTexture(render_w, render_h);
 
   while (!WindowShouldClose()) {
+    if (IsKeyPressed(KEY_F1)) {
+      save_state = game_data;
+    } else if (IsKeyPressed(KEY_F2)) {
+      game_data = save_state;
+    } else if (IsKeyPressed(KEY_F5)) {
+      game_speed = 0;
+    } else if (IsKeyPressed(KEY_F6)) {
+      game_speed = 1;
+    } else if (IsKeyPressed(KEY_F7)) {
+      game_speed = 2;
+    } else if (IsKeyPressed(KEY_F8)) {
+      game_speed = 100;
+    }
     // ------[Game Logic]------
-    SpawnNewShapes(GD);
-    UpdateShapes(GD);
+    for (int t = 0; t < game_speed; ++t) {
+      ++GD->ticks;
 
-    UpdatePlayer(GD);
+      SpawnNewShapes(GD);
+      UpdateShapes(GD);
 
-    SpawnNewProjs(GD);
-    UpdateProjs(GD);
+      UpdatePlayer(GD);
 
-    UpdatePickups(GD);
+      SpawnNewProjs(GD);
+      UpdateProjs(GD);
 
-    UpdateTextFx(GD);
+      UpdatePickups(GD);
 
-    // update camera
-    GD->camera.x = GD->player.x - render_w / 2;
-    GD->camera.y = GD->player.y - render_h / 2;
+      UpdateTextFx(GD);
+
+      // update camera
+      GD->camera.x = GD->player.x - render_w / 2;
+      GD->camera.y = GD->player.y - render_h / 2;
+    }
 
     // ------[Drawing]------
     BeginTextureMode(canvas);
@@ -89,8 +110,6 @@ int main() {
     DrawTexturePro(canvas.texture, (Rectangle){0, 0, canvas.texture.width, -canvas.texture.height},
                    (Rectangle){0, 0, window_w, window_h}, (Vector2){0, 0}, 0.0f, WHITE);
     EndDrawing();
-
-    ++GD->ticks;
   }
 
   // cleanup

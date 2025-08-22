@@ -77,14 +77,6 @@ void fixed_nudge(fixed_t* fix, fixed_t target, fixed_t delta) {
 
 fixed_t fixed_lerp(fixed_t a, fixed_t b, fixed_t n) { return a + (((b - a) * n) >> fixed_bits); }
 
-fixed_pair fixed_norm(fixed_t dx, fixed_t dy) {
-  fixed_t sq_dist = (dx * dx + dy * dy);
-  if (sq_dist == 0) {
-    return (fixed_pair){0, 0};
-  }
-  return (fixed_pair){dx / sq_dist, dy / sq_dist};
-}
-
 angle_t angle_from_slope(fixed_t dx, fixed_t dy) { return atan2(dy, dx) * angle_factor / (2 * M_PI); }
 
 angle_t angle_from_line(fixed_t ax, fixed_t ay, fixed_t bx, fixed_t by) {

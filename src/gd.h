@@ -63,6 +63,14 @@ typedef struct Player {
   int damage_history[60];
 } Player;
 
+typedef enum ShapeVariant {
+  SHAPE_VARIANT_NONE,
+  SHAPE_VARIANT_BIG,
+  SHAPE_VARIANT_FAST,
+  SHAPE_VARIANT_HEALING,
+  SHAPE_VARIANT_COUNT,
+} ShapeVariant;
+
 typedef struct Shape {
   bool exists;
   bool marked_for_despawn;
@@ -75,6 +83,7 @@ typedef struct Shape {
   int size;
   Color fg;
   Color bg;
+  ShapeVariant variant;
 
   fixed_t x;
   fixed_t y;
@@ -118,6 +127,9 @@ typedef struct Pickup {
   fixed_t x;
   fixed_t y;
   ItemType type;
+
+  int sqdist_to_player;
+  angle_t angle_to_player;
 } Pickup;
 
 typedef struct TextFx {

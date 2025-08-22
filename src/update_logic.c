@@ -24,7 +24,48 @@ int ClaimEmptyShapeSlot(GameData* GD) {
   return -1;
 }
 
-void SetShapeStats(Shape* shape, int sides) {
+int PickShapeSides(GameData* GD) {
+  int r = GetRandomValue(0, 99);
+  if (r < 70) {
+    return 3;
+  } else if (r < 85) {
+    return 4;
+  } else if (r < 95) {
+    return 5;
+  } else {
+    return 6;
+  }
+}
+
+ShapeVariant PickShapeVariant(GameData* GD) {
+  if (GD->pickups_spawned < 10) {
+    return SHAPE_VARIANT_NONE;
+  } else if (GD->pickups_spawned < 25) {
+    int r = GetRandomValue(0, 99);
+    if (r < 90) {
+      return SHAPE_VARIANT_NONE;
+    } else if (r < 95) {
+      return SHAPE_VARIANT_BIG;
+    } else {
+      return SHAPE_VARIANT_FAST;
+    }
+  } else {
+    int r = GetRandomValue(0, 99);
+    if (r < 70) {
+      return SHAPE_VARIANT_NONE;
+    } else if (r < 80) {
+      return SHAPE_VARIANT_BIG;
+    } else if (r < 90) {
+      return SHAPE_VARIANT_FAST;
+    } else {
+      return SHAPE_VARIANT_HEALING;
+    }
+  }
+}
+
+void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
+  shape->sides = sides;
+  shape->variant = variant;
   switch (sides) {
     case 3: {
       shape->max_hp = 200;
@@ -70,6 +111,36 @@ void SetShapeStats(Shape* shape, int sides) {
       TraceLog(LOG_ERROR, "Bad Shape side count of %d", sides);
     } break;
   }
+
+  switch (variant) {
+    case SHAPE_VARIANT_NONE: {
+    } break;
+    case SHAPE_VARIANT_BIG: {
+      shape->fg = DARKGRAY;
+      shape->bg = BLACK;
+      shape->size *= 2;
+      shape->max_hp *= 4;
+      shape->regen /= 2;
+      shape->max_move_speed;
+    } break;
+    case SHAPE_VARIANT_FAST: {
+      shape->fg = ORANGE;
+      shape->bg = BLACK;
+      shape->max_hp *= 2;
+      shape->regen = 0;
+      shape->max_move_speed *= 3;
+    } break;
+    case SHAPE_VARIANT_HEALING: {
+      shape->fg = RED;
+      shape->bg = WHITE;
+      shape->max_hp *= 2;
+      shape->regen += 10;
+    } break;
+    default: {
+      TraceLog(LOG_ERROR, "Bad Shape side count of %d", sides);
+    } break;
+  }
+
   shape->hp = shape->max_hp;
   shape->marked_for_despawn = 0;
 }
@@ -89,7 +160,7 @@ void SpawnChildShapes(GameData* GD, int parent) {
     GD->shapes[s].kb_angle = ang;
     GD->shapes[s].i_frames = 30;
     GD->shapes[s].ticks_since_damaged = 0;
-    SetShapeStats(&GD->shapes[s], parent_sides - 1);
+    SetShapeStats(&GD->shapes[s], parent_sides - 1, GD->shapes[parent].variant);
     GD->shapes[s].hp = GD->shapes[s].max_hp / 2;
   }
 }
@@ -113,7 +184,7 @@ void SpawnPickup(GameData* GD, int s) {
 void UpdatePlayerStats(GameData* GD) {
   GD->player.stat_update_timer = 4 * target_fps;
 
-  GD->player.stats.damage = 45;
+  GD->player.stats.damage = 40;
   GD->player.stats.max_move_speed = fixed_new(1, 128);
   GD->player.stats.reload_delay = fixed_new(0, 128);
   GD->player.stats.shot_count = fixed_new(1, 0);
@@ -138,7 +209,7 @@ void UpdatePlayerStats(GameData* GD) {
           ++GD->player.stats.turn_speed;
           break;
         case ITEM_DAMAGE_UP:
-          GD->player.stats.damage = GD->player.stats.damage * 125 / 100;
+          GD->player.stats.damage += 10;
           GD->player.stats.reload_delay = GD->player.stats.reload_delay * 105 / 100;
           break;
         case ITEM_ACCURACY_UP:
@@ -191,16 +262,7 @@ void SpawnNewShapes(GameData* GD) {
     GD->shapes[s].y = GD->player.y + fixed_new(GetRandomValue(-render_h, render_h), 0);
     GD->shapes[s].move_angle = GetRandomValue(0, angle_factor - 1);
     GD->shapes[s].ticks_since_damaged = 1000;
-    int rand = GetRandomValue(0, 99);
-    if (rand < 70) {
-      SetShapeStats(&GD->shapes[s], 3);
-    } else if (rand < 85) {
-      SetShapeStats(&GD->shapes[s], 4);
-    } else if (rand < 95) {
-      SetShapeStats(&GD->shapes[s], 5);
-    } else {
-      SetShapeStats(&GD->shapes[s], 6);
-    }
+    SetShapeStats(&GD->shapes[s], PickShapeSides(GD), PickShapeVariant(GD));
     // printf("Spawned shape %d\n", s);
   }
 }
@@ -237,6 +299,7 @@ void InitGameData(GameData* GD) {
   // for (int c = 0; c < LENGTHOF(GD->player.item_counts); ++c) {
   //   GD->player.item_counts[c] = 6;
   // }
+  *GD = (GameData){0};
   UpdatePlayerStats(GD);
   GD->font = LoadFontEx("Kitchen Sink.ttf", 8, NULL, 0);
 }
@@ -259,6 +322,9 @@ void UpdateShapes(GameData* GD) {
     if (GD->ticks % 60 < GD->shapes[s].regen && (GD->shapes[s].hp < GD->shapes[s].max_hp)) {
       GD->shapes[s].hp += 10;
     }
+    if (GD->shapes[s].variant == SHAPE_VARIANT_HEALING && (GD->shapes[s].hp < GD->shapes[s].max_hp)) {
+      GD->shapes[s].hp += GD->shapes[s].max_hp / 120;
+    }
 
     // despawning
     if (GD->shapes[s].marked_for_despawn) {
@@ -279,8 +345,12 @@ void UpdateShapes(GameData* GD) {
     }
 
     // movement
-    GD->shapes[s].x += fixed_cos(GD->shapes[s].move_angle) * GD->shapes[s].move_speed / fixed_factor;
-    GD->shapes[s].y += fixed_sin(GD->shapes[s].move_angle) * GD->shapes[s].move_speed / fixed_factor;
+    fixed_t real_move_speed = GD->shapes[s].move_speed;
+    if (GD->shapes[s].sqdist_to_player < int_sq(64) && GD->shapes[s].move_speed > GD->player.stats.max_move_speed) {
+      real_move_speed = GD->player.stats.max_move_speed;
+    }
+    GD->shapes[s].x += fixed_cos(GD->shapes[s].move_angle) * real_move_speed / fixed_factor;
+    GD->shapes[s].y += fixed_sin(GD->shapes[s].move_angle) * real_move_speed / fixed_factor;
 
     // kb
     GD->shapes[s].x += fixed_cos(GD->shapes[s].kb_angle) * GD->shapes[s].kb_speed / fixed_factor;
@@ -297,9 +367,21 @@ void UpdateShapes(GameData* GD) {
     }
 
     // targeting player
-    if (GD->shapes[s].ticks_since_damaged < 180) {
-      angle_rotate_towards(&GD->shapes[s].move_angle, GD->shapes[s].angle_to_player, 3);
-      fixed_nudge(&GD->shapes[s].move_speed, GD->shapes[s].max_move_speed, fixed_new(0, 8));
+    int aggro_time = 180;
+    if (GD->shapes[s].variant == SHAPE_VARIANT_FAST) {
+      aggro_time = 600;
+    }
+    if (GD->shapes[s].ticks_since_damaged < aggro_time) {
+      if (GD->shapes[s].variant == SHAPE_VARIANT_FAST) {
+        angle_rotate_towards(&GD->shapes[s].move_angle, GD->shapes[s].angle_to_player, 2);
+      } else {
+        angle_rotate_towards(&GD->shapes[s].move_angle, GD->shapes[s].angle_to_player, 3);
+      }
+      if (abs(angle_diff(GD->shapes[s].move_angle, GD->shapes[s].angle_to_player)) > 15) {
+        fixed_nudge(&GD->shapes[s].move_speed, GD->shapes[s].max_move_speed / 2, fixed_new(0, 16));
+      } else {
+        fixed_nudge(&GD->shapes[s].move_speed, GD->shapes[s].max_move_speed, fixed_new(0, 8));
+      }
     } else {
       fixed_nudge(&GD->shapes[s].move_speed, GD->shapes[s].max_move_speed / 2, fixed_new(0, 8));
     }
@@ -535,7 +617,20 @@ void UpdatePickups(GameData* GD) {
     if (!GD->pickups[p].exists) {
       continue;
     }
-    // ...
+
+    // update sqdist_to_player
+    {
+      int dx = fixed_whole(GD->player.x) - fixed_whole(GD->pickups[p].x);
+      int dy = fixed_whole(GD->player.y) - fixed_whole(GD->pickups[p].y);
+      GD->pickups[p].sqdist_to_player = int_sq(dx) + int_sq(dy);
+      GD->pickups[p].angle_to_player = angle_from_slope(dx, dy);
+    }
+
+    // move faraway off-screen items a bit closer
+    if (GD->pickups[p].sqdist_to_player > int_sq(render_w * 2)) {
+      GD->pickups[p].x += fixed_cos(GD->pickups[p].angle_to_player) * render_w;
+      GD->pickups[p].y += fixed_sin(GD->pickups[p].angle_to_player) * render_w;
+    }
   }
 }
 
