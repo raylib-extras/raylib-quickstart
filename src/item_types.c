@@ -1,13 +1,15 @@
 #include "item_types.h"
 
 const char* const item_strs[] = {
-    "+Spd",
+    "+Speed",
     "+FR",
     "+Rot",
     "+Dmg",
     "+Acc",
-    "+SSpd",
-    "+SCnt",
+    "+SSpeed",
+    "+SCount",
     "+KB",
     "+Pierce",
+    "+Magnet",
+    "+Homing",
     "ERROR"};

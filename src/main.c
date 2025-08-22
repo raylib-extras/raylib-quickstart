@@ -18,13 +18,13 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include "update_logic.h"
 
 #define FIELD(obj, field) ((obj).field)
-#define PRINT_STAT(index, name)                                                                                                  \
-  do {                                                                                                                           \
-    if (FIELD(GD->player.stats, name) != FIELD(GD->player.prev_stats, name)) {                                                   \
-      DrawPrintf(0, (index) * 8, VIOLET, #name ": %d -> %d", FIELD(GD->player.prev_stats, name), FIELD(GD->player.stats, name)); \
-    } else {                                                                                                                     \
-      DrawPrintf(0, (index) * 8, BLACK, #name ": %d", FIELD(GD->player.stats, name));                                            \
-    }                                                                                                                            \
+#define PRINT_STAT(index, name)                                                                                                     \
+  do {                                                                                                                              \
+    if (FIELD(GD->player.stats, name) != FIELD(GD->player.prev_stats, name)) {                                                      \
+      DrawPrintf(0, (index) * 8, VIOLET, "%s: %d -> %d", #name, FIELD(GD->player.prev_stats, name), FIELD(GD->player.stats, name)); \
+    } else {                                                                                                                        \
+      DrawPrintf(0, (index) * 8, BLACK, "%s: %d", #name, FIELD(GD->player.stats, name));                                            \
+    }                                                                                                                               \
   } while (0);
 
 int main() {
@@ -60,7 +60,20 @@ int main() {
       game_speed = 2;
     } else if (IsKeyPressed(KEY_F8)) {
       game_speed = 100;
+    } else if (IsKeyPressed(KEY_F9)) {
+      for (int p = 0; p < LENGTHOF(GD->pickups); ++p) {
+        if (GD->pickups[p].exists) {
+          GD->pickups[p].type = (GD->pickups[p].type - 1 + ITEM_COUNT) % ITEM_COUNT;
+        }
+      }
+    } else if (IsKeyPressed(KEY_F10)) {
+      for (int p = 0; p < LENGTHOF(GD->pickups); ++p) {
+        if (GD->pickups[p].exists) {
+          GD->pickups[p].type = (GD->pickups[p].type + 1) % ITEM_COUNT;
+        }
+      }
     }
+
     // ------[Game Logic]------
     for (int t = 0; t < game_speed; ++t) {
       ++GD->ticks;
@@ -105,6 +118,8 @@ int main() {
     PRINT_STAT(i++, sight_range);
     PRINT_STAT(i++, size);
     PRINT_STAT(i++, turn_speed);
+    PRINT_STAT(i++, magnetism_dist);
+    PRINT_STAT(i++, shot_homing_power);
     EndTextureMode();
     BeginDrawing();
     DrawTexturePro(canvas.texture, (Rectangle){0, 0, canvas.texture.width, -canvas.texture.height},

@@ -20,14 +20,15 @@ void DrawCheckerboard(GameData* GD) {
 }
 
 void DrawProjs(GameData* GD) {
-  for (int i = 0; i < LENGTHOF(GD->projs); ++i) {
-    if (!GD->projs[i].exists) {
+  for (int p = 0; p < LENGTHOF(GD->projs); ++p) {
+    if (!GD->projs[p].exists) {
       continue;
     }
-    Vector2 render_pos = {fixed_whole(GD->projs[i].x - GD->camera.x) + render_w / 2,
-                          fixed_whole(GD->projs[i].y - GD->camera.y) + render_h / 2};
-    DrawPoly(render_pos, 4, GD->projs[i].size, GD->ticks + i * 15, GRAY);
-    DrawPolyLinesEx(render_pos, 4, GD->projs[i].size, GD->ticks + i * 15, 2.0f, BLACK);
+    Vector2 render_pos = {fixed_whole(GD->projs[p].x - GD->camera.x) + render_w / 2,
+                          fixed_whole(GD->projs[p].y - GD->camera.y) + render_h / 2};
+    Color color = (GD->projs[p].is_homing && GD->projs[p].despawn_timer % 2 == 0 ? MAGENTA : GRAY);
+    DrawPoly(render_pos, 4, GD->projs[p].size, GD->ticks + p * 15, color);
+    DrawPolyLinesEx(render_pos, 4, GD->projs[p].size, GD->ticks + p * 15, 2.0f, BLACK);
   }
 }
 

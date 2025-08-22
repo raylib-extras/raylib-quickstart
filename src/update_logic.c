@@ -195,6 +195,8 @@ void UpdatePlayerStats(GameData* GD) {
   GD->player.stats.sight_range = render_h / 2;
   GD->player.stats.size = 12;
   GD->player.stats.turn_speed = 2;
+  GD->player.stats.magnetism_dist = 16;
+  GD->player.stats.shot_homing_power = 0;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GD->player.item_counts[i]; ++x) {
       switch (i) {
@@ -234,6 +236,12 @@ void UpdatePlayerStats(GameData* GD) {
             GD->player.stats.reload_delay = GD->player.stats.reload_delay * 115 / 100;
           }
           break;
+        case ITEM_MAGNETISM_UP:
+          GD->player.stats.magnetism_dist += 16;
+          break;
+        case ITEM_HOMING_POWER:
+          GD->player.stats.shot_homing_power += 8;
+          break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
       }
@@ -250,6 +258,7 @@ void UpdatePlayerStats(GameData* GD) {
   clamp(&GD->player.stats.shot_spread, 0, 32);
   clamp(&GD->player.stats.size, 10, 50);
   clamp(&GD->player.stats.turn_speed, 1, 64);
+  clamp(&GD->player.stats.magnetism_dist, 16, 1000);
 }
 
 void SpawnNewShapes(GameData* GD) {
@@ -449,7 +458,7 @@ void UpdatePlayer(GameData* GD) {
   if (IsKeyDown(KEY_W)) GD->player.y -= GD->player.move_speed;
 
   // find index of closest shape
-  int closest_sqdist = INT32_MAX;
+  int closest_sqdist = INT_MAX;
   int closest_shape_idx = -1;
   for (int s = 0; s < LENGTHOF(GD->shapes); ++s) {
     if (GD->shapes[s].exists) {
@@ -514,6 +523,8 @@ void SpawnNewProjs(GameData* GD) {
       GD->projs[p].pierce = GD->player.stats.shot_pierce;
       GD->projs[p].x = GD->player.x;
       GD->projs[p].y = GD->player.y;
+      GD->projs[p].homing_max_dist = 64;
+      GD->projs[p].homing_power = GD->player.stats.shot_homing_power;
       if (first_shot_in_volley) {
         GD->projs[p].move_speed = GD->player.stats.shot_speed;
         GD->projs[p].angle = GD->player.angle + GetRandomValue(-GD->player.stats.shot_spread, GD->player.stats.shot_spread);
@@ -549,6 +560,52 @@ void UpdateProjs(GameData* GD) {
       GD->projs[p] = (Proj){0};
       GD->projs[p].exists = false;
       continue;
+    }
+
+    // homing
+    GD->projs[p].is_homing = false;
+    if (GD->projs[p].homing_max_dist > 0 && GD->projs[p].homing_power > 0) {
+      // find nearest shape we haven't hit yet
+      int nearest_shape_idx = -1;
+      int s_sqdist = INT_MAX;
+      for (int s = 0; s < LENGTHOF(GD->shapes); ++s) {
+        if (!GD->shapes[s].exists) {
+          continue;
+        }
+        bool already_hit = false;
+        for (int h = 0; h < LENGTHOF(GD->projs[p].hit_shape_ids); ++h) {
+          if (GD->projs[p].hit_shape_ids[h] == GD->shapes[s].id) {
+            already_hit = true;
+            break;
+          }
+        }
+        if (already_hit) {
+          continue;
+        }
+        int dx = fixed_whole(GD->shapes[s].x) - fixed_whole(GD->projs[p].x);
+        int dy = fixed_whole(GD->shapes[s].y) - fixed_whole(GD->projs[p].y);
+        int sqdist = int_sq(dx) + int_sq(dy);
+        if (sqdist < s_sqdist) {
+          s_sqdist = sqdist;
+          nearest_shape_idx = s;
+        }
+      }
+      // home, then update homing power
+      if (nearest_shape_idx != -1 && s_sqdist < int_sq(GD->projs[p].homing_max_dist + GD->shapes[nearest_shape_idx].size)) {
+        angle_t target_angle = angle_from_line(GD->projs[p].x, GD->projs[p].y, GD->shapes[nearest_shape_idx].x, GD->shapes[nearest_shape_idx].y);
+        if (target_angle != GD->projs[p].angle) {
+          GD->projs[p].is_homing = true;
+          angle_rotate_towards(&GD->projs[p].angle, target_angle, 8);
+          --GD->projs[p].homing_power;
+
+          // make text fx
+          int t = GetTextFxSlot(GD);
+          GD->text_fx[t].x = GD->projs[p].x;
+          GD->text_fx[t].y = GD->projs[p].y - 64;
+          GD->text_fx[t].despawn_timer = 30;
+          snprintf(GD->text_fx[t].text, LENGTHOF(GD->text_fx[t].text), ".");
+        }
+      }
     }
 
     // movement
@@ -632,7 +689,12 @@ void UpdatePickups(GameData* GD) {
       GD->pickups[p].angle_to_player = angle_from_slope(dx, dy);
     }
 
-    // move faraway off-screen items a bit closer
+    if (GD->pickups[p].sqdist_to_player < int_sq(GD->player.stats.magnetism_dist)) {
+      GD->pickups[p].x += fixed_cos(GD->pickups[p].angle_to_player) * GD->player.stats.max_move_speed / fixed_factor;
+      GD->pickups[p].y += fixed_sin(GD->pickups[p].angle_to_player) * GD->player.stats.max_move_speed / fixed_factor;
+    }
+
+    // move faraway off-screen items closer
     if (GD->pickups[p].sqdist_to_player > int_sq(render_w * 2)) {
       GD->pickups[p].x += fixed_cos(GD->pickups[p].angle_to_player) * render_w;
       GD->pickups[p].y += fixed_sin(GD->pickups[p].angle_to_player) * render_w;

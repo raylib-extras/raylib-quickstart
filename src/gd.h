@@ -42,6 +42,9 @@ typedef struct PlayerStats {
   int sight_range;
   int size;
   int turn_speed;
+
+  int magnetism_dist;
+  int shot_homing_power;
 } PlayerStats;
 
 typedef struct Player {
@@ -124,6 +127,10 @@ typedef struct Proj {
   int despawn_timer;
   fixed_t kb;
 
+  bool is_homing;
+  int homing_max_dist;
+  int homing_power;
+
   uint8_t hit_shape_ids[16];
 } Proj;
 
@@ -163,7 +170,7 @@ typedef struct GameData {
   Pickup pickups[40];
   int pickups_spawned;
 
-  TextFx text_fx[15];
+  TextFx text_fx[40];
 
   int ticks;
   Font font;
