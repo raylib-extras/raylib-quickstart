@@ -89,7 +89,7 @@ void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
     } break;
     case 5: {
       shape->max_hp = 1000;
-      shape->max_move_speed = fixed_new(8, 0) / target_fps;
+      shape->max_move_speed = fixed_new(16, 0) / target_fps;
       shape->regen = 12;
       shape->sides = 5;
       shape->size = 24;
@@ -99,7 +99,7 @@ void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
     } break;
     case 6: {
       shape->max_hp = 5000;
-      shape->max_move_speed = fixed_new(4, 0) / target_fps;
+      shape->max_move_speed = fixed_new(16, 0) / target_fps;
       shape->regen = 50;
       shape->sides = 6;
       shape->size = 40;
@@ -346,7 +346,7 @@ void UpdateShapes(GameData* GD) {
 
     // movement
     fixed_t real_move_speed = GD->shapes[s].move_speed;
-    if (GD->shapes[s].sqdist_to_player < int_sq(64) && GD->shapes[s].move_speed > GD->player.stats.max_move_speed) {
+    if (GD->shapes[s].sqdist_to_target < int_sq(64) && GD->shapes[s].move_speed > GD->player.stats.max_move_speed) {
       real_move_speed = GD->player.stats.max_move_speed;
     }
     GD->shapes[s].x += fixed_cos(GD->shapes[s].move_angle) * real_move_speed / fixed_factor;
@@ -358,7 +358,7 @@ void UpdateShapes(GameData* GD) {
     GD->shapes[s].kb_speed -= fixed_new(0, 4);
     fixed_clamp(&GD->shapes[s].kb_speed, 0, fixed_new(64, 0));
 
-    // update sqdist_to_player
+    // update sqdist_to_player, angle_to_player
     {
       int dx = fixed_whole(GD->player.x) - fixed_whole(GD->shapes[s].x);
       int dy = fixed_whole(GD->player.y) - fixed_whole(GD->shapes[s].y);
@@ -366,18 +366,33 @@ void UpdateShapes(GameData* GD) {
       GD->shapes[s].angle_to_player = angle_from_slope(dx, dy);
     }
 
-    // targeting player
+    // targeting
     int aggro_time = 180;
     if (GD->shapes[s].variant == SHAPE_VARIANT_FAST) {
       aggro_time = 600;
     }
-    if (GD->shapes[s].ticks_since_damaged < aggro_time) {
-      if (GD->shapes[s].variant == SHAPE_VARIANT_FAST) {
-        angle_rotate_towards(&GD->shapes[s].move_angle, GD->shapes[s].angle_to_player, 2);
-      } else {
-        angle_rotate_towards(&GD->shapes[s].move_angle, GD->shapes[s].angle_to_player, 3);
+    if (GD->shapes[s].always_target || GD->shapes[s].ticks_since_damaged < aggro_time) {
+      // update target_x, target_y
+      GD->shapes[s].target_x = GD->player.x;
+      GD->shapes[s].target_y = GD->player.y;
+
+      // update sqdist_to_target, angle_to_target
+      {
+        int dx = fixed_whole(GD->shapes[s].target_x) - fixed_whole(GD->shapes[s].x);
+        int dy = fixed_whole(GD->shapes[s].target_y) - fixed_whole(GD->shapes[s].y);
+        GD->shapes[s].sqdist_to_target = int_sq(dx) + int_sq(dy);
+        GD->shapes[s].angle_to_target = angle_from_slope(dx, dy);
       }
-      if (abs(angle_diff(GD->shapes[s].move_angle, GD->shapes[s].angle_to_player)) > 15) {
+
+      // FAST variants have a slower turn speed
+      if (GD->shapes[s].variant == SHAPE_VARIANT_FAST) {
+        angle_rotate_towards(&GD->shapes[s].move_angle, GD->shapes[s].angle_to_target, 2);
+      } else {
+        angle_rotate_towards(&GD->shapes[s].move_angle, GD->shapes[s].angle_to_target, 3);
+      }
+
+      // shapes use a slower max move speed when not facing target
+      if (abs(angle_diff(GD->shapes[s].move_angle, GD->shapes[s].angle_to_target)) > 15) {
         fixed_nudge(&GD->shapes[s].move_speed, GD->shapes[s].max_move_speed / 2, fixed_new(0, 16));
       } else {
         fixed_nudge(&GD->shapes[s].move_speed, GD->shapes[s].max_move_speed, fixed_new(0, 8));
@@ -412,17 +427,8 @@ void UpdateShapes(GameData* GD) {
         }
       }
     }
-
-    // absorption
-    // if (GD->shapes[i].sqdist_to_player < int_sq(GD->player.stats.size - 4)) {
-    //   GD->player.stats.size += 1;
-    //   GD->shapes[i].hp -= 10;
-    // } else if (GD->shapes[i].sqdist_to_player < int_sq(GD->player.stats.size + 8)) {
-    //   angle_t target_angle = angle_from_line(GD->shapes[i].x, GD->shapes[i].y, GD->player.x, GD->player.y);
-    //   GD->shapes[i].angle = target_angle;
-    // }
   }
-  // qsort(GD->shapes, LENGTHOF(GD->shapes), sizeof(Shape), CompareShapes);
+  qsort(GD->shapes, LENGTHOF(GD->shapes), sizeof(Shape), CompareShapes);
   // for (int s = 0; s < LENGTHOF(GD->shapes); ++s) {
   //   if (GD->shapes[s].exists) {
   //     printf("%c", GD->shapes[s].sides + '0');

@@ -97,6 +97,12 @@ typedef struct Shape {
   int sqdist_to_player;
   angle_t angle_to_player;
 
+  bool always_target;
+  fixed_t target_x;
+  fixed_t target_y;
+  int sqdist_to_target;
+  angle_t angle_to_target;
+
   int hp;
   int max_hp;
   int regen;
