@@ -69,10 +69,10 @@ void DrawShapes(GameData* GD) {
 
     // debug info
     // DrawPrintf(render_pos.x, render_pos.y, BLACK, "[%d]", i);
-    DrawLine(render_pos.x, render_pos.y,
-             render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].move_angle) * GD->shapes[i].move_speed * target_fps / fixed_factor),
-             render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].move_angle) * GD->shapes[i].move_speed * target_fps / fixed_factor),
-             RED);
+    // DrawLine(render_pos.x, render_pos.y,
+    //          render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].move_angle) * GD->shapes[i].move_speed * target_fps / fixed_factor),
+    //          render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].move_angle) * GD->shapes[i].move_speed * target_fps / fixed_factor),
+    //          RED);
     DrawLine(render_pos.x, render_pos.y,
              render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].kb_angle) * GD->shapes[i].kb_speed * target_fps / fixed_factor),
              render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].kb_angle) * GD->shapes[i].kb_speed * target_fps / fixed_factor),

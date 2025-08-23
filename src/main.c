@@ -37,13 +37,15 @@ int main() {
   // it as the current working directory so we can load from it
   SearchAndSetResourceDir("resources");
 
-  GameData game_data = {};
+  GameData game_data;
 
   GameData* GD = &game_data;
   InitGameData(GD);
 
   GameData save_state = game_data;
   int game_speed = 1;
+
+  bool show_stats = true;
 
   RenderTexture2D canvas = LoadRenderTexture(render_w, render_h);
 
@@ -52,6 +54,8 @@ int main() {
       save_state = game_data;
     } else if (IsKeyPressed(KEY_F2)) {
       game_data = save_state;
+    } else if (IsKeyPressed(KEY_F3)) {
+      show_stats = !show_stats;
     } else if (IsKeyPressed(KEY_F5)) {
       game_speed = 0;
     } else if (IsKeyPressed(KEY_F6)) {
@@ -59,7 +63,7 @@ int main() {
     } else if (IsKeyPressed(KEY_F7)) {
       game_speed = 2;
     } else if (IsKeyPressed(KEY_F8)) {
-      game_speed = 100;
+      game_speed = 10000;
     } else if (IsKeyPressed(KEY_F9)) {
       for (int p = 0; p < LENGTHOF(GD->pickups); ++p) {
         if (GD->pickups[p].exists) {
@@ -106,20 +110,23 @@ int main() {
     DrawPickups(GD);
     DrawTextFx(GD);
 
-    int i = 0;
-    PRINT_STAT(i++, damage);
-    PRINT_STAT(i++, max_move_speed);
-    PRINT_STAT(i++, reload_delay);
-    PRINT_STAT(i++, shot_count);
-    PRINT_STAT(i++, shot_kb);
-    PRINT_STAT(i++, shot_pierce);
-    PRINT_STAT(i++, shot_speed);
-    PRINT_STAT(i++, shot_spread);
-    PRINT_STAT(i++, sight_range);
-    PRINT_STAT(i++, size);
-    PRINT_STAT(i++, turn_speed);
-    PRINT_STAT(i++, magnetism_dist);
-    PRINT_STAT(i++, shot_homing_power);
+    if (show_stats) {
+      int i = 0;
+      PRINT_STAT(i++, damage);
+      PRINT_STAT(i++, max_move_speed);
+      PRINT_STAT(i++, reload_delay);
+      PRINT_STAT(i++, shot_count);
+      PRINT_STAT(i++, shot_kb);
+      PRINT_STAT(i++, shot_pierce);
+      PRINT_STAT(i++, shot_speed);
+      PRINT_STAT(i++, shot_spread);
+      PRINT_STAT(i++, sight_range);
+      PRINT_STAT(i++, size);
+      PRINT_STAT(i++, turn_speed);
+      PRINT_STAT(i++, magnetism_dist);
+      PRINT_STAT(i++, shot_homing_power);
+    }
+
     EndTextureMode();
     BeginDrawing();
     DrawTexturePro(canvas.texture, (Rectangle){0, 0, canvas.texture.width, -canvas.texture.height},
