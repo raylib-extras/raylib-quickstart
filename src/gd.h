@@ -30,6 +30,8 @@ extern const int window_h;
 
 extern const int target_fps;
 
+extern const fixed_t default_z;  // z is distance from camera
+
 typedef struct PlayerStats {
   int damage;
   fixed_t max_move_speed;
@@ -45,6 +47,7 @@ typedef struct PlayerStats {
 
   int magnetism_dist;
   int shot_homing_power;
+  int view_distance;
 } PlayerStats;
 
 typedef struct Player {
@@ -154,13 +157,16 @@ typedef struct TextFx {
   char text[8];
 } TextFx;
 
+typedef struct GdCamera {  // raylib already defines struct Camera >:(
+  fixed_t x;
+  fixed_t y;
+  fixed_t zoom;
+} GdCamera;
+
 typedef struct GameData {
   Player player;
 
-  struct {
-    fixed_t x;
-    fixed_t y;
-  } camera;
+  GdCamera camera;
 
   Shape shapes[80];
   int shape_count;

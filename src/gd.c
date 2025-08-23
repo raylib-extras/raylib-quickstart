@@ -7,3 +7,4 @@ const int window_w = render_w * window_scale;
 const int window_h = render_h * window_scale;
 
 const int target_fps = 60;
+const fixed_t default_z = 256;

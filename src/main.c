@@ -10,6 +10,7 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include <stdint.h>
 #include <stdio.h>
 
+#include "camera_transform.h"
 #include "draw_logic.h"
 #include "fixed_math.h"
 #include "gd.h"
@@ -45,7 +46,7 @@ int main() {
   GameData save_state = game_data;
   int game_speed = 1;
 
-  bool show_stats = true;
+  bool show_stats = false;
 
   RenderTexture2D canvas = LoadRenderTexture(render_w, render_h);
 
@@ -76,6 +77,10 @@ int main() {
           GD->pickups[p].type = (GD->pickups[p].type + 1) % ITEM_COUNT;
         }
       }
+    } else if (IsKeyPressed(KEY_MINUS) || IsKeyPressedRepeat(KEY_MINUS)) {
+      GD->camera.zoom -= 8;
+    } else if (IsKeyPressed(KEY_EQUAL) || IsKeyPressedRepeat(KEY_EQUAL)) {
+      GD->camera.zoom += 8;
     }
 
     // ------[Game Logic]------
@@ -95,8 +100,11 @@ int main() {
       UpdateTextFx(GD);
 
       // update camera
-      GD->camera.x = GD->player.x - render_w / 2;
-      GD->camera.y = GD->player.y - render_h / 2;
+      GD->camera.x = GD->player.x - GetRenderLength(GD, render_w / 2, default_z);
+      GD->camera.y = GD->player.y - GetRenderLength(GD, render_h / 2, default_z);
+
+      fixed_t target_zoom = 256 * 256 / (GD->player.stats.view_distance * fixed_factor * 2 / render_h);
+      fixed_nudge(&GD->camera.zoom, target_zoom, 1);
     }
 
     // ------[Drawing]------
@@ -125,7 +133,9 @@ int main() {
       PRINT_STAT(i++, turn_speed);
       PRINT_STAT(i++, magnetism_dist);
       PRINT_STAT(i++, shot_homing_power);
+      PRINT_STAT(i++, view_distance);
     }
+    DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->camera.x, GD->camera.y, GD->camera.zoom);
 
     EndTextureMode();
     BeginDrawing();
@@ -140,5 +150,15 @@ int main() {
 
   // destroy the window and cleanup the OpenGL context
   CloseWindow();
+
+  // FILE* save = fopen("gamedata.sav", "w");
+  // for (int i = 0; i < sizeof(*GD); ++i) {
+  //   fprintf(save, "%02X ", ((uint8_t*)(GD))[i]);
+  //   if (i % 32 == 31) {
+  //     fputc('\n', save);
+  //   }
+  // }
+  // fclose(save);
+
   return 0;
 }

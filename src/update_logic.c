@@ -197,6 +197,7 @@ void UpdatePlayerStats(GameData* GD) {
   GD->player.stats.turn_speed = 2;
   GD->player.stats.magnetism_dist = 16;
   GD->player.stats.shot_homing_power = 0;
+  GD->player.stats.view_distance = 120;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GD->player.item_counts[i]; ++x) {
       switch (i) {
@@ -242,6 +243,10 @@ void UpdatePlayerStats(GameData* GD) {
         case ITEM_HOMING_POWER:
           GD->player.stats.shot_homing_power += 8;
           break;
+        case ITEM_SIGHT_UP:
+          GD->player.stats.sight_range += 12;
+          GD->player.stats.view_distance += 12;
+          break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
       }
@@ -259,6 +264,7 @@ void UpdatePlayerStats(GameData* GD) {
   clamp(&GD->player.stats.size, 10, 50);
   clamp(&GD->player.stats.turn_speed, 1, 64);
   clamp(&GD->player.stats.magnetism_dist, 16, 1000);
+  clamp(&GD->player.stats.view_distance, 120, 240);
 }
 
 void SpawnNewShapes(GameData* GD) {
@@ -310,6 +316,7 @@ void InitGameData(GameData* GD) {
   // }
   *GD = (GameData){0};
   UpdatePlayerStats(GD);
+  GD->camera.zoom = fixed_new(1, 0);
   GD->font = LoadFontEx("Kitchen Sink.ttf", 8, NULL, 0);
 }
 

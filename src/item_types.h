@@ -12,6 +12,7 @@ typedef enum ItemType {
   ITEM_PIERCE_UP,
   ITEM_MAGNETISM_UP,
   ITEM_HOMING_POWER,
+  ITEM_SIGHT_UP,
   ITEM_COUNT
 } ItemType;
 
