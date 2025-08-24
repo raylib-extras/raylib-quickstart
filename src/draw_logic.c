@@ -3,7 +3,7 @@
 #include <string.h>
 #include <strings.h>
 
-#include "camera_transform.h"
+#include "camera_util.h"
 
 void DrawCheckerboard(GameData* GD) {
   const int check_size = 128;

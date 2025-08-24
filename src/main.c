@@ -10,7 +10,7 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include <stdint.h>
 #include <stdio.h>
 
-#include "camera_transform.h"
+#include "camera_util.h"
 #include "draw_logic.h"
 #include "fixed_math.h"
 #include "gd.h"
