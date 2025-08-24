@@ -135,7 +135,12 @@ int main() {
       PRINT_STAT(i++, shot_homing_power);
       PRINT_STAT(i++, view_distance);
     }
-    DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->camera.x, GD->camera.y, GD->camera.zoom);
+    // DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->camera.x, GD->camera.y, GD->camera.zoom);
+    for (int i = 0; i < ITEM_COUNT; ++i) {
+      DrawPrintf(i * 12, 0, BLACK, "%d", GD->player.item_counts[i]);
+    }
+    DrawPrintf(0, 8, BLACK, "%d pickups spawned", GD->pickups_spawned);
+    DrawPrintf(0, 16, BLACK, "Lvl %d - XP %d/%d", GD->player.level, GD->player.xp, XpForLevelUp(GD));
 
     EndTextureMode();
     BeginDrawing();

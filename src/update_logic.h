@@ -10,6 +10,8 @@ void InitGameData(GameData* GD);
 void SpawnNewShapes(GameData* GD);
 void UpdateShapes(GameData* GD);
 
+int XpForLevelUp(GameData* GD);
+
 void UpdatePlayer(GameData* GD);
 
 void SpawnNewProjs(GameData* GD);

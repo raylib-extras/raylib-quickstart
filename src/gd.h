@@ -60,10 +60,15 @@ typedef struct Player {
   PlayerStats stats;
   int stat_update_timer;
 
+  int level;
+  int xp;
+  int total_xp;
+
   fixed_t reload_progress;
   fixed_t shot_progress;
 
   ItemType item_counts[ITEM_COUNT];
+  int items_collected;
 
   int dps;
   int damage_history[60];
@@ -80,8 +85,9 @@ typedef enum ShapeVariant {
 typedef struct Shape {
   bool exists;
   bool marked_for_despawn;
-  bool spawn_pickup_on_despawn;
+  bool grant_xp_on_despawn;
   bool spawn_children_on_despawn;
+  int xp;
 
   uint8_t id;
 

@@ -75,7 +75,7 @@ void DrawShapes(GameData* GD) {
 
     // healthbar
     if (GD->shapes[i].hp < GD->shapes[i].max_hp) {
-      int bar_width = GD->shapes[i].max_hp / 20;
+      int bar_width = GetRenderLength(GD, GD->shapes[i].max_hp / 20, default_z);
       int filled_width = bar_width * GD->shapes[i].hp / GD->shapes[i].max_hp;
       Color color = GREEN;
       if (filled_width <= bar_width / 2) {
@@ -94,10 +94,10 @@ void DrawShapes(GameData* GD) {
     //          render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].move_angle) * GD->shapes[i].move_speed * target_fps / fixed_factor),
     //          render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].move_angle) * GD->shapes[i].move_speed * target_fps / fixed_factor),
     //          RED);
-    DrawLine(render_pos.x, render_pos.y,
-             render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].kb_angle) * GD->shapes[i].kb_speed * target_fps / fixed_factor),
-             render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].kb_angle) * GD->shapes[i].kb_speed * target_fps / fixed_factor),
-             BLUE);
+    // DrawLine(render_pos.x, render_pos.y,
+    //          render_pos.x + fixed_whole(fixed_cos(GD->shapes[i].kb_angle) * GD->shapes[i].kb_speed * target_fps / fixed_factor),
+    //          render_pos.y + fixed_whole(fixed_sin(GD->shapes[i].kb_angle) * GD->shapes[i].kb_speed * target_fps / fixed_factor),
+    //          BLUE);
   }
 }
 
@@ -107,11 +107,11 @@ void DrawPlayer(GameData* GD) {
   Vector2 render_pos = {rx, ry};
   DrawPoly(render_pos, 20, GetRenderLength(GD, GD->player.stats.size, default_z), 0, GRAY);
   DrawPolyLinesEx(render_pos, 20, GetRenderLength(GD, GD->player.stats.size, default_z), 0, 2.0f, BLACK);
-  DrawLine(render_pos.x,
-           render_pos.y,
-           render_pos.x + fixed_whole(fixed_cos(GD->player.angle) * 16),
-           render_pos.y + fixed_whole(fixed_sin(GD->player.angle) * 16),
-           GREEN);
+  // DrawLine(render_pos.x,
+  //          render_pos.y,
+  //          render_pos.x + fixed_whole(fixed_cos(GD->player.angle) * 16),
+  //          render_pos.y + fixed_whole(fixed_sin(GD->player.angle) * 16),
+  //          GREEN);
 }
 
 void DrawPickups(GameData* GD) {

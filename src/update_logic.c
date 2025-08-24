@@ -26,22 +26,62 @@ int ClaimEmptyShapeSlot(GameData* GD) {
 
 int PickShapeSides(GameData* GD) {
   int r = GetRandomValue(0, 99);
-  if (r < 70) {
-    return 3;
-  } else if (r < 85) {
-    return 4;
-  } else if (r < 95) {
-    return 5;
+  if (GD->pickups_spawned < 10) {
+    if (r < 85) {
+      return 3;
+    } else {
+      return 4;
+    }
+  } else if (GD->pickups_spawned < 20) {
+    if (r < 75) {
+      return 3;
+    } else if (r < 90) {
+      return 4;
+    } else {
+      return 5;
+    }
+  } else if (GD->pickups_spawned < 40) {
+    if (r < 75) {
+      return 3;
+    } else if (r < 90) {
+      return 4;
+    } else if (r < 98) {
+      return 5;
+    } else {
+      return 6;
+    }
+  } else if (GD->pickups_spawned < 60) {
+    if (r < 50) {
+      return 3;
+    } else if (r < 80) {
+      return 4;
+    } else if (r < 95) {
+      return 5;
+    } else {
+      return 6;
+    }
   } else {
-    return 6;
+    if (r < 50) {
+      return 4;
+    } else if (r < 75) {
+      return 5;
+    } else {
+      return 6;
+    };
   }
 }
 
-ShapeVariant PickShapeVariant(GameData* GD) {
-  if (GD->pickups_spawned < 10) {
+ShapeVariant PickShapeVariant(GameData* GD, int sides) {
+  int r = GetRandomValue(0, 99);
+  if (GD->pickups_spawned < 30) {
     return SHAPE_VARIANT_NONE;
-  } else if (GD->pickups_spawned < 25) {
-    int r = GetRandomValue(0, 99);
+  } else if (GD->pickups_spawned < 50) {
+    if (r < 90) {
+      return SHAPE_VARIANT_NONE;
+    } else {
+      return SHAPE_VARIANT_BIG;
+    }
+  } else if (GD->pickups_spawned < 70) {
     if (r < 90) {
       return SHAPE_VARIANT_NONE;
     } else if (r < 95) {
@@ -50,12 +90,11 @@ ShapeVariant PickShapeVariant(GameData* GD) {
       return SHAPE_VARIANT_FAST;
     }
   } else {
-    int r = GetRandomValue(0, 99);
-    if (r < 70) {
+    if (r < 85) {
       return SHAPE_VARIANT_NONE;
-    } else if (r < 80) {
-      return SHAPE_VARIANT_BIG;
     } else if (r < 90) {
+      return SHAPE_VARIANT_BIG;
+    } else if (r < 95) {
       return SHAPE_VARIANT_FAST;
     } else {
       return SHAPE_VARIANT_HEALING;
@@ -76,6 +115,7 @@ void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
       shape->fg = YELLOW;
       shape->bg = GOLD;
       shape->spawn_children_on_despawn = false;
+      shape->xp = 4;
     } break;
     case 4: {
       shape->max_hp = 400;
@@ -86,6 +126,7 @@ void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
       shape->fg = PINK;
       shape->bg = RED;
       shape->spawn_children_on_despawn = true;
+      shape->xp = 8;
     } break;
     case 5: {
       shape->max_hp = 1000;
@@ -96,6 +137,7 @@ void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
       shape->fg = PURPLE;
       shape->bg = VIOLET;
       shape->spawn_children_on_despawn = true;
+      shape->xp = 16;
     } break;
     case 6: {
       shape->max_hp = 5000;
@@ -106,6 +148,7 @@ void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
       shape->fg = GREEN;
       shape->bg = LIME;
       shape->spawn_children_on_despawn = true;
+      shape->xp = 32;
     } break;
     default: {
       TraceLog(LOG_ERROR, "Bad Shape side count of %d", sides);
@@ -122,6 +165,7 @@ void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
       shape->max_hp *= 4;
       shape->regen /= 2;
       shape->max_move_speed;
+      shape->xp *= 2;
     } break;
     case SHAPE_VARIANT_FAST: {
       shape->fg = ORANGE;
@@ -129,12 +173,14 @@ void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
       shape->max_hp *= 2;
       shape->regen = 0;
       shape->max_move_speed *= 3;
+      shape->xp *= 2;
     } break;
     case SHAPE_VARIANT_HEALING: {
       shape->fg = RED;
       shape->bg = WHITE;
       shape->max_hp *= 2;
       shape->regen += 10;
+      shape->xp *= 2;
     } break;
     default: {
       TraceLog(LOG_ERROR, "Bad Shape side count of %d", sides);
@@ -142,14 +188,15 @@ void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
   }
 
   shape->hp = shape->max_hp;
-  shape->marked_for_despawn = 0;
+  shape->marked_for_despawn = false;
 }
 
 void SpawnChildShapes(GameData* GD, int parent) {
   int parent_sides = GD->shapes[parent].sides;
+  int child_count = parent_sides * (GD->shapes[parent].variant == SHAPE_VARIANT_BIG ? 2 : 1);
   angle_t ang = GetRandomValue(0, angle_factor - 1);
-  for (int i = 0; i < parent_sides; ++i) {
-    ang += (angle_factor / parent_sides);
+  for (int i = 0; i < child_count; ++i) {
+    ang += (angle_factor / child_count);
     int s = ClaimEmptyShapeSlot(GD);
     if (s == -1) {
       return;
@@ -176,7 +223,9 @@ void SpawnPickup(GameData* GD, int s) {
     GD->pickups[p].type = GetRandomValue(0, ITEM_COUNT - 1);
     if (GD->player.item_counts[GD->pickups[p].type] >= 8) {
       GD->pickups[p].exists = false;
+      return;
     }
+    ++GD->pickups_spawned;
     return;
   }
 }
@@ -241,11 +290,11 @@ void UpdatePlayerStats(GameData* GD) {
           GD->player.stats.magnetism_dist += 16;
           break;
         case ITEM_HOMING_POWER:
-          GD->player.stats.shot_homing_power += 8;
+          GD->player.stats.shot_homing_power += 6;
           break;
         case ITEM_SIGHT_UP:
-          GD->player.stats.sight_range += 12;
-          GD->player.stats.view_distance += 12;
+          GD->player.stats.sight_range += 8;
+          GD->player.stats.view_distance += 8;
           break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
@@ -268,16 +317,23 @@ void UpdatePlayerStats(GameData* GD) {
 }
 
 void SpawnNewShapes(GameData* GD) {
-  if (GD->ticks % 30 == 0 && GD->shape_count < (LENGTHOF(GD->shapes) / 2)) {
+  if (GD->ticks % 15 == 0 && GD->shape_count < (LENGTHOF(GD->shapes) / 2)) {
+    fixed_t new_x = GD->player.x + fixed_new(GetRandomValue(-render_w, render_w), 0);
+    fixed_t new_y = GD->player.y + fixed_new(GetRandomValue(-render_h, render_h), 0);
+    if (fixed_abs(new_x - GD->player.x) / fixed_factor < render_w / 2 &&
+        fixed_abs(new_y - GD->player.y) / fixed_factor < render_h / 2) {
+      return;
+    }
     int s = ClaimEmptyShapeSlot(GD);
     if (s == -1) {
       return;
     }
-    GD->shapes[s].x = GD->player.x + fixed_new(GetRandomValue(-render_w, render_w), 0);
-    GD->shapes[s].y = GD->player.y + fixed_new(GetRandomValue(-render_h, render_h), 0);
+    GD->shapes[s].x = new_x;
+    GD->shapes[s].y = new_y;
     GD->shapes[s].move_angle = GetRandomValue(0, angle_factor - 1);
     GD->shapes[s].ticks_since_damaged = 1000;
-    SetShapeStats(&GD->shapes[s], PickShapeSides(GD), PickShapeVariant(GD));
+    int sides = PickShapeSides(GD);
+    SetShapeStats(&GD->shapes[s], sides, PickShapeVariant(GD, sides));
     // printf("Spawned shape %d\n", s);
   }
 }
@@ -345,13 +401,18 @@ void UpdateShapes(GameData* GD) {
     // despawning
     if (GD->shapes[s].marked_for_despawn) {
       // printf("Despawned shape %d\n", i);
+      if (GD->shapes[s].grant_xp_on_despawn) {
+        GD->player.total_xp += GD->shapes[s].xp;
+        GD->player.xp += GD->shapes[s].xp;
+        if (GD->player.xp >= XpForLevelUp(GD)) {
+          GD->player.xp -= XpForLevelUp(GD);
+          SpawnPickup(GD, s);
+          ++GD->player.level;
+        }
+      }
       if (GD->shapes[s].sides > 3) {
         if (GD->shapes[s].spawn_children_on_despawn) {
           SpawnChildShapes(GD, s);
-        }
-      } else {
-        if (GD->shapes[s].spawn_pickup_on_despawn) {
-          SpawnPickup(GD, s);
         }
       }
       GD->shapes[s] = (Shape){0};
@@ -456,6 +517,10 @@ void UpdateShapes(GameData* GD) {
   // printf(" %d\n", GD->shape_count);
 }
 
+int XpForLevelUp(GameData* GD) {
+  return 2 + 2 * GD->player.level;
+}
+
 void UpdatePlayer(GameData* GD) {
   // player movement
   GD->player.move_speed = GD->player.stats.max_move_speed;
@@ -493,6 +558,7 @@ void UpdatePlayer(GameData* GD) {
     if (sqdist < int_sq(GD->player.stats.size)) {
       GD->pickups[p].exists = false;
       ++GD->player.item_counts[GD->pickups[p].type];
+      ++GD->player.items_collected;
       UpdatePlayerStats(GD);
     }
   }
@@ -667,9 +733,8 @@ void UpdateProjs(GameData* GD) {
       // do player dps tracking
       GD->player.dps += GD->projs[p].damage;
       GD->player.damage_history[GD->ticks % LENGTHOF(GD->player.damage_history)] += GD->projs[p].damage;
-      if (GD->shapes[s].hp <= 0 && GetRandomValue(0, (GD->pickups_spawned <= 5 ? 1 : 5)) == 0) {
-        GD->shapes[s].spawn_pickup_on_despawn = true;
-        ++GD->pickups_spawned;
+      if (GD->shapes[s].hp <= 0) {
+        GD->shapes[s].grant_xp_on_despawn = true;
       }
 
       // queue proj for despawn
