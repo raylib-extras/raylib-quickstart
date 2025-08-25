@@ -119,7 +119,7 @@ int main() {
     DrawTextFx(GD);
 
     if (show_stats) {
-      int i = 0;
+      int i = 5;
       PRINT_STAT(i++, damage);
       PRINT_STAT(i++, max_move_speed);
       PRINT_STAT(i++, reload_delay);
