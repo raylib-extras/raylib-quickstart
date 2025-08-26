@@ -20,3 +20,4 @@ void UpdateProjs(GameData* GD);
 void UpdatePickups(GameData* GD);
 
 void UpdateTextFx(GameData* GD);
+void UpdateXpOrbs(GameData* GD);

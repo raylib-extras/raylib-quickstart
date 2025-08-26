@@ -9,6 +9,7 @@ https://creativecommons.org/publicdomain/zero/1.0/
 */
 #include <stdint.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "camera_util.h"
 #include "draw_logic.h"
@@ -98,6 +99,7 @@ int main() {
       UpdatePickups(GD);
 
       UpdateTextFx(GD);
+      UpdateXpOrbs(GD);
 
       // update camera
       GD->camera.x = GD->player.x - GetRenderLength(GD, render_w / 2, default_z);
@@ -116,6 +118,7 @@ int main() {
     DrawShapes(GD);
     DrawPlayer(GD);
     DrawPickups(GD);
+    DrawXpOrbs(GD);
     DrawTextFx(GD);
 
     if (show_stats) {

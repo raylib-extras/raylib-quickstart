@@ -5,14 +5,14 @@
 
 #include "shape_util.h"
 
-void SpawnPickup(GameData* GD, int s) {
+void SpawnPickup(GameData* GD, fixed_t x, fixed_t y) {
   for (int p = 0; p < LENGTHOF(GD->pickups); ++p) {
     if (GD->pickups[p].exists) {
       continue;
     }
     GD->pickups[p].exists = true;
-    GD->pickups[p].x = GD->shapes[s].x;
-    GD->pickups[p].y = GD->shapes[s].y;
+    GD->pickups[p].x = x;
+    GD->pickups[p].y = y;
     GD->pickups[p].type = GetRandomValue(0, ITEM_COUNT - 1);
     if (GD->player.item_counts[GD->pickups[p].type] >= 8) {
       GD->pickups[p].exists = false;
@@ -127,6 +127,20 @@ int GetTextFxSlot(GameData* GD) {
   return oldest_idx;
 }
 
+void SpawnXpOrb(GameData* GD, fixed_t x, fixed_t y, int xp) {
+  for (int o = 0; o < LENGTHOF(GD->xp_orbs); ++o) {
+    if (GD->xp_orbs[o].exists) {
+      continue;
+    }
+
+    GD->xp_orbs[o].exists = true;
+    GD->xp_orbs[o].x = x;
+    GD->xp_orbs[o].y = y;
+    GD->xp_orbs[o].xp = xp;
+    return;
+  }
+}
+
 void InitGameData(GameData* GD) {
   // for (int c = 0; c < LENGTHOF(GD->player.item_counts); ++c) {
   //   GD->player.item_counts[c] = 6;
@@ -163,13 +177,7 @@ void UpdateShapes(GameData* GD) {
     if (GD->shapes[s].marked_for_despawn) {
       // printf("Despawned shape %d\n", i);
       if (GD->shapes[s].grant_xp_on_despawn) {
-        GD->player.total_xp += GD->shapes[s].xp;
-        GD->player.xp += GD->shapes[s].xp;
-        if (GD->player.xp >= XpForLevelUp(GD)) {
-          GD->player.xp -= XpForLevelUp(GD);
-          SpawnPickup(GD, s);
-          ++GD->player.level;
-        }
+        SpawnXpOrb(GD, GD->shapes[s].x, GD->shapes[s].y, GD->shapes[s].xp);
       }
       if (GD->shapes[s].sides > 3) {
         if (GD->shapes[s].spawn_children_on_despawn) {
@@ -544,6 +552,55 @@ void UpdateTextFx(GameData* GD) {
     GD->text_fx[t].y -= fixed_new(0, 128);
     if (GD->text_fx[t].despawn_timer <= 0) {
       GD->text_fx[t].exists = false;
+    }
+  }
+}
+
+void UpdateXpOrbs(GameData* GD) {
+  for (int o = 0; o < LENGTHOF(GD->xp_orbs); ++o) {
+    if (!GD->xp_orbs[o].exists) {
+      continue;
+    }
+
+    GD->xp_orbs[o].x += fixed_cos(GD->xp_orbs[o].angle) * GD->xp_orbs[o].move_speed / fixed_factor;
+    GD->xp_orbs[o].y += fixed_sin(GD->xp_orbs[o].angle) * GD->xp_orbs[o].move_speed / fixed_factor;
+    ++GD->xp_orbs[o].age;
+
+    int dx = fixed_whole(GD->player.x) - fixed_whole(GD->xp_orbs[o].x);
+    int dy = fixed_whole(GD->player.y) - fixed_whole(GD->xp_orbs[o].y);
+    angle_t target_angle = angle_from_slope(dx, dy);
+    angle_rotate_towards(&GD->xp_orbs[o].angle, target_angle, 4);
+
+    int sqdist_to_player = int_sq(dx) + int_sq(dy);
+    if (sqdist_to_player < int_sq(GD->player.stats.magnetism_dist) + int_sq(GD->player.stats.size)) {
+      GD->xp_orbs[o].noticed_player = true;
+    }
+
+    if (GD->xp_orbs[o].noticed_player) {
+      if (angle_diff(GD->xp_orbs[o].angle, target_angle) > 15) {
+        fixed_nudge(&GD->xp_orbs[o].move_speed, 0, fixed_new(0, 16));
+      } else {
+        fixed_nudge(&GD->xp_orbs[o].move_speed, fixed_new(256, 0) / target_fps, fixed_new(0, 16));
+      }
+
+      if (sqdist_to_player < int_sq(GD->player.stats.size)) {
+        GD->player.total_xp += GD->xp_orbs[o].xp;
+        GD->player.xp += GD->xp_orbs[o].xp;
+        if (GD->player.xp >= XpForLevelUp(GD)) {
+          GD->player.xp -= XpForLevelUp(GD);
+          SpawnPickup(GD, GD->player.x, GD->player.y - fixed_new(60, 0));
+          ++GD->player.level;
+        }
+        for (int o2 = 0; o2 < LENGTHOF(GD->xp_orbs); ++o2) {
+          if (!GD->xp_orbs[o2].exists) {
+            continue;
+          }
+          GD->xp_orbs[o2].noticed_player = true;
+        }
+
+        GD->xp_orbs[o] = (XpOrb){0};
+        GD->xp_orbs[o].exists = false;
+      }
     }
   }
 }

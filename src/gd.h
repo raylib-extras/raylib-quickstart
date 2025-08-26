@@ -163,6 +163,20 @@ typedef struct TextFx {
   char text[8];
 } TextFx;
 
+typedef struct XpOrb {
+  bool exists;
+
+  fixed_t x;
+  fixed_t y;
+  fixed_t move_speed;
+  angle_t angle;
+
+  int xp;
+  int age;
+  bool noticed_player;
+
+} XpOrb;
+
 typedef struct GdCamera {  // raylib already defines struct Camera >:(
   fixed_t x;
   fixed_t y;
@@ -183,6 +197,8 @@ typedef struct GameData {
   int pickups_spawned;
 
   TextFx text_fx[40];
+
+  XpOrb xp_orbs[40];
 
   int ticks;
   Font font;

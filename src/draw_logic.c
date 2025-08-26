@@ -153,3 +153,17 @@ void DrawTextFx(GameData* GD) {
     DrawPrintf(render_pos.x - 3 * strlen(GD->text_fx[t].text), render_pos.y, BLACK, "%s", GD->text_fx[t].text);
   }
 }
+
+void DrawXpOrbs(GameData* GD) {
+  for (int o = 0; o < LENGTHOF(GD->xp_orbs); ++o) {
+    if (!GD->xp_orbs[o].exists) {
+      continue;
+    }
+    int rx, ry;
+    GetRenderCoords(GD, GD->xp_orbs[o].x, GD->xp_orbs[o].y, default_z, &rx, &ry);
+    Vector2 render_pos = {rx, ry};
+    Color colors[] = {GREEN, LIME, GREEN, GREEN, LIME, GREEN};
+    int size = GetRenderLength(GD, GD->xp_orbs[o].xp / 2, default_z);
+    DrawCircleV(render_pos, ((size < 2) ? 2 : size), colors[GD->xp_orbs[o].age % LENGTHOF(colors)]);
+  }
+}
