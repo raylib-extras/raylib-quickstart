@@ -58,16 +58,20 @@ int main() {
       save_state = game_data;
     } else if (IsKeyPressed(KEY_F2)) {
       game_data = save_state;
+
     } else if (IsKeyPressed(KEY_F3)) {
       show_stats = !show_stats;
+
     } else if (IsKeyPressed(KEY_F5)) {
-      game_speed = 0;
+      game_speed /= 2;
     } else if (IsKeyPressed(KEY_F6)) {
-      game_speed = 1;
-    } else if (IsKeyPressed(KEY_F7)) {
-      game_speed = 2;
-    } else if (IsKeyPressed(KEY_F8)) {
-      game_speed = 10000;
+      if (game_speed < (1 << 8)) {
+        game_speed *= 2;
+      }
+      if (game_speed == 0) {
+        game_speed = 1;
+      }
+
     } else if (IsKeyPressed(KEY_F9)) {
       for (int p = 0; p < LENGTHOF(GD->pickups); ++p) {
         if (GD->pickups[p].exists) {
@@ -80,6 +84,7 @@ int main() {
           GD->pickups[p].type = (GD->pickups[p].type + 1) % ITEM_COUNT;
         }
       }
+
     } else if (IsKeyPressed(KEY_MINUS) || IsKeyPressedRepeat(KEY_MINUS)) {
       GD->camera.zoom -= 8;
     } else if (IsKeyPressed(KEY_EQUAL) || IsKeyPressedRepeat(KEY_EQUAL)) {
@@ -129,23 +134,21 @@ int main() {
     DrawPrintf(0, 8, BLACK, "%d pickups spawned", GD->pickups_spawned);
     DrawPrintf(0, 16, BLACK, "Lvl %d - XP %d/%d", GD->player.level, GD->player.xp, XpForLevelUp(GD));
     if (show_stats) {
-      {
-        int i = 5;
-        PRINT_STAT(i++, damage);
-        PRINT_STAT(i++, max_move_speed);
-        PRINT_STAT(i++, reload_delay);
-        PRINT_STAT(i++, shot_count);
-        PRINT_STAT(i++, shot_kb);
-        PRINT_STAT(i++, shot_pierce);
-        PRINT_STAT(i++, shot_speed);
-        PRINT_STAT(i++, shot_spread);
-        PRINT_STAT(i++, sight_range);
-        PRINT_STAT(i++, size);
-        PRINT_STAT(i++, turn_speed);
-        PRINT_STAT(i++, magnetism_dist);
-        PRINT_STAT(i++, shot_homing_power);
-        PRINT_STAT(i++, view_distance);
-      }
+      int i = 5;
+      PRINT_STAT(i++, damage);
+      PRINT_STAT(i++, max_move_speed);
+      PRINT_STAT(i++, reload_delay);
+      PRINT_STAT(i++, shot_count);
+      PRINT_STAT(i++, shot_kb);
+      PRINT_STAT(i++, shot_pierce);
+      PRINT_STAT(i++, shot_speed);
+      PRINT_STAT(i++, shot_spread);
+      PRINT_STAT(i++, sight_range);
+      PRINT_STAT(i++, size);
+      PRINT_STAT(i++, turn_speed);
+      PRINT_STAT(i++, magnetism_dist);
+      PRINT_STAT(i++, shot_homing_power);
+      PRINT_STAT(i++, view_distance);
       // DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->camera.x, GD->camera.y, GD->camera.zoom);
 
       const int entries = LENGTHOF(perf_entries[0].us_entries);
@@ -176,15 +179,6 @@ int main() {
   // destroy the window and cleanup the OpenGL context
   CloseWindow();
   PerfUninit();
-
-  // FILE* save = fopen("gamedata.sav", "w");
-  // for (int i = 0; i < sizeof(*GD); ++i) {
-  //   fprintf(save, "%02X ", ((uint8_t*)(GD))[i]);
-  //   if (i % 32 == 31) {
-  //     fputc('\n', save);
-  //   }
-  // }
-  // fclose(save);
 
   return 0;
 }
