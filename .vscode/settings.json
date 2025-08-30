@@ -17,6 +17,14 @@
 		"typeinfo": "c",
 		"array": "c",
 		"string_view": "c",
-		"initializer_list": "c"
+		"initializer_list": "c",
+		"deque": "c",
+		"string": "c",
+		"unordered_map": "c",
+		"vector": "c",
+		"algorithm": "c",
+		"random": "c",
+		"limits": "c",
+		"system_error": "c"
 	}
 }

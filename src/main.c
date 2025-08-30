@@ -15,6 +15,7 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include "draw_logic.h"
 #include "fixed_math.h"
 #include "gd.h"
+#include "perf.h"
 #include "raylib.h"
 #include "resource_dir.h"  // utility header for SearchAndSetResourceDir
 #include "update_logic.h"
@@ -34,6 +35,7 @@ int main() {
   SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
   InitWindow(window_w, window_h, "raygame");
   SetTargetFPS(target_fps);
+  PerfInit();
 
   // Utility function from resource_dir.h to find the resources folder and set
   // it as the current working directory so we can load from it
@@ -88,18 +90,18 @@ int main() {
     for (int t = 0; t < game_speed; ++t) {
       ++GD->ticks;
 
-      SpawnNewShapes(GD);
-      UpdateShapes(GD);
+      PERF_EXPR("UPDATE", (SpawnNewShapes(GD),
+                           UpdateShapes(GD),
 
-      UpdatePlayer(GD);
+                           UpdatePlayer(GD),
 
-      SpawnNewProjs(GD);
-      UpdateProjs(GD);
+                           SpawnNewProjs(GD),
+                           UpdateProjs(GD),
 
-      UpdatePickups(GD);
+                           UpdatePickups(GD),
 
-      UpdateTextFx(GD);
-      UpdateXpOrbs(GD);
+                           UpdateTextFx(GD),
+                           UpdateXpOrbs(GD)));
 
       // update camera
       GD->camera.x = GD->player.x - GetRenderLength(GD, render_w / 2, default_z);
@@ -113,37 +115,52 @@ int main() {
     BeginTextureMode(canvas);
     ClearBackground(WHITE);
 
-    DrawCheckerboard(GD);
-    DrawProjs(GD);
-    DrawShapes(GD);
-    DrawPlayer(GD);
-    DrawPickups(GD);
-    DrawXpOrbs(GD);
-    DrawTextFx(GD);
+    PERF_EXPR("DRAW", (DrawCheckerboard(GD),
+                       DrawProjs(GD),
+                       DrawShapes(GD),
+                       DrawPlayer(GD),
+                       DrawPickups(GD),
+                       DrawXpOrbs(GD),
+                       DrawTextFx(GD)));
 
-    if (show_stats) {
-      int i = 5;
-      PRINT_STAT(i++, damage);
-      PRINT_STAT(i++, max_move_speed);
-      PRINT_STAT(i++, reload_delay);
-      PRINT_STAT(i++, shot_count);
-      PRINT_STAT(i++, shot_kb);
-      PRINT_STAT(i++, shot_pierce);
-      PRINT_STAT(i++, shot_speed);
-      PRINT_STAT(i++, shot_spread);
-      PRINT_STAT(i++, sight_range);
-      PRINT_STAT(i++, size);
-      PRINT_STAT(i++, turn_speed);
-      PRINT_STAT(i++, magnetism_dist);
-      PRINT_STAT(i++, shot_homing_power);
-      PRINT_STAT(i++, view_distance);
-    }
-    // DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->camera.x, GD->camera.y, GD->camera.zoom);
     for (int i = 0; i < ITEM_COUNT; ++i) {
       DrawPrintf(i * 12, 0, BLACK, "%d", GD->player.item_counts[i]);
     }
     DrawPrintf(0, 8, BLACK, "%d pickups spawned", GD->pickups_spawned);
     DrawPrintf(0, 16, BLACK, "Lvl %d - XP %d/%d", GD->player.level, GD->player.xp, XpForLevelUp(GD));
+    if (show_stats) {
+      {
+        int i = 5;
+        PRINT_STAT(i++, damage);
+        PRINT_STAT(i++, max_move_speed);
+        PRINT_STAT(i++, reload_delay);
+        PRINT_STAT(i++, shot_count);
+        PRINT_STAT(i++, shot_kb);
+        PRINT_STAT(i++, shot_pierce);
+        PRINT_STAT(i++, shot_speed);
+        PRINT_STAT(i++, shot_spread);
+        PRINT_STAT(i++, sight_range);
+        PRINT_STAT(i++, size);
+        PRINT_STAT(i++, turn_speed);
+        PRINT_STAT(i++, magnetism_dist);
+        PRINT_STAT(i++, shot_homing_power);
+        PRINT_STAT(i++, view_distance);
+      }
+      // DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->camera.x, GD->camera.y, GD->camera.zoom);
+
+      const int entries = LENGTHOF(perf_entries[0].us_entries);
+      for (int x = 0; x < 120; ++x) {
+        int y1 = render_h;
+        for (int f = 0; f < LENGTHOF(perf_entries) && perf_entries[f].exists; ++f) {
+          int us = perf_entries[f].us_entries[x] / 16;
+          Color color = (f % 2 == 0 ? GRAY : SKYBLUE);
+          if (x != perf_entries[f].us_index) {
+            DrawLine(x, y1, x, y1 - us, color);
+          }
+          y1 -= us;
+        }
+      }
+    }
 
     EndTextureMode();
     BeginDrawing();
@@ -158,6 +175,7 @@ int main() {
 
   // destroy the window and cleanup the OpenGL context
   CloseWindow();
+  PerfUninit();
 
   // FILE* save = fopen("gamedata.sav", "w");
   // for (int i = 0; i < sizeof(*GD); ++i) {
