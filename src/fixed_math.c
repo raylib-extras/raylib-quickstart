@@ -99,3 +99,17 @@ void angle_rotate_towards(angle_t* ang, angle_t target, int turn_speed) {
     *ang += diff;
   }
 }
+
+int min(int a, int b) {
+  return a < b ? a : b;
+}
+fixed_t fixed_min(fixed_t a, fixed_t b) {
+  return a < b ? a : b;
+}
+
+int max(int a, int b) {
+  return a > b ? a : b;
+}
+fixed_t fixed_max(fixed_t a, fixed_t b) {
+  return a > b ? a : b;
+}

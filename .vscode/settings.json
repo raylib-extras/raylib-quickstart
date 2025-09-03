@@ -25,6 +25,9 @@
 		"algorithm": "c",
 		"random": "c",
 		"limits": "c",
-		"system_error": "c"
+		"system_error": "c",
+		"bit": "c",
+		"functional": "c",
+		"numeric": "c"
 	}
 }

@@ -33,6 +33,8 @@ extern const int target_fps;
 extern const fixed_t default_z;  // z is distance from camera
 
 typedef struct PlayerStats {
+  int max_hp;
+  int regen_delay;
   int damage;
   fixed_t max_move_speed;
   fixed_t reload_delay;
@@ -60,12 +62,16 @@ typedef struct Player {
   PlayerStats stats;
   int stat_update_timer;
 
+  int hp;
+  int ticks_since_damaged;
+
   int level;
   int xp;
   int total_xp;
 
   fixed_t reload_progress;
   fixed_t shot_progress;
+  int ticks_since_last_shot;
 
   ItemType item_counts[ITEM_COUNT];
   int items_collected;
@@ -108,6 +114,7 @@ typedef struct Shape {
 
   int sqdist_to_player;
   angle_t angle_to_player;
+  int ticks_since_damaged_player;
 
   bool always_target;
   fixed_t target_x;
@@ -188,10 +195,10 @@ typedef struct GameData {
 
   GdCamera camera;
 
-  Shape shapes[80];
+  Shape shapes[100];
   int shape_count;
 
-  Proj projs[40];
+  Proj projs[60];
 
   Pickup pickups[40];
   int pickups_spawned;

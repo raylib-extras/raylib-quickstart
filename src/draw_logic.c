@@ -57,8 +57,8 @@ void DrawShapes(GameData* GD) {
     GetRenderCoords(GD, GD->shapes[i].x, GD->shapes[i].y, default_z, &rx, &ry);
     Vector2 render_pos = {rx, ry};
     // shape
-    Color fg = (GD->shapes[i].ticks_since_damaged >= 4) ? GD->shapes[i].fg : WHITE;
-    Color bg = (GD->shapes[i].ticks_since_damaged >= 4) ? GD->shapes[i].bg : PINK;
+    Color fg = (GD->shapes[i].ticks_since_damaged >= 8) ? GD->shapes[i].fg : WHITE;
+    Color bg = (GD->shapes[i].ticks_since_damaged >= 8) ? GD->shapes[i].bg : PINK;
     int rotation = GD->ticks;
     if (GD->shapes[i].variant == SHAPE_VARIANT_FAST) {
       rotation = GD->ticks * 3;
@@ -105,13 +105,43 @@ void DrawPlayer(GameData* GD) {
   int rx, ry;
   GetRenderCoords(GD, GD->player.x, GD->player.y, default_z, &rx, &ry);
   Vector2 render_pos = {rx, ry};
-  DrawPoly(render_pos, 20, GetRenderLength(GD, GD->player.stats.size, default_z), 0, GRAY);
-  DrawPolyLinesEx(render_pos, 20, GetRenderLength(GD, GD->player.stats.size, default_z), 0, 2.0f, BLACK);
+  int cannon_distance = GD->player.stats.size * 3 / 4 + GD->player.ticks_since_last_shot;
+  clamp(&cannon_distance, GD->player.stats.size * 3 / 4, GD->player.stats.size * 5 / 4);
+  GetRenderCoords(GD,
+                  GD->player.x + fixed_cos(GD->player.angle) * cannon_distance,
+                  GD->player.y + fixed_sin(GD->player.angle) * cannon_distance,
+                  default_z,
+                  &rx, &ry);
+  Vector2 cannon_pos = {rx, ry};
+  Color fg = (GD->player.ticks_since_damaged >= 4) ? GRAY : WHITE;
+  Color bg = (GD->player.ticks_since_damaged >= 4) ? BLACK : PINK;
+
+  DrawPoly(cannon_pos, 4, GetRenderLength(GD, GD->player.stats.size * 3 / 5, default_z), (32 + GD->player.angle) * 360 / angle_factor, fg);
+  DrawPolyLinesEx(cannon_pos, 4, GetRenderLength(GD, GD->player.stats.size * 3 / 5, default_z), (32 + GD->player.angle) * 360 / angle_factor, 2.5f, bg);
+
+  DrawPoly(render_pos, 20, GetRenderLength(GD, GD->player.stats.size, default_z), 0, fg);
+  DrawPolyLinesEx(render_pos, 20, GetRenderLength(GD, GD->player.stats.size, default_z), 0, 2.0f, bg);
+
   // DrawLine(render_pos.x,
   //          render_pos.y,
   //          render_pos.x + fixed_whole(fixed_cos(GD->player.angle) * 16),
   //          render_pos.y + fixed_whole(fixed_sin(GD->player.angle) * 16),
   //          GREEN);
+
+  // healthbar
+  if (GD->player.hp <= GD->player.stats.max_hp) {
+    int bar_width = GetRenderLength(GD, GD->player.stats.max_hp / 20, default_z);
+    int filled_width = bar_width * GD->player.hp / GD->player.stats.max_hp;
+    Color color = GREEN;
+    if (filled_width <= bar_width / 2) {
+      color = YELLOW;
+    }
+    if (filled_width <= bar_width / 4) {
+      color = RED;
+    }
+    DrawRectangle(render_pos.x - bar_width / 2, render_pos.y + GD->player.stats.size + 2, bar_width, 3, BLACK);
+    DrawRectangle(render_pos.x - bar_width / 2, render_pos.y + GD->player.stats.size + 2, filled_width, 3, color);
+  }
 }
 
 void DrawPickups(GameData* GD) {

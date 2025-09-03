@@ -101,18 +101,7 @@ int main() {
     for (int t = 0; t < game_speed; ++t) {
       ++GD->ticks;
 
-      PERF_EXPR("UPDATE", (SpawnNewShapes(GD),
-                           UpdateShapes(GD),
-
-                           UpdatePlayer(GD),
-
-                           SpawnNewProjs(GD),
-                           UpdateProjs(GD),
-
-                           UpdatePickups(GD),
-
-                           UpdateTextFx(GD),
-                           UpdateXpOrbs(GD)));
+      PERF_EXPR("UPDATE", UpdateGame(GD));
 
       // update camera
       GD->camera.x = GD->player.x - GetRenderLength(GD, render_w / 2, default_z);

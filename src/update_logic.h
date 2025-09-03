@@ -6,6 +6,7 @@
 #include "gd.h"
 
 void InitGameData(GameData* GD);
+void UpdateGame(GameData* GD);
 
 void SpawnNewShapes(GameData* GD);
 void UpdateShapes(GameData* GD);

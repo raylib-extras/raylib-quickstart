@@ -13,4 +13,6 @@ const char* const item_strs[] = {
     "+Magnet",
     "+Homing",
     "+Sight",
+    "+MaxHp",
+    "+Regen",
     "ERROR"};
