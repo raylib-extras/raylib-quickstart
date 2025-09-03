@@ -24,9 +24,9 @@
 
 extern const int render_w;
 extern const int render_h;
-extern const int window_scale;
-extern const int window_w;
-extern const int window_h;
+extern int window_scale;
+extern int window_w;
+extern int window_h;
 
 extern const int target_fps;
 
