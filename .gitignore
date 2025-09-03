@@ -405,3 +405,6 @@ Makefile
 *.swp
 *.swo
 *.swn
+
+# custom
+./resources/perf_stats.txt
