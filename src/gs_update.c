@@ -1,4 +1,4 @@
-#include "update_logic.h"
+#include "gs_update.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -6,7 +6,29 @@
 #include "camera_util.h"
 #include "shape_util.h"
 
-void SpawnPickup(GameScene* GS, fixed_t x, fixed_t y) {
+void GsSpawnNewShapes(GameScene* GS) {
+  if (GS->ticks % 15 == 0 && GS->shape_count < (LENGTHOF(GS->shapes) / 2)) {
+    fixed_t new_x = GS->player.x + fixed_new(GetRandomValue(-render_w, render_w), 0);
+    fixed_t new_y = GS->player.y + fixed_new(GetRandomValue(-render_h, render_h), 0);
+    if (fixed_abs(new_x - GS->player.x) / fixed_factor < render_w / 2 &&
+        fixed_abs(new_y - GS->player.y) / fixed_factor < render_h / 2) {
+      return;
+    }
+    int s = ClaimEmptyShapeSlot(GS);
+    if (s == -1) {
+      return;
+    }
+    GS->shapes[s].x = new_x;
+    GS->shapes[s].y = new_y;
+    GS->shapes[s].move_angle = GetRandomValue(0, angle_factor - 1);
+    GS->shapes[s].ticks_since_damaged = 1000;
+    int sides = PickShapeSides(GS);
+    SetShapeStats(&GS->shapes[s], sides, PickShapeVariant(GS, sides));
+    // printf("Spawned shape %d\n", s);
+  }
+}
+
+void GsSpawnPickup(GameScene* GS, fixed_t x, fixed_t y) {
   for (int p = 0; p < LENGTHOF(GS->pickups); ++p) {
     if (GS->pickups[p].exists) {
       continue;
@@ -24,7 +46,7 @@ void SpawnPickup(GameScene* GS, fixed_t x, fixed_t y) {
   }
 }
 
-void UpdatePlayerStats(GameScene* GS) {
+void GsUpdatePlayerStats(GameScene* GS) {
   GS->player.stat_update_timer = 6 * target_fps;
 
   GS->player.stats.max_hp = 400;
@@ -121,7 +143,7 @@ void UpdatePlayerStats(GameScene* GS) {
   clamp(&GS->player.stats.view_distance, 120, 240);
 }
 
-int GetTextFxSlot(GameScene* GS) {
+int GsGetTextFxSlot(GameScene* GS) {
   int oldest_idx = 0;
   for (int t = 0; t < LENGTHOF(GS->text_fx); ++t) {
     if (!GS->text_fx[t].exists) {
@@ -134,12 +156,12 @@ int GetTextFxSlot(GameScene* GS) {
   }
 
   // force-override oldest text effect if there were no slots available
-  GS->text_fx[oldest_idx] = (TextFx){0};
+  GS->text_fx[oldest_idx] = (GsTextFx){0};
   GS->text_fx[oldest_idx].exists = true;
   return oldest_idx;
 }
 
-void SpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
+void GsSpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
   for (int o = 0; o < LENGTHOF(GS->xp_orbs); ++o) {
     if (GS->xp_orbs[o].exists) {
       continue;
@@ -153,7 +175,7 @@ void SpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
   }
 }
 
-void UpdateShapes(GameScene* GS) {
+void GsUpdateShapes(GameScene* GS) {
   // shape logic
   for (int s = 0; s < LENGTHOF(GS->shapes); ++s) {
     if (!GS->shapes[s].exists) {
@@ -179,14 +201,14 @@ void UpdateShapes(GameScene* GS) {
     if (GS->shapes[s].marked_for_despawn) {
       // printf("Despawned shape %d\n", i);
       if (GS->shapes[s].grant_xp_on_despawn) {
-        SpawnXpOrb(GS, GS->shapes[s].x, GS->shapes[s].y, GS->shapes[s].xp);
+        GsSpawnXpOrb(GS, GS->shapes[s].x, GS->shapes[s].y, GS->shapes[s].xp);
       }
       if (GS->shapes[s].sides > 3) {
         if (GS->shapes[s].spawn_children_on_despawn) {
           SpawnChildShapes(GS, s);
         }
       }
-      GS->shapes[s] = (Shape){0};
+      GS->shapes[s] = (GsShape){0};
       GS->shapes[s].exists = false;
       --GS->shape_count;
       continue;
@@ -272,7 +294,7 @@ void UpdateShapes(GameScene* GS) {
       GS->player.ticks_since_damaged = 0;
 
       // make text fx
-      int t = GetTextFxSlot(GS);
+      int t = GsGetTextFxSlot(GS);
       GS->text_fx[t].x = GS->shapes[s].x;
       GS->text_fx[t].y = GS->shapes[s].y;
       GS->text_fx[t].despawn_timer = 60;
@@ -300,7 +322,7 @@ void UpdateShapes(GameScene* GS) {
       }
     }
   }
-  qsort(GS->shapes, LENGTHOF(GS->shapes), sizeof(Shape), CompareShapes);
+  qsort(GS->shapes, LENGTHOF(GS->shapes), sizeof(GsShape), CompareShapes);
   // for (int s = 0; s < LENGTHOF(GS->shapes); ++s) {
   //   if (GS->shapes[s].exists) {
   //     printf("%c", GS->shapes[s].sides + '0');
@@ -312,11 +334,11 @@ void UpdateShapes(GameScene* GS) {
   // printf(" %d\n", GS->shape_count);
 }
 
-int XpForLevelUp(GameScene* GS) {
+int GsXpForLevelUp(GameScene* GS) {
   return 2 + 2 * GS->player.level;
 }
 
-void UpdatePlayer(GameScene* GS) {
+void GsUpdatePlayer(GameScene* GS) {
   // player movement
   GS->player.move_speed = GS->player.stats.max_move_speed;
   if (IsKeyDown(KEY_A)) GS->player.x -= GS->player.move_speed;
@@ -354,7 +376,7 @@ void UpdatePlayer(GameScene* GS) {
       GS->pickups[p].exists = false;
       ++GS->player.item_counts[GS->pickups[p].type];
       ++GS->player.items_collected;
-      UpdatePlayerStats(GS);
+      GsUpdatePlayerStats(GS);
     }
   }
 
@@ -382,7 +404,7 @@ void UpdatePlayer(GameScene* GS) {
   ++GS->player.ticks_since_last_shot;
 }
 
-void SpawnNewProjs(GameScene* GS) {
+void GsSpawnNewProjs(GameScene* GS) {
   // spawn new projs
   GS->player.reload_progress += fixed_factor * fixed_factor / target_fps / GS->player.stats.reload_delay;
   while (GS->player.reload_progress >= fixed_factor) {
@@ -427,7 +449,7 @@ void SpawnNewProjs(GameScene* GS) {
   }
 }
 
-void UpdateProjs(GameScene* GS) {
+void GsUpdateProjs(GameScene* GS) {
   // proj logic
   for (int p = 0; p < LENGTHOF(GS->projs); ++p) {
     if (!GS->projs[p].exists) {
@@ -437,7 +459,7 @@ void UpdateProjs(GameScene* GS) {
     --GS->projs[p].despawn_timer;
     if (GS->projs[p].despawn_timer <= 0) {
       // printf("Despawned proj %d\n", p);
-      GS->projs[p] = (Proj){0};
+      GS->projs[p] = (GsProj){0};
       GS->projs[p].exists = false;
       continue;
     }
@@ -479,7 +501,7 @@ void UpdateProjs(GameScene* GS) {
           --GS->projs[p].homing_power;
 
           // make text fx
-          int t = GetTextFxSlot(GS);
+          int t = GsGetTextFxSlot(GS);
           GS->text_fx[t].x = GS->projs[p].x;
           GS->text_fx[t].y = GS->projs[p].y - 64;
           GS->text_fx[t].despawn_timer = 30;
@@ -531,7 +553,7 @@ void UpdateProjs(GameScene* GS) {
       GS->shapes[s].kb_speed = fixed_max(GS->shapes[s].kb_speed, GS->projs[p].kb * GS->shapes[s].max_move_speed / fixed_factor);
 
       // make text fx
-      int t = GetTextFxSlot(GS);
+      int t = GsGetTextFxSlot(GS);
       GS->text_fx[t].x = GS->shapes[s].x;
       GS->text_fx[t].y = GS->shapes[s].y;
       GS->text_fx[t].despawn_timer = 60;
@@ -554,7 +576,7 @@ void UpdateProjs(GameScene* GS) {
   }
 }
 
-void UpdatePickups(GameScene* GS) {
+void GsUpdatePickups(GameScene* GS) {
   for (int p = 0; p < LENGTHOF(GS->pickups); ++p) {
     if (!GS->pickups[p].exists) {
       continue;
@@ -581,7 +603,7 @@ void UpdatePickups(GameScene* GS) {
   }
 }
 
-void UpdateTextFx(GameScene* GS) {
+void GsUpdateTextFx(GameScene* GS) {
   for (int t = 0; t < LENGTHOF(GS->text_fx); ++t) {
     if (!GS->text_fx[t].exists) {
       continue;
@@ -594,7 +616,7 @@ void UpdateTextFx(GameScene* GS) {
   }
 }
 
-void UpdateXpOrbs(GameScene* GS) {
+void GsUpdateXpOrbs(GameScene* GS) {
   for (int o = 0; o < LENGTHOF(GS->xp_orbs); ++o) {
     if (!GS->xp_orbs[o].exists) {
       continue;
@@ -624,9 +646,9 @@ void UpdateXpOrbs(GameScene* GS) {
       if (sqdist_to_player < int_sq(GS->player.stats.size)) {
         GS->player.total_xp += GS->xp_orbs[o].xp;
         GS->player.xp += GS->xp_orbs[o].xp;
-        if (GS->player.xp >= XpForLevelUp(GS)) {
-          GS->player.xp -= XpForLevelUp(GS);
-          SpawnPickup(GS, GS->player.x, GS->player.y - fixed_new(60, 0));
+        if (GS->player.xp >= GsXpForLevelUp(GS)) {
+          GS->player.xp -= GsXpForLevelUp(GS);
+          GsSpawnPickup(GS, GS->player.x, GS->player.y - fixed_new(60, 0));
           ++GS->player.level;
         }
         for (int o2 = 0; o2 < LENGTHOF(GS->xp_orbs); ++o2) {
@@ -636,14 +658,14 @@ void UpdateXpOrbs(GameScene* GS) {
           GS->xp_orbs[o2].noticed_player = true;
         }
 
-        GS->xp_orbs[o] = (XpOrb){0};
+        GS->xp_orbs[o] = (GsXpOrb){0};
         GS->xp_orbs[o].exists = false;
       }
     }
   }
 }
 
-void UpdateGsCamera(GameScene* GS) {
+void GsUpdateCamera(GameScene* GS) {
   GS->camera.x = GS->player.x - GetRenderLength(GS, render_w / 2, default_z);
   GS->camera.y = GS->player.y - GetRenderLength(GS, render_h / 2, default_z);
 
@@ -651,30 +673,17 @@ void UpdateGsCamera(GameScene* GS) {
   fixed_nudge(&GS->camera.zoom, target_zoom, 1);
 }
 
-void InitGameData(GameData* GD) {
-  // for (int c = 0; c < LENGTHOF(GS->player.item_counts); ++c) {
-  //   GS->player.item_counts[c] = 6;
-  // }
-  *GD = (GameData){0};
-  UpdatePlayerStats(&GD->GS);
-  GD->GS.player.hp = GD->GS.player.stats.max_hp;
-  GD->GS.camera.zoom = fixed_new(1, 0);
-  GD->GS.font = LoadFontEx("Kitchen Sink.ttf", 8, NULL, 0);
-}
+void GsUpdate(GameScene* GS) {
+  GsSpawnNewShapes(GS);
+  GsUpdateShapes(GS);
 
-void UpdateGd(GameData* GD) {
-  SpawnNewShapes(&GD->GS);
-  UpdateShapes(&GD->GS);
+  GsUpdatePlayer(GS);
 
-  UpdatePlayer(&GD->GS);
+  GsSpawnNewProjs(GS);
+  GsUpdateProjs(GS);
 
-  SpawnNewProjs(&GD->GS);
-  UpdateProjs(&GD->GS);
-
-  UpdatePickups(&GD->GS);
-
-  UpdateTextFx(&GD->GS);
-  UpdateXpOrbs(&GD->GS);
-
-  UpdateGsCamera(&GD->GS);
+  GsUpdatePickups(GS);
+  GsUpdateTextFx(GS);
+  GsUpdateXpOrbs(GS);
+  GsUpdateCamera(GS);
 }

@@ -1,21 +1,11 @@
-#include "draw_logic.h"
+#include "gs_draw.h"
 
 #include <string.h>
 #include <strings.h>
 
 #include "camera_util.h"
 
-void DrawGd(GameData* GD) {
-  DrawCheckerboard(&GD->GS);
-  DrawProjs(&GD->GS);
-  DrawShapes(&GD->GS);
-  DrawPlayer(&GD->GS);
-  DrawPickups(&GD->GS);
-  DrawXpOrbs(&GD->GS);
-  DrawTextFx(&GD->GS);
-}
-
-void DrawCheckerboard(GameScene* GS) {
+void GsDrawCheckerboard(GameScene* GS) {
   const int check_size = 128;
   const fixed_t check_z = default_z;
 
@@ -40,7 +30,7 @@ void DrawCheckerboard(GameScene* GS) {
   }
 }
 
-void DrawProjs(GameScene* GS) {
+void GsDrawProjs(GameScene* GS) {
   for (int p = 0; p < LENGTHOF(GS->projs); ++p) {
     if (!GS->projs[p].exists) {
       continue;
@@ -58,7 +48,7 @@ void DrawProjs(GameScene* GS) {
   }
 }
 
-void DrawShapes(GameScene* GS) {
+void GsDrawShapes(GameScene* GS) {
   for (int i = 0; i < LENGTHOF(GS->shapes); ++i) {
     if (!GS->shapes[i].exists) {
       continue;
@@ -111,7 +101,7 @@ void DrawShapes(GameScene* GS) {
   }
 }
 
-void DrawPlayer(GameScene* GS) {
+void GsDrawPlayer(GameScene* GS) {
   int rx, ry;
   GetRenderCoords(GS, GS->player.x, GS->player.y, default_z, &rx, &ry);
   Vector2 render_pos = {rx, ry};
@@ -154,7 +144,7 @@ void DrawPlayer(GameScene* GS) {
   }
 }
 
-void DrawPickups(GameScene* GS) {
+void GsDrawPickups(GameScene* GS) {
   for (int p = 0; p < LENGTHOF(GS->pickups); ++p) {
     if (!GS->pickups[p].exists) {
       continue;
@@ -181,7 +171,7 @@ void DrawPickups(GameScene* GS) {
   }
 }
 
-void DrawTextFx(GameScene* GS) {
+void GsDrawTextFx(GameScene* GS) {
   for (int t = 0; t < LENGTHOF(GS->text_fx); ++t) {
     if (!GS->text_fx[t].exists) {
       continue;
@@ -194,7 +184,7 @@ void DrawTextFx(GameScene* GS) {
   }
 }
 
-void DrawXpOrbs(GameScene* GS) {
+void GsDrawXpOrbs(GameScene* GS) {
   for (int o = 0; o < LENGTHOF(GS->xp_orbs); ++o) {
     if (!GS->xp_orbs[o].exists) {
       continue;
@@ -206,4 +196,14 @@ void DrawXpOrbs(GameScene* GS) {
     int size = GetRenderLength(GS, GS->xp_orbs[o].xp / 2, default_z);
     DrawCircleV(render_pos, ((size < 2) ? 2 : size), colors[GS->xp_orbs[o].age % LENGTHOF(colors)]);
   }
+}
+
+void GsDraw(GameScene* GS) {
+  GsDrawCheckerboard(GS);
+  GsDrawProjs(GS);
+  GsDrawShapes(GS);
+  GsDrawPlayer(GS);
+  GsDrawPickups(GS);
+  GsDrawXpOrbs(GS);
+  GsDrawTextFx(GS);
 }

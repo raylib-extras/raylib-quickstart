@@ -1,30 +1,8 @@
 #include "shape_util.h"
 
-void SpawnNewShapes(GameScene* GS) {
-  if (GS->ticks % 15 == 0 && GS->shape_count < (LENGTHOF(GS->shapes) / 2)) {
-    fixed_t new_x = GS->player.x + fixed_new(GetRandomValue(-render_w, render_w), 0);
-    fixed_t new_y = GS->player.y + fixed_new(GetRandomValue(-render_h, render_h), 0);
-    if (fixed_abs(new_x - GS->player.x) / fixed_factor < render_w / 2 &&
-        fixed_abs(new_y - GS->player.y) / fixed_factor < render_h / 2) {
-      return;
-    }
-    int s = ClaimEmptyShapeSlot(GS);
-    if (s == -1) {
-      return;
-    }
-    GS->shapes[s].x = new_x;
-    GS->shapes[s].y = new_y;
-    GS->shapes[s].move_angle = GetRandomValue(0, angle_factor - 1);
-    GS->shapes[s].ticks_since_damaged = 1000;
-    int sides = PickShapeSides(GS);
-    SetShapeStats(&GS->shapes[s], sides, PickShapeVariant(GS, sides));
-    // printf("Spawned shape %d\n", s);
-  }
-}
-
 int CompareShapes(const void* p, const void* q) {
-  const Shape* a = p;
-  const Shape* b = q;
+  const GsShape* a = p;
+  const GsShape* b = q;
   int exists_cmp = a->exists - b->exists;
   if (exists_cmp != 0) {
     return -exists_cmp;
@@ -40,7 +18,7 @@ int ClaimEmptyShapeSlot(GameScene* GS) {
   for (int i = 0; i < LENGTHOF(GS->shapes); ++i) {
     if (!GS->shapes[i].exists) {
       ++GS->shape_count;
-      GS->shapes[i] = (Shape){0};
+      GS->shapes[i] = (GsShape){0};
       GS->shapes[i].exists = true;
       GS->shapes[i].id = next_free_id;
       ++next_free_id;
@@ -100,7 +78,7 @@ int PickShapeSides(GameScene* GS) {
   }
 }
 
-ShapeVariant PickShapeVariant(GameScene* GS, int sides) {
+GsShapeVariant PickShapeVariant(GameScene* GS, int sides) {
   int r = GetRandomValue(0, 99);
   if (GS->pickups_spawned < 30) {
     return SHAPE_VARIANT_NONE;
@@ -131,7 +109,7 @@ ShapeVariant PickShapeVariant(GameScene* GS, int sides) {
   }
 }
 
-void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
+void SetShapeStats(GsShape* shape, int sides, GsShapeVariant variant) {
   shape->sides = sides;
   shape->variant = variant;
   switch (sides) {

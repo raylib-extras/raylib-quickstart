@@ -7,18 +7,19 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit
 https://creativecommons.org/publicdomain/zero/1.0/
 
 */
+#include <raylib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
 
 #include "camera_util.h"
-#include "draw_logic.h"
 #include "fixed_math.h"
 #include "gd.h"
+#include "gd_draw.h"
+#include "gd_init.h"
+#include "gd_update.h"
 #include "perf.h"
-#include "raylib.h"
 #include "resource_dir.h"  // utility header for SearchAndSetResourceDir
-#include "update_logic.h"
 
 #define FIELD(obj, field) ((obj).field)
 #define PRINT_STAT(index, name)                                                                                                           \
@@ -44,7 +45,7 @@ int main() {
   GameData game_data;
 
   GameData* GD = &game_data;
-  InitGameData(GD);
+  GdInit(GD);
 
   GameData save_state = game_data;
   int game_speed = 1;
@@ -101,21 +102,21 @@ int main() {
     for (int t = 0; t < game_speed; ++t) {
       ++GD->GS.ticks;
 
-      PERF_EXPR("UPDATE", UpdateGd(GD));
+      PERF_EXPR("UPDATE", GdUpdate(GD));
     }
 
     // ------[Drawing]------
     BeginTextureMode(canvas);
     ClearBackground(WHITE);
 
-    GameScene* GS = &GD->GS;
-    PERF_EXPR("DRAW", DrawGd(GD));
+    PERF_EXPR("DRAW", GdDraw(GD));
 
+    GameScene* GS = &GD->GS;
     for (int i = 0; i < ITEM_COUNT; ++i) {
       DrawPrintf(i * 12, 0, BLACK, "%d", GD->GS.player.item_counts[i]);
     }
     DrawPrintf(0, 8, BLACK, "%d pickups spawned", GD->GS.pickups_spawned);
-    DrawPrintf(0, 16, BLACK, "Lvl %d - XP %d/%d", GD->GS.player.level, GD->GS.player.xp, XpForLevelUp(GS));
+    // DrawPrintf(0, 16, BLACK, "Lvl %d - XP %d/%d", GD->GS.player.level, GD->GS.player.xp, GsXpForLevelUp(GS));
     if (show_stats) {
       int i = 5;
       PRINT_STAT(i++, damage);
