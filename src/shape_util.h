@@ -2,10 +2,10 @@
 
 #include "gd.h"
 
-void SpawnNewShapes(GameData* GD);
+void SpawnNewShapes(GameScene* GS);
 int CompareShapes(const void* p, const void* q);
-int ClaimEmptyShapeSlot(GameData* GD);
-int PickShapeSides(GameData* GD);
-ShapeVariant PickShapeVariant(GameData* GD, int sides);
+int ClaimEmptyShapeSlot(GameScene* GS);
+int PickShapeSides(GameScene* GS);
+ShapeVariant PickShapeVariant(GameScene* GS, int sides);
 void SetShapeStats(Shape* shape, int sides, ShapeVariant variant);
-void SpawnChildShapes(GameData* GD, int parent);
+void SpawnChildShapes(GameScene* GS, int parent);

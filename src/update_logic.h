@@ -5,20 +5,22 @@
 #include "fixed_math.h"
 #include "gd.h"
 
+void SpawnNewShapes(GameScene* GS);
+void UpdateShapes(GameScene* GS);
+
+int XpForLevelUp(GameScene* GS);
+
+void UpdatePlayer(GameScene* GS);
+
+void SpawnNewProjs(GameScene* GS);
+void UpdateProjs(GameScene* GS);
+
+void UpdatePickups(GameScene* GS);
+
+void UpdateTextFx(GameScene* GS);
+void UpdateXpOrbs(GameScene* GS);
+
+void UpdateGsCamera(GameScene* GS);
+
 void InitGameData(GameData* GD);
-void UpdateGame(GameData* GD);
-
-void SpawnNewShapes(GameData* GD);
-void UpdateShapes(GameData* GD);
-
-int XpForLevelUp(GameData* GD);
-
-void UpdatePlayer(GameData* GD);
-
-void SpawnNewProjs(GameData* GD);
-void UpdateProjs(GameData* GD);
-
-void UpdatePickups(GameData* GD);
-
-void UpdateTextFx(GameData* GD);
-void UpdateXpOrbs(GameData* GD);
+void UpdateGd(GameData* GD);

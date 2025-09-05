@@ -21,13 +21,13 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include "update_logic.h"
 
 #define FIELD(obj, field) ((obj).field)
-#define PRINT_STAT(index, name)                                                                                                     \
-  do {                                                                                                                              \
-    if (FIELD(GD->player.stats, name) != FIELD(GD->player.prev_stats, name)) {                                                      \
-      DrawPrintf(0, (index) * 8, VIOLET, "%s: %d -> %d", #name, FIELD(GD->player.prev_stats, name), FIELD(GD->player.stats, name)); \
-    } else {                                                                                                                        \
-      DrawPrintf(0, (index) * 8, BLACK, "%s: %d", #name, FIELD(GD->player.stats, name));                                            \
-    }                                                                                                                               \
+#define PRINT_STAT(index, name)                                                                                                           \
+  do {                                                                                                                                    \
+    if (FIELD(GD->GS.player.stats, name) != FIELD(GD->GS.player.prev_stats, name)) {                                                      \
+      DrawPrintf(0, (index) * 8, VIOLET, "%s: %d -> %d", #name, FIELD(GD->GS.player.prev_stats, name), FIELD(GD->GS.player.stats, name)); \
+    } else {                                                                                                                              \
+      DrawPrintf(0, (index) * 8, BLACK, "%s: %d", #name, FIELD(GD->GS.player.stats, name));                                               \
+    }                                                                                                                                     \
   } while (0);
 
 int main() {
@@ -79,55 +79,43 @@ int main() {
       }
 
     } else if (IsKeyPressed(KEY_F9)) {
-      for (int p = 0; p < LENGTHOF(GD->pickups); ++p) {
-        if (GD->pickups[p].exists) {
-          GD->pickups[p].type = (GD->pickups[p].type - 1 + ITEM_COUNT) % ITEM_COUNT;
+      for (int p = 0; p < LENGTHOF(GD->GS.pickups); ++p) {
+        if (GD->GS.pickups[p].exists) {
+          GD->GS.pickups[p].type = (GD->GS.pickups[p].type - 1 + ITEM_COUNT) % ITEM_COUNT;
         }
       }
     } else if (IsKeyPressed(KEY_F10)) {
-      for (int p = 0; p < LENGTHOF(GD->pickups); ++p) {
-        if (GD->pickups[p].exists) {
-          GD->pickups[p].type = (GD->pickups[p].type + 1) % ITEM_COUNT;
+      for (int p = 0; p < LENGTHOF(GD->GS.pickups); ++p) {
+        if (GD->GS.pickups[p].exists) {
+          GD->GS.pickups[p].type = (GD->GS.pickups[p].type + 1) % ITEM_COUNT;
         }
       }
 
     } else if (IsKeyPressed(KEY_MINUS) || IsKeyPressedRepeat(KEY_MINUS)) {
-      GD->camera.zoom -= 8;
+      GD->GS.camera.zoom -= 8;
     } else if (IsKeyPressed(KEY_EQUAL) || IsKeyPressedRepeat(KEY_EQUAL)) {
-      GD->camera.zoom += 8;
+      GD->GS.camera.zoom += 8;
     }
 
     // ------[Game Logic]------
     for (int t = 0; t < game_speed; ++t) {
-      ++GD->ticks;
+      ++GD->GS.ticks;
 
-      PERF_EXPR("UPDATE", UpdateGame(GD));
-
-      // update camera
-      GD->camera.x = GD->player.x - GetRenderLength(GD, render_w / 2, default_z);
-      GD->camera.y = GD->player.y - GetRenderLength(GD, render_h / 2, default_z);
-
-      fixed_t target_zoom = 256 * 256 / (GD->player.stats.view_distance * fixed_factor * 2 / render_h);
-      fixed_nudge(&GD->camera.zoom, target_zoom, 1);
+      PERF_EXPR("UPDATE", UpdateGd(GD));
     }
 
     // ------[Drawing]------
     BeginTextureMode(canvas);
     ClearBackground(WHITE);
 
-    PERF_EXPR("DRAW", (DrawCheckerboard(GD),
-                       DrawProjs(GD),
-                       DrawShapes(GD),
-                       DrawPlayer(GD),
-                       DrawPickups(GD),
-                       DrawXpOrbs(GD),
-                       DrawTextFx(GD)));
+    GameScene* GS = &GD->GS;
+    PERF_EXPR("DRAW", DrawGd(GD));
 
     for (int i = 0; i < ITEM_COUNT; ++i) {
-      DrawPrintf(i * 12, 0, BLACK, "%d", GD->player.item_counts[i]);
+      DrawPrintf(i * 12, 0, BLACK, "%d", GD->GS.player.item_counts[i]);
     }
-    DrawPrintf(0, 8, BLACK, "%d pickups spawned", GD->pickups_spawned);
-    DrawPrintf(0, 16, BLACK, "Lvl %d - XP %d/%d", GD->player.level, GD->player.xp, XpForLevelUp(GD));
+    DrawPrintf(0, 8, BLACK, "%d pickups spawned", GD->GS.pickups_spawned);
+    DrawPrintf(0, 16, BLACK, "Lvl %d - XP %d/%d", GD->GS.player.level, GD->GS.player.xp, XpForLevelUp(GS));
     if (show_stats) {
       int i = 5;
       PRINT_STAT(i++, damage);
@@ -144,7 +132,7 @@ int main() {
       PRINT_STAT(i++, magnetism_dist);
       PRINT_STAT(i++, shot_homing_power);
       PRINT_STAT(i++, view_distance);
-      // DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->camera.x, GD->camera.y, GD->camera.zoom);
+      // DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->GS.camera.x, GD->GS.camera.y, GD->GS.camera.zoom);
 
       const int entries = LENGTHOF(perf_entries[0].us_entries);
       for (int x = 0; x < 120; ++x) {

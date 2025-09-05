@@ -18,7 +18,7 @@
     if (snprintf(out, LENGTHOF(out), text __VA_OPT__(, ) __VA_ARGS__) > LENGTHOF(out)) { \
       TraceLog(LOG_WARNING, "DrawPrintf output truncated");                              \
     }                                                                                    \
-    DrawTextEx(GD->font, out, (Vector2){(float)x, (float)y}, 8, 0, color);               \
+    DrawTextEx(GS->font, out, (Vector2){(float)x, (float)y}, 8, 0, color);               \
   } while (0)
 #endif
 
@@ -190,7 +190,7 @@ typedef struct GdCamera {  // raylib already defines struct Camera >:(
   fixed_t zoom;
 } GdCamera;
 
-typedef struct GameData {
+typedef struct GameScene {
   Player player;
 
   GdCamera camera;
@@ -209,5 +209,11 @@ typedef struct GameData {
 
   int ticks;
   Font font;
+
+} GameScene;
+
+typedef struct GameData {
+  int unused;
+  GameScene GS;
 
 } GameData;

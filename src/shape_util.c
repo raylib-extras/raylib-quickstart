@@ -1,23 +1,23 @@
 #include "shape_util.h"
 
-void SpawnNewShapes(GameData* GD) {
-  if (GD->ticks % 15 == 0 && GD->shape_count < (LENGTHOF(GD->shapes) / 2)) {
-    fixed_t new_x = GD->player.x + fixed_new(GetRandomValue(-render_w, render_w), 0);
-    fixed_t new_y = GD->player.y + fixed_new(GetRandomValue(-render_h, render_h), 0);
-    if (fixed_abs(new_x - GD->player.x) / fixed_factor < render_w / 2 &&
-        fixed_abs(new_y - GD->player.y) / fixed_factor < render_h / 2) {
+void SpawnNewShapes(GameScene* GS) {
+  if (GS->ticks % 15 == 0 && GS->shape_count < (LENGTHOF(GS->shapes) / 2)) {
+    fixed_t new_x = GS->player.x + fixed_new(GetRandomValue(-render_w, render_w), 0);
+    fixed_t new_y = GS->player.y + fixed_new(GetRandomValue(-render_h, render_h), 0);
+    if (fixed_abs(new_x - GS->player.x) / fixed_factor < render_w / 2 &&
+        fixed_abs(new_y - GS->player.y) / fixed_factor < render_h / 2) {
       return;
     }
-    int s = ClaimEmptyShapeSlot(GD);
+    int s = ClaimEmptyShapeSlot(GS);
     if (s == -1) {
       return;
     }
-    GD->shapes[s].x = new_x;
-    GD->shapes[s].y = new_y;
-    GD->shapes[s].move_angle = GetRandomValue(0, angle_factor - 1);
-    GD->shapes[s].ticks_since_damaged = 1000;
-    int sides = PickShapeSides(GD);
-    SetShapeStats(&GD->shapes[s], sides, PickShapeVariant(GD, sides));
+    GS->shapes[s].x = new_x;
+    GS->shapes[s].y = new_y;
+    GS->shapes[s].move_angle = GetRandomValue(0, angle_factor - 1);
+    GS->shapes[s].ticks_since_damaged = 1000;
+    int sides = PickShapeSides(GS);
+    SetShapeStats(&GS->shapes[s], sides, PickShapeVariant(GS, sides));
     // printf("Spawned shape %d\n", s);
   }
 }
@@ -33,16 +33,16 @@ int CompareShapes(const void* p, const void* q) {
 }
 
 uint8_t next_free_id = 1;
-int ClaimEmptyShapeSlot(GameData* GD) {
-  if (GD->shape_count >= LENGTHOF(GD->shapes)) {
+int ClaimEmptyShapeSlot(GameScene* GS) {
+  if (GS->shape_count >= LENGTHOF(GS->shapes)) {
     return -1;
   }
-  for (int i = 0; i < LENGTHOF(GD->shapes); ++i) {
-    if (!GD->shapes[i].exists) {
-      ++GD->shape_count;
-      GD->shapes[i] = (Shape){0};
-      GD->shapes[i].exists = true;
-      GD->shapes[i].id = next_free_id;
+  for (int i = 0; i < LENGTHOF(GS->shapes); ++i) {
+    if (!GS->shapes[i].exists) {
+      ++GS->shape_count;
+      GS->shapes[i] = (Shape){0};
+      GS->shapes[i].exists = true;
+      GS->shapes[i].id = next_free_id;
       ++next_free_id;
       if (next_free_id == 0) {  // skip 0
         ++next_free_id;
@@ -53,15 +53,15 @@ int ClaimEmptyShapeSlot(GameData* GD) {
   return -1;
 }
 
-int PickShapeSides(GameData* GD) {
+int PickShapeSides(GameScene* GS) {
   int r = GetRandomValue(0, 99);
-  if (GD->pickups_spawned < 10) {
+  if (GS->pickups_spawned < 10) {
     if (r < 85) {
       return 3;
     } else {
       return 4;
     }
-  } else if (GD->pickups_spawned < 20) {
+  } else if (GS->pickups_spawned < 20) {
     if (r < 75) {
       return 3;
     } else if (r < 90) {
@@ -69,7 +69,7 @@ int PickShapeSides(GameData* GD) {
     } else {
       return 5;
     }
-  } else if (GD->pickups_spawned < 40) {
+  } else if (GS->pickups_spawned < 40) {
     if (r < 75) {
       return 3;
     } else if (r < 90) {
@@ -79,7 +79,7 @@ int PickShapeSides(GameData* GD) {
     } else {
       return 6;
     }
-  } else if (GD->pickups_spawned < 60) {
+  } else if (GS->pickups_spawned < 60) {
     if (r < 50) {
       return 3;
     } else if (r < 80) {
@@ -100,17 +100,17 @@ int PickShapeSides(GameData* GD) {
   }
 }
 
-ShapeVariant PickShapeVariant(GameData* GD, int sides) {
+ShapeVariant PickShapeVariant(GameScene* GS, int sides) {
   int r = GetRandomValue(0, 99);
-  if (GD->pickups_spawned < 30) {
+  if (GS->pickups_spawned < 30) {
     return SHAPE_VARIANT_NONE;
-  } else if (GD->pickups_spawned < 50) {
+  } else if (GS->pickups_spawned < 50) {
     if (r < 90) {
       return SHAPE_VARIANT_NONE;
     } else {
       return SHAPE_VARIANT_BIG;
     }
-  } else if (GD->pickups_spawned < 70) {
+  } else if (GS->pickups_spawned < 70) {
     if (r < 90) {
       return SHAPE_VARIANT_NONE;
     } else if (r < 95) {
@@ -220,23 +220,23 @@ void SetShapeStats(Shape* shape, int sides, ShapeVariant variant) {
   shape->marked_for_despawn = false;
 }
 
-void SpawnChildShapes(GameData* GD, int parent) {
-  int parent_sides = GD->shapes[parent].sides;
-  int child_count = parent_sides * (GD->shapes[parent].variant == SHAPE_VARIANT_BIG ? 2 : 1);
+void SpawnChildShapes(GameScene* GS, int parent) {
+  int parent_sides = GS->shapes[parent].sides;
+  int child_count = parent_sides * (GS->shapes[parent].variant == SHAPE_VARIANT_BIG ? 2 : 1);
   angle_t ang = GetRandomValue(0, angle_factor - 1);
   for (int i = 0; i < child_count; ++i) {
     ang += (angle_factor / child_count);
-    int s = ClaimEmptyShapeSlot(GD);
+    int s = ClaimEmptyShapeSlot(GS);
     if (s == -1) {
       return;
     }
-    GD->shapes[s].x = GD->shapes[parent].x;
-    GD->shapes[s].y = GD->shapes[parent].y;
-    GD->shapes[s].kb_speed = fixed_new(75, 0) / target_fps;
-    GD->shapes[s].kb_angle = ang;
-    GD->shapes[s].i_frames = 30;
-    GD->shapes[s].ticks_since_damaged = 0;
-    SetShapeStats(&GD->shapes[s], parent_sides - 1, GD->shapes[parent].variant);
-    GD->shapes[s].hp = GD->shapes[s].max_hp / 2;
+    GS->shapes[s].x = GS->shapes[parent].x;
+    GS->shapes[s].y = GS->shapes[parent].y;
+    GS->shapes[s].kb_speed = fixed_new(75, 0) / target_fps;
+    GS->shapes[s].kb_angle = ang;
+    GS->shapes[s].i_frames = 30;
+    GS->shapes[s].ticks_since_damaged = 0;
+    SetShapeStats(&GS->shapes[s], parent_sides - 1, GS->shapes[parent].variant);
+    GS->shapes[s].hp = GS->shapes[s].max_hp / 2;
   }
 }
