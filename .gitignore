@@ -407,4 +407,4 @@ Makefile
 *.swn
 
 # custom
-./resources/perf_stats.txt
+resources/perf_stats.txt
