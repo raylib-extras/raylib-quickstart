@@ -16,7 +16,6 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include "fixed_math.h"
 #include "gd.h"
 #include "gd_draw.h"
-#include "gd_init.h"
 #include "gd_update.h"
 #include "perf.h"
 #include "resource_dir.h"  // utility header for SearchAndSetResourceDir
@@ -100,8 +99,6 @@ int main() {
 
     // ------[Game Logic]------
     for (int t = 0; t < game_speed; ++t) {
-      ++GD->GS.ticks;
-
       PERF_EXPR("UPDATE", GdUpdate(GD));
     }
 

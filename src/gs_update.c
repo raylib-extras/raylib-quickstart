@@ -162,8 +162,12 @@ int GsGetTextFxSlot(GameScene* GS) {
 }
 
 void GsSpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
+  int oldest_idx = 0;
   for (int o = 0; o < LENGTHOF(GS->xp_orbs); ++o) {
     if (GS->xp_orbs[o].exists) {
+      if (GS->xp_orbs[o].age > GS->xp_orbs[oldest_idx].age) {
+        oldest_idx = o;
+      }
       continue;
     }
 
@@ -173,6 +177,12 @@ void GsSpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
     GS->xp_orbs[o].xp = xp;
     return;
   }
+
+  // override oldest XP orb if all slots are full
+  GS->xp_orbs[oldest_idx].exists = true;
+  GS->xp_orbs[oldest_idx].x = x;
+  GS->xp_orbs[oldest_idx].y = y;
+  GS->xp_orbs[oldest_idx].xp = xp;
 }
 
 void GsUpdateShapes(GameScene* GS) {
@@ -241,7 +251,8 @@ void GsUpdateShapes(GameScene* GS) {
     if (GS->shapes[s].variant == SHAPE_VARIANT_FAST) {
       aggro_time = 600;
     }
-    if (GS->shapes[s].always_target || GS->shapes[s].ticks_since_damaged < aggro_time) {
+    if (GS->shapes[s].always_target || GS->shapes[s].ticks_since_damaged < aggro_time ||
+        GS->shapes[s].sqdist_to_player < int_sq(80)) {
       // update target_x, target_y
       GS->shapes[s].target_x = GS->player.x;
       GS->shapes[s].target_y = GS->player.y;
@@ -293,10 +304,17 @@ void GsUpdateShapes(GameScene* GS) {
       GS->player.hp -= 50;
       GS->player.ticks_since_damaged = 0;
 
-      // make text fx
+      // make text fx for shape dmg
       int t = GsGetTextFxSlot(GS);
       GS->text_fx[t].x = GS->shapes[s].x;
       GS->text_fx[t].y = GS->shapes[s].y;
+      GS->text_fx[t].despawn_timer = 60;
+      snprintf(GS->text_fx[t].text, LENGTHOF(GS->text_fx[t].text), "-%d", 50);
+
+      // make text fx for player dmg
+      t = GsGetTextFxSlot(GS);
+      GS->text_fx[t].x = GS->player.x;
+      GS->text_fx[t].y = GS->player.y;
       GS->text_fx[t].despawn_timer = 60;
       snprintf(GS->text_fx[t].text, LENGTHOF(GS->text_fx[t].text), "-%d", 50);
     }
@@ -335,7 +353,7 @@ void GsUpdateShapes(GameScene* GS) {
 }
 
 int GsXpForLevelUp(GameScene* GS) {
-  return 2 + 2 * GS->player.level;
+  return 6 + 3 * GS->player.level;
 }
 
 void GsUpdatePlayer(GameScene* GS) {
@@ -616,6 +634,21 @@ void GsUpdateTextFx(GameScene* GS) {
   }
 }
 
+void GsLevelUpPlayer(GameScene* GS) {
+  GS->curr_overlay = GS_OVERLAY_PICK_ITEM;
+  int* seq = LoadRandomSequence(3, 0, ITEM_COUNT - 1);
+  GS->ol_pick_item = (GsOlPickItem){
+      .item_count = 3,
+      .items = {seq[0], seq[1], seq[2]},
+      .selected_item_idx = 0,
+      .ticks = 0};
+  UnloadRandomSequence(seq);
+
+  GS->player.xp -= GsXpForLevelUp(GS);
+  // GsSpawnPickup(GS, GS->player.x, GS->player.y - fixed_new(60, 0));
+  ++GS->player.level;
+}
+
 void GsUpdateXpOrbs(GameScene* GS) {
   for (int o = 0; o < LENGTHOF(GS->xp_orbs); ++o) {
     if (!GS->xp_orbs[o].exists) {
@@ -647,9 +680,7 @@ void GsUpdateXpOrbs(GameScene* GS) {
         GS->player.total_xp += GS->xp_orbs[o].xp;
         GS->player.xp += GS->xp_orbs[o].xp;
         if (GS->player.xp >= GsXpForLevelUp(GS)) {
-          GS->player.xp -= GsXpForLevelUp(GS);
-          GsSpawnPickup(GS, GS->player.x, GS->player.y - fixed_new(60, 0));
-          ++GS->player.level;
+          GsLevelUpPlayer(GS);
         }
         for (int o2 = 0; o2 < LENGTHOF(GS->xp_orbs); ++o2) {
           if (!GS->xp_orbs[o2].exists) {
@@ -673,17 +704,55 @@ void GsUpdateCamera(GameScene* GS) {
   fixed_nudge(&GS->camera.zoom, target_zoom, 1);
 }
 
+void GsUpdateOlPickItem(GameScene* GS) {
+  if (IsKeyPressed(KEY_S)) {
+    GS->ol_pick_item.selected_item_idx += 1;
+  };
+  if (IsKeyPressed(KEY_W)) {
+    GS->ol_pick_item.selected_item_idx += (GS->ol_pick_item.item_count - 1);
+  };
+  GS->ol_pick_item.selected_item_idx %= GS->ol_pick_item.item_count;
+
+  if (IsKeyPressed(KEY_SPACE)) {
+    ItemType selected_item = GS->ol_pick_item.items[GS->ol_pick_item.selected_item_idx];
+    ++GS->player.item_counts[selected_item];
+    GsUpdatePlayerStats(GS);
+    GS->curr_overlay = GS_OVERLAY_NONE;
+  }
+}
+
+void GsInit(GameScene* GS) {
+  GsUpdatePlayerStats(GS);
+  GS->player.hp = GS->player.stats.max_hp;
+  GS->camera.zoom = fixed_new(1, 0);
+  GS->font = LoadFontEx("Kitchen Sink.ttf", 8, NULL, 0);
+}
+
 void GsUpdate(GameScene* GS) {
-  GsSpawnNewShapes(GS);
-  GsUpdateShapes(GS);
+  switch (GS->curr_overlay) {
+    case GS_OVERLAY_NONE: {
+      GsSpawnNewShapes(GS);
+      GsUpdateShapes(GS);
 
-  GsUpdatePlayer(GS);
+      GsUpdatePlayer(GS);
 
-  GsSpawnNewProjs(GS);
-  GsUpdateProjs(GS);
+      GsSpawnNewProjs(GS);
+      GsUpdateProjs(GS);
 
-  GsUpdatePickups(GS);
-  GsUpdateTextFx(GS);
-  GsUpdateXpOrbs(GS);
-  GsUpdateCamera(GS);
+      GsUpdatePickups(GS);
+      GsUpdateTextFx(GS);
+      GsUpdateXpOrbs(GS);
+      GsUpdateCamera(GS);
+      ++GS->ticks;
+    } break;
+
+    case GS_OVERLAY_PICK_ITEM: {
+      GsUpdateOlPickItem(GS);
+      ++GS->ol_pick_item.ticks;
+    } break;
+
+    default: {
+      TraceLog(LOG_ERROR, "Bad overlay value %d", GS->curr_overlay);
+    } break;
+  }
 }

@@ -33,13 +33,13 @@ int ClaimEmptyShapeSlot(GameScene* GS) {
 
 int PickShapeSides(GameScene* GS) {
   int r = GetRandomValue(0, 99);
-  if (GS->pickups_spawned < 10) {
+  if (GS->player.level < 10) {
     if (r < 85) {
       return 3;
     } else {
       return 4;
     }
-  } else if (GS->pickups_spawned < 20) {
+  } else if (GS->player.level < 20) {
     if (r < 75) {
       return 3;
     } else if (r < 90) {
@@ -47,7 +47,7 @@ int PickShapeSides(GameScene* GS) {
     } else {
       return 5;
     }
-  } else if (GS->pickups_spawned < 40) {
+  } else if (GS->player.level < 40) {
     if (r < 75) {
       return 3;
     } else if (r < 90) {
@@ -57,7 +57,7 @@ int PickShapeSides(GameScene* GS) {
     } else {
       return 6;
     }
-  } else if (GS->pickups_spawned < 60) {
+  } else if (GS->player.level < 60) {
     if (r < 50) {
       return 3;
     } else if (r < 80) {
@@ -80,15 +80,15 @@ int PickShapeSides(GameScene* GS) {
 
 GsShapeVariant PickShapeVariant(GameScene* GS, int sides) {
   int r = GetRandomValue(0, 99);
-  if (GS->pickups_spawned < 30) {
+  if (GS->player.level < 30) {
     return SHAPE_VARIANT_NONE;
-  } else if (GS->pickups_spawned < 50) {
+  } else if (GS->player.level < 50) {
     if (r < 90) {
       return SHAPE_VARIANT_NONE;
     } else {
       return SHAPE_VARIANT_BIG;
     }
-  } else if (GS->pickups_spawned < 70) {
+  } else if (GS->player.level < 70) {
     if (r < 90) {
       return SHAPE_VARIANT_NONE;
     } else if (r < 95) {

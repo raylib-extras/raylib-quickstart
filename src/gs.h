@@ -163,6 +163,22 @@ typedef struct GsCamera {
   fixed_t zoom;
 } GsCamera;
 
+typedef enum GsOverlayType {
+  GS_OVERLAY_NONE,
+  GS_OVERLAY_PICK_ITEM,
+} GsOverlayType;
+
+typedef struct GsOlPickItem {
+  int item_count;
+  ItemType items[8];
+  int selected_item_idx;
+  int ticks;
+} GsOlPickItem;
+
+typedef struct GsDrawData {
+  fixed_t xp_bar_filled_width;
+} GsDrawData;
+
 typedef struct GameScene {
   GsPlayer player;
 
@@ -179,6 +195,11 @@ typedef struct GameScene {
   GsTextFx text_fx[40];
 
   GsXpOrb xp_orbs[40];
+
+  GsOverlayType curr_overlay;
+  GsOlPickItem ol_pick_item;
+
+  GsDrawData draw_data;
 
   int ticks;
   Font font;

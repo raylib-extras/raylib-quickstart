@@ -101,6 +101,9 @@ void GsDrawShapes(GameScene* GS) {
   }
 }
 
+// hack
+int GsXpForLevelUp(GameScene* GS);
+
 void GsDrawPlayer(GameScene* GS) {
   int rx, ry;
   GetRenderCoords(GS, GS->player.x, GS->player.y, default_z, &rx, &ry);
@@ -129,7 +132,7 @@ void GsDrawPlayer(GameScene* GS) {
   //          GREEN);
 
   // healthbar
-  if (GS->player.hp <= GS->player.stats.max_hp) {
+  if (GS->player.hp < GS->player.stats.max_hp) {
     int bar_width = GetRenderLength(GS, GS->player.stats.max_hp / 20, default_z);
     int filled_width = bar_width * GS->player.hp / GS->player.stats.max_hp;
     Color color = GREEN;
@@ -198,12 +201,60 @@ void GsDrawXpOrbs(GameScene* GS) {
   }
 }
 
+void GsDrawUi(GameScene* GS) {
+  {
+    int bar_width = render_w;
+    int target_filled_width = bar_width * GS->player.xp / GsXpForLevelUp(GS);
+    GS->draw_data.xp_bar_filled_width = fixed_lerp(GS->draw_data.xp_bar_filled_width, fixed_new(target_filled_width, 0), fixed_new(0, 32));
+    Color color = MAGENTA;
+    DrawRectangle(0, render_h - 4, bar_width, 4, BLACK);
+    DrawRectangle(0, render_h - 4, fixed_whole(GS->draw_data.xp_bar_filled_width), 4, color);
+    DrawPrintf(0, render_h - 4 - 8, BLACK, "Level %d, %d/%d XP", GS->player.level, GS->player.xp, GsXpForLevelUp(GS));
+  }
+}
+
+void GsDrawPickItemOverlay(GameScene* GS) {
+  const int ol_x = render_w / 4;
+  const int ol_y = render_h / 4;
+  const int ol_w = render_w / 2;
+  const int ol_h = render_h / 2;
+  const int lh = 8;  // line height
+  DrawRectangle(ol_x, ol_y, ol_w, ol_h, BLACK);
+
+  DrawPrintf(ol_x + lh, ol_y + lh, YELLOW, "You are now level %d!", GS->player.level);
+  DrawPrintf(ol_x + lh, ol_y + lh + lh, GRAY, "Pick an upgrade!");
+
+  for (int i = 0; i < GS->ol_pick_item.item_count; ++i) {
+    int text_x = ol_x + lh;
+    int text_y = ol_y + lh * (4 + i);
+    bool is_selected = (i == GS->ol_pick_item.selected_item_idx);
+    DrawPrintf(text_x, text_y, WHITE, "%s %s", (is_selected ? "> " : " "), item_strs[GS->ol_pick_item.items[i]]);
+  }
+
+  DrawPrintf(ol_x + lh, ol_y + ol_h - lh * 3, GRAY, "W/S to select, \nSPACE to confirm");
+}
+
 void GsDraw(GameScene* GS) {
+  // Always draw the main screen.
   GsDrawCheckerboard(GS);
   GsDrawProjs(GS);
   GsDrawShapes(GS);
   GsDrawPlayer(GS);
   GsDrawPickups(GS);
   GsDrawXpOrbs(GS);
+  GsDrawUi(GS);
   GsDrawTextFx(GS);
+
+  switch (GS->curr_overlay) {
+    case GS_OVERLAY_NONE: {
+    } break;
+
+    case GS_OVERLAY_PICK_ITEM: {
+      GsDrawPickItemOverlay(GS);
+    } break;
+
+    default: {
+      TraceLog(LOG_ERROR, "Bad overlay value %d", GS->curr_overlay);
+    } break;
+  }
 }
