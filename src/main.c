@@ -21,13 +21,13 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include "resource_dir.h"  // utility header for SearchAndSetResourceDir
 
 #define FIELD(obj, field) ((obj).field)
-#define PRINT_STAT(index, name)                                                                                                           \
-  do {                                                                                                                                    \
-    if (FIELD(GD->GS.player.stats, name) != FIELD(GD->GS.player.prev_stats, name)) {                                                      \
-      DrawPrintf(0, (index) * 8, VIOLET, "%s: %d -> %d", #name, FIELD(GD->GS.player.prev_stats, name), FIELD(GD->GS.player.stats, name)); \
-    } else {                                                                                                                              \
-      DrawPrintf(0, (index) * 8, BLACK, "%s: %d", #name, FIELD(GD->GS.player.stats, name));                                               \
-    }                                                                                                                                     \
+#define PRINT_STAT(index, name)                                                                                                                  \
+  do {                                                                                                                                           \
+    if (FIELD(GD->GS.player.stats, name) != FIELD(GD->GS.player.tmp_stats, name)) {                                                              \
+      DrawPrintf(0, (index) * ft_height, VIOLET, "%s: %d -> %d", #name, FIELD(GD->GS.player.stats, name), FIELD(GD->GS.player.tmp_stats, name)); \
+    } else {                                                                                                                                     \
+      DrawPrintf(0, (index) * ft_height, BLACK, "%s: %d", #name, FIELD(GD->GS.player.stats, name));                                              \
+    }                                                                                                                                            \
   } while (0);
 
 int main() {
@@ -40,6 +40,7 @@ int main() {
   // Utility function from resource_dir.h to find the resources folder and set
   // it as the current working directory so we can load from it
   SearchAndSetResourceDir("resources");
+  ft_font = LoadFontEx("Kitchen Sink.ttf", ft_height, NULL, 0);
 
   GameData game_data;
 
@@ -112,7 +113,7 @@ int main() {
     for (int i = 0; i < ITEM_COUNT; ++i) {
       DrawPrintf(i * 12, 0, BLACK, "%d", GD->GS.player.item_counts[i]);
     }
-    DrawPrintf(0, 8, BLACK, "%d pickups spawned", GD->GS.pickups_spawned);
+    DrawPrintf(0, ft_height, BLACK, "%d pickups spawned", GD->GS.pickups_spawned);
     // DrawPrintf(0, 16, BLACK, "Lvl %d - XP %d/%d", GD->GS.player.level, GD->GS.player.xp, GsXpForLevelUp(GS));
     if (show_stats) {
       int i = 5;

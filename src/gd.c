@@ -9,3 +9,7 @@ int window_h = render_h * default_window_scale;
 
 const int target_fps = 60;
 const fixed_t default_z = 256;
+
+const int ft_height = 8;
+const int ft_width = 6;
+Font ft_font;

@@ -4,26 +4,54 @@
 
 #include "fixed_math.h"
 #include "item_types.h"
+#include "stddef.h"
 
-typedef struct GsPlayerStats {
-  int max_hp;
-  int regen_delay;
-  int damage;
-  fixed_t max_move_speed;
-  fixed_t reload_delay;
-  fixed_t shot_count;
-  fixed_t shot_kb;
-  int shot_pierce;
-  fixed_t shot_speed;
-  int shot_spread;
-  int sight_range;
-  int size;
-  int turn_speed;
+typedef enum GsPlayerStatType {
+  STAT_MAX_HP,
+  STAT_REGEN_DELAY,
+  STAT_DAMAGE,
+  STAT_MAX_MOVE_SPEED,
+  STAT_RELOAD_DELAY,
+  STAT_SHOT_COUNT,
+  STAT_SHOT_KB,
+  STAT_SHOT_PIERCE,
+  STAT_SHOT_SPEED,
+  STAT_SHOT_SPREAD,
+  STAT_SIGHT_RANGE,
+  STAT_SIZE,
+  STAT_TURN_SPEED,
+  STAT_MAGNETISM_DIST,
+  STAT_SHOT_HOMING_POWER,
+  STAT_VIEW_DISTANCE,
+  STAT_COUNT
+} GsPlayerStatType;
 
-  int magnetism_dist;
-  int shot_homing_power;
-  int view_distance;
+typedef union GsPlayerStats {
+  int as_int[STAT_COUNT];
+  fixed_t as_fixed[STAT_COUNT];
+  struct {
+    int max_hp;
+    int regen_delay;
+    int damage;
+    fixed_t max_move_speed;
+    fixed_t reload_delay;
+    fixed_t shot_count;
+    fixed_t shot_kb;
+    int shot_pierce;
+    fixed_t shot_speed;
+    int shot_spread;
+    int sight_range;
+    int size;
+    int turn_speed;
+
+    int magnetism_dist;
+    int shot_homing_power;
+    int view_distance;
+  };
 } GsPlayerStats;
+
+extern const char* stat_names[STAT_COUNT + 1];
+extern const bool stat_lower_is_better[STAT_COUNT];
 
 typedef struct GsPlayer {
   fixed_t x;
@@ -33,6 +61,7 @@ typedef struct GsPlayer {
 
   GsPlayerStats prev_stats;
   GsPlayerStats stats;
+  GsPlayerStats tmp_stats;
   int stat_update_timer;
 
   int hp;
@@ -202,6 +231,5 @@ typedef struct GameScene {
   GsDrawData draw_data;
 
   int ticks;
-  Font font;
 
 } GameScene;

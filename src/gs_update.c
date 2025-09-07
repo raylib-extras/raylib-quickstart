@@ -46,80 +46,80 @@ void GsSpawnPickup(GameScene* GS, fixed_t x, fixed_t y) {
   }
 }
 
-void GsUpdatePlayerStats(GameScene* GS) {
+void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   GS->player.stat_update_timer = 6 * target_fps;
 
-  GS->player.stats.max_hp = 400;
-  GS->player.stats.regen_delay = 300;
-  GS->player.stats.damage = 40;
-  GS->player.stats.max_move_speed = fixed_new(1, 128);
-  GS->player.stats.reload_delay = fixed_new(0, 128);
-  GS->player.stats.shot_count = fixed_new(1, 0);
-  GS->player.stats.shot_kb = fixed_new(0, 0);
-  GS->player.stats.shot_pierce = 1;
-  GS->player.stats.shot_speed = fixed_new(2, 0);
-  GS->player.stats.shot_spread = 1;
-  GS->player.stats.sight_range = render_h / 2;
-  GS->player.stats.size = 12;
-  GS->player.stats.turn_speed = 2;
-  GS->player.stats.magnetism_dist = 16;
-  GS->player.stats.shot_homing_power = 0;
-  GS->player.stats.view_distance = 120;
+  stats->max_hp = 400;
+  stats->regen_delay = 300;
+  stats->damage = 40;
+  stats->max_move_speed = fixed_new(1, 128);
+  stats->reload_delay = fixed_new(0, 128);
+  stats->shot_count = fixed_new(1, 0);
+  stats->shot_kb = fixed_new(0, 0);
+  stats->shot_pierce = 1;
+  stats->shot_speed = fixed_new(2, 0);
+  stats->shot_spread = 1;
+  stats->sight_range = render_h / 2;
+  stats->size = 12;
+  stats->turn_speed = 2;
+  stats->magnetism_dist = 16;
+  stats->shot_homing_power = 0;
+  stats->view_distance = 120;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GS->player.item_counts[i]; ++x) {
       switch (i) {
         case ITEM_SPEED_UP:
-          GS->player.stats.max_move_speed += fixed_new(0, 64);
+          stats->max_move_speed += fixed_new(0, 64);
           break;
         case ITEM_FIRE_RATE_UP:
-          GS->player.stats.reload_delay = GS->player.stats.reload_delay * 80 / 100;
-          GS->player.stats.shot_spread += 2;
+          stats->reload_delay = stats->reload_delay * 80 / 100;
+          stats->shot_spread += 2;
           break;
         case ITEM_TURN_SPEED_UP:
-          ++GS->player.stats.turn_speed;
+          ++stats->turn_speed;
           break;
         case ITEM_DAMAGE_UP:
-          GS->player.stats.damage += 10;
-          GS->player.stats.reload_delay = GS->player.stats.reload_delay * 105 / 100;
+          stats->damage += 10;
+          stats->reload_delay = stats->reload_delay * 105 / 100;
           break;
         case ITEM_ACCURACY_UP:
-          GS->player.stats.shot_spread -= 2;
+          stats->shot_spread -= 2;
           break;
         case ITEM_SHOT_SPEED_UP:
-          GS->player.stats.shot_speed += fixed_new(0, 128);
-          GS->player.stats.damage = GS->player.stats.damage * 105 / 100;
-          GS->player.stats.shot_kb += fixed_new(0, 16);
+          stats->shot_speed += fixed_new(0, 128);
+          stats->damage = stats->damage * 105 / 100;
+          stats->shot_kb += fixed_new(0, 16);
           break;
         case ITEM_SHOT_COUNT_UP:
-          GS->player.stats.shot_count += fixed_new(0, 64);
-          GS->player.stats.reload_delay = GS->player.stats.reload_delay * 105 / 100;
-          GS->player.stats.shot_spread += 2;
+          stats->shot_count += fixed_new(0, 64);
+          stats->reload_delay = stats->reload_delay * 105 / 100;
+          stats->shot_spread += 2;
           break;
         case ITEM_SHOT_KB_UP:
-          GS->player.stats.shot_kb += fixed_new(0, 64);
+          stats->shot_kb += fixed_new(0, 64);
           break;
         case ITEM_PIERCE_UP:
-          GS->player.stats.shot_pierce += 1;
-          if (GS->player.stats.shot_pierce < 4) {
-            GS->player.stats.reload_delay = GS->player.stats.reload_delay * 115 / 100;
+          stats->shot_pierce += 1;
+          if (stats->shot_pierce < 4) {
+            stats->reload_delay = stats->reload_delay * 115 / 100;
           }
           break;
         case ITEM_MAGNETISM_UP:
-          GS->player.stats.magnetism_dist += 16;
+          stats->magnetism_dist += 16;
           break;
         case ITEM_HOMING_POWER:
-          GS->player.stats.shot_homing_power += 5;
+          stats->shot_homing_power += 5;
           break;
         case ITEM_SIGHT_UP:
-          GS->player.stats.sight_range += 8;
-          GS->player.stats.view_distance += 8;
+          stats->sight_range += 8;
+          stats->view_distance += 8;
           break;
         case ITEM_MAX_HP_UP:
-          GS->player.stats.max_hp += 100;
-          GS->player.stats.size += 1;
+          stats->max_hp += 100;
+          stats->size += 1;
           break;
         case ITEM_REGEN_UP:
-          GS->player.stats.regen_delay = GS->player.stats.regen_delay * 80 / 100;
+          stats->regen_delay = stats->regen_delay * 80 / 100;
           break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
@@ -127,20 +127,20 @@ void GsUpdatePlayerStats(GameScene* GS) {
     }
   }
 
-  clamp(&GS->player.stats.max_hp, 10, 10000);
-  clamp(&GS->player.stats.regen_delay, 0, 1000);
-  clamp(&GS->player.stats.damage, 10, 1000);
-  fixed_clamp(&GS->player.stats.max_move_speed, fixed_new(1, 0), fixed_new(4, 0));
-  fixed_clamp(&GS->player.stats.reload_delay, fixed_new(0, 8), fixed_new(5, 0));
-  fixed_clamp(&GS->player.stats.shot_count, fixed_new(1, 0), fixed_new(8, 0));
-  fixed_clamp(&GS->player.stats.shot_kb, fixed_new(0, 0), fixed_new(4, 0));
-  clamp(&GS->player.stats.shot_pierce, 1, 8);
-  fixed_clamp(&GS->player.stats.shot_speed, fixed_new(0, 128), fixed_new(8, 0));
-  clamp(&GS->player.stats.shot_spread, 0, 32);
-  clamp(&GS->player.stats.size, 10, 50);
-  clamp(&GS->player.stats.turn_speed, 1, 64);
-  clamp(&GS->player.stats.magnetism_dist, 16, 1000);
-  clamp(&GS->player.stats.view_distance, 120, 240);
+  clamp(&stats->max_hp, 10, 10000);
+  clamp(&stats->regen_delay, 0, 1000);
+  clamp(&stats->damage, 10, 1000);
+  fixed_clamp(&stats->max_move_speed, fixed_new(1, 0), fixed_new(4, 0));
+  fixed_clamp(&stats->reload_delay, fixed_new(0, 8), fixed_new(5, 0));
+  fixed_clamp(&stats->shot_count, fixed_new(1, 0), fixed_new(8, 0));
+  fixed_clamp(&stats->shot_kb, fixed_new(0, 0), fixed_new(4, 0));
+  clamp(&stats->shot_pierce, 1, 8);
+  fixed_clamp(&stats->shot_speed, fixed_new(0, 128), fixed_new(8, 0));
+  clamp(&stats->shot_spread, 0, 32);
+  clamp(&stats->size, 10, 50);
+  clamp(&stats->turn_speed, 1, 64);
+  clamp(&stats->magnetism_dist, 16, 1000);
+  clamp(&stats->view_distance, 120, 240);
 }
 
 int GsGetTextFxSlot(GameScene* GS) {
@@ -299,6 +299,7 @@ void GsUpdateShapes(GameScene* GS) {
       GS->shapes[s].move_speed = 0;
       GS->shapes[s].kb_speed = fixed_new(2, 0);
       GS->shapes[s].kb_angle = GS->shapes[s].angle_to_player + 128;
+      GS->shapes[s].grant_xp_on_despawn = true;
 
       // damage player
       GS->player.hp -= 50;
@@ -353,7 +354,7 @@ void GsUpdateShapes(GameScene* GS) {
 }
 
 int GsXpForLevelUp(GameScene* GS) {
-  return 6 + 3 * GS->player.level;
+  return 6 + 6 * GS->player.level;
 }
 
 void GsUpdatePlayer(GameScene* GS) {
@@ -394,7 +395,7 @@ void GsUpdatePlayer(GameScene* GS) {
       GS->pickups[p].exists = false;
       ++GS->player.item_counts[GS->pickups[p].type];
       ++GS->player.items_collected;
-      GsUpdatePlayerStats(GS);
+      GsUpdatePlayerStats(GS, &GS->player.stats);
     }
   }
 
@@ -705,6 +706,12 @@ void GsUpdateCamera(GameScene* GS) {
 }
 
 void GsUpdateOlPickItem(GameScene* GS) {
+  if (GS->ol_pick_item.item_count <= 0) {
+    GS->curr_overlay = GS_OVERLAY_NONE;
+    TraceLog(LOG_ERROR, "No items in pick item overlay");
+    return;
+  }
+
   if (IsKeyPressed(KEY_S)) {
     GS->ol_pick_item.selected_item_idx += 1;
   };
@@ -713,19 +720,23 @@ void GsUpdateOlPickItem(GameScene* GS) {
   };
   GS->ol_pick_item.selected_item_idx %= GS->ol_pick_item.item_count;
 
+  ItemType selected_item = GS->ol_pick_item.items[GS->ol_pick_item.selected_item_idx];
+
+  ++GS->player.item_counts[selected_item];
+  GsUpdatePlayerStats(GS, &GS->player.tmp_stats);
+  --GS->player.item_counts[selected_item];
+
   if (IsKeyPressed(KEY_SPACE)) {
-    ItemType selected_item = GS->ol_pick_item.items[GS->ol_pick_item.selected_item_idx];
     ++GS->player.item_counts[selected_item];
-    GsUpdatePlayerStats(GS);
+    GS->player.stats = GS->player.tmp_stats;
     GS->curr_overlay = GS_OVERLAY_NONE;
   }
 }
 
 void GsInit(GameScene* GS) {
-  GsUpdatePlayerStats(GS);
+  GsUpdatePlayerStats(GS, &GS->player.stats);
   GS->player.hp = GS->player.stats.max_hp;
   GS->camera.zoom = fixed_new(1, 0);
-  GS->font = LoadFontEx("Kitchen Sink.ttf", 8, NULL, 0);
 }
 
 void GsUpdate(GameScene* GS) {

@@ -19,7 +19,7 @@
     if (snprintf(out, LENGTHOF(out), text __VA_OPT__(, ) __VA_ARGS__) > LENGTHOF(out)) { \
       TraceLog(LOG_WARNING, "DrawPrintf output truncated");                              \
     }                                                                                    \
-    DrawTextEx(GS->font, out, (Vector2){(float)x, (float)y}, 8, 0, color);               \
+    DrawTextEx(ft_font, out, (Vector2){(float)x, (float)y}, ft_height, 0, color);        \
   } while (0)
 #endif
 
@@ -29,12 +29,15 @@ extern int window_scale;
 extern int window_w;
 extern int window_h;
 
+extern const int ft_height;
+extern const int ft_width;
+extern Font ft_font;
+
 extern const int target_fps;
 
 extern const fixed_t default_z;  // z is distance from camera
 
 typedef struct GameData {
-  int unused;
   GameScene GS;
 
 } GameData;

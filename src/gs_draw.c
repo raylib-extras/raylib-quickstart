@@ -209,16 +209,16 @@ void GsDrawUi(GameScene* GS) {
     Color color = MAGENTA;
     DrawRectangle(0, render_h - 4, bar_width, 4, BLACK);
     DrawRectangle(0, render_h - 4, fixed_whole(GS->draw_data.xp_bar_filled_width), 4, color);
-    DrawPrintf(0, render_h - 4 - 8, BLACK, "Level %d, %d/%d XP", GS->player.level, GS->player.xp, GsXpForLevelUp(GS));
+    DrawPrintf(0, render_h - 4 - ft_height, BLACK, "Level %d, %d/%d XP", GS->player.level, GS->player.xp, GsXpForLevelUp(GS));
   }
 }
 
 void GsDrawPickItemOverlay(GameScene* GS) {
-  const int ol_x = render_w / 4;
-  const int ol_y = render_h / 4;
-  const int ol_w = render_w / 2;
-  const int ol_h = render_h / 2;
-  const int lh = 8;  // line height
+  const int ol_x = render_w / 8;
+  const int ol_y = render_h / 8;
+  const int ol_w = render_w * 3 / 4;
+  const int ol_h = render_h * 3 / 4;
+  const int lh = ft_height;  // line height
   DrawRectangle(ol_x, ol_y, ol_w, ol_h, BLACK);
 
   DrawPrintf(ol_x + lh, ol_y + lh, YELLOW, "You are now level %d!", GS->player.level);
@@ -229,6 +229,20 @@ void GsDrawPickItemOverlay(GameScene* GS) {
     int text_y = ol_y + lh * (4 + i);
     bool is_selected = (i == GS->ol_pick_item.selected_item_idx);
     DrawPrintf(text_x, text_y, WHITE, "%s %s", (is_selected ? "> " : " "), item_strs[GS->ol_pick_item.items[i]]);
+  }
+
+  // Draw stat changes
+  {
+    int text_x = render_w / 2;
+    int text_y = ol_y + lh * 4;
+    for (GsPlayerStatType s = 0; s < STAT_COUNT; ++s) {
+      if (GS->player.stats.as_int[s] != GS->player.tmp_stats.as_int[s]) {
+        bool is_upgrade = stat_lower_is_better[s] == (GS->player.tmp_stats.as_int[s] <= GS->player.stats.as_int[s]);
+        DrawPrintf(text_x, text_y, (is_upgrade ? LIME : LIGHTGRAY),
+                   "%s: \n  %d -> %d", stat_names[s], GS->player.stats.as_int[s], GS->player.tmp_stats.as_int[s]);
+        text_y += lh * 3;
+      }
+    }
   }
 
   DrawPrintf(ol_x + lh, ol_y + ol_h - lh * 3, GRAY, "W/S to select, \nSPACE to confirm");
