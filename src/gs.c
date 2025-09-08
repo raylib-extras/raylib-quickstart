@@ -2,8 +2,8 @@
 
 const char* stat_names[STAT_COUNT + 1] = {
     [STAT_MAX_HP] = "Max HP",
-    [STAT_REGEN_DELAY] = "Regen Delay",
-    [STAT_DAMAGE] = "Damage",
+    [STAT_ACTIVE_REGEN_DELAY] = "Active Regen Delay",
+    [STAT_SHOT_DAMAGE] = "Shot Damage",
     [STAT_MAX_MOVE_SPEED] = "Move Speed",
     [STAT_RELOAD_DELAY] = "Reload Delay",
     [STAT_SHOT_COUNT] = "Shot Count",
@@ -15,13 +15,17 @@ const char* stat_names[STAT_COUNT + 1] = {
     [STAT_SIZE] = "Size",
     [STAT_TURN_SPEED] = "Turn Speed",
     [STAT_MAGNETISM_DIST] = "Magnetism Power",
+    [STAT_SHOT_HOMING_PERCENT] = "Homing %",
     [STAT_SHOT_HOMING_POWER] = "Homing Power",
     [STAT_VIEW_DISTANCE] = "View Distance",
+    [STAT_CONTACT_DAMAGE] = "Contact Damage",
+    [STAT_ACTIVE_REGEN] = "Active Regen",
+    [STAT_PASSIVE_REGEN] = "Passive Regen",
     [STAT_COUNT] = "ERROR",
 };
 
 const bool stat_lower_is_better[STAT_COUNT] = {
-    [STAT_REGEN_DELAY] = true,
+    [STAT_ACTIVE_REGEN_DELAY] = true,
     [STAT_RELOAD_DELAY] = true,
     [STAT_SHOT_SPREAD] = true,
 };

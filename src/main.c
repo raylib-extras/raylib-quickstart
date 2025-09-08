@@ -41,12 +41,11 @@ int main() {
   // it as the current working directory so we can load from it
   SearchAndSetResourceDir("resources");
   ft_font = LoadFontEx("Kitchen Sink.ttf", ft_height, NULL, 0);
-
+  SetTextLineSpacing(ft_height / 2);
   GameData game_data;
 
   GameData* GD = &game_data;
   GdInit(GD);
-
   GameData save_state = game_data;
   int game_speed = 1;
 
@@ -117,7 +116,7 @@ int main() {
     // DrawPrintf(0, 16, BLACK, "Lvl %d - XP %d/%d", GD->GS.player.level, GD->GS.player.xp, GsXpForLevelUp(GS));
     if (show_stats) {
       int i = 5;
-      PRINT_STAT(i++, damage);
+      PRINT_STAT(i++, shot_damage);
       PRINT_STAT(i++, max_move_speed);
       PRINT_STAT(i++, reload_delay);
       PRINT_STAT(i++, shot_count);

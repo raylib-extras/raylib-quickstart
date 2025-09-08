@@ -47,11 +47,9 @@ void GsSpawnPickup(GameScene* GS, fixed_t x, fixed_t y) {
 }
 
 void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
-  GS->player.stat_update_timer = 6 * target_fps;
-
   stats->max_hp = 400;
-  stats->regen_delay = 300;
-  stats->damage = 40;
+  stats->active_regen_delay = 300;
+  stats->shot_damage = 40;
   stats->max_move_speed = fixed_new(1, 128);
   stats->reload_delay = fixed_new(0, 128);
   stats->shot_count = fixed_new(1, 0);
@@ -63,31 +61,35 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->size = 12;
   stats->turn_speed = 2;
   stats->magnetism_dist = 16;
+  stats->shot_homing_percent = 0;
   stats->shot_homing_power = 0;
   stats->view_distance = 120;
+  stats->contact_damage = 20;
+  stats->active_regen = 20;
+  stats->passive_regen = 0;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GS->player.item_counts[i]; ++x) {
       switch (i) {
         case ITEM_SPEED_UP:
-          stats->max_move_speed += fixed_new(0, 64);
+          stats->max_move_speed += fixed_new(0, 96);
           break;
         case ITEM_FIRE_RATE_UP:
           stats->reload_delay = stats->reload_delay * 80 / 100;
-          stats->shot_spread += 2;
+          stats->shot_spread += 3;
           break;
         case ITEM_TURN_SPEED_UP:
           ++stats->turn_speed;
           break;
         case ITEM_DAMAGE_UP:
-          stats->damage += 10;
+          stats->shot_damage += 10;
           stats->reload_delay = stats->reload_delay * 105 / 100;
           break;
         case ITEM_ACCURACY_UP:
-          stats->shot_spread -= 2;
+          stats->shot_spread -= 4;
           break;
         case ITEM_SHOT_SPEED_UP:
           stats->shot_speed += fixed_new(0, 128);
-          stats->damage = stats->damage * 105 / 100;
+          stats->shot_damage = stats->shot_damage * 105 / 100;
           stats->shot_kb += fixed_new(0, 16);
           break;
         case ITEM_SHOT_COUNT_UP:
@@ -100,7 +102,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
           break;
         case ITEM_PIERCE_UP:
           stats->shot_pierce += 1;
-          if (stats->shot_pierce < 4) {
+          if (stats->shot_pierce < 5) {
             stats->reload_delay = stats->reload_delay * 115 / 100;
           }
           break;
@@ -108,7 +110,13 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
           stats->magnetism_dist += 16;
           break;
         case ITEM_HOMING_POWER:
-          stats->shot_homing_power += 5;
+          if (x == 0) {
+            stats->shot_homing_power += 20;
+            stats->shot_homing_percent += 20;
+          } else {
+            stats->shot_homing_power += 4;
+            stats->shot_homing_percent += 4;
+          }
           break;
         case ITEM_SIGHT_UP:
           stats->sight_range += 8;
@@ -116,10 +124,16 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
           break;
         case ITEM_MAX_HP_UP:
           stats->max_hp += 100;
+          stats->max_hp = stats->max_hp * 11 / 10;
           stats->size += 1;
           break;
         case ITEM_REGEN_UP:
-          stats->regen_delay = stats->regen_delay * 80 / 100;
+          stats->active_regen_delay = stats->active_regen_delay * 75 / 100;
+          stats->active_regen = stats->active_regen * 3 / 2;
+          stats->passive_regen += 2;
+          break;
+        case ITEM_CONTACT_DAMAGE_UP:
+          stats->contact_damage = (stats->contact_damage * 3 / 2);
           break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
@@ -128,8 +142,8 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   }
 
   clamp(&stats->max_hp, 10, 10000);
-  clamp(&stats->regen_delay, 0, 1000);
-  clamp(&stats->damage, 10, 1000);
+  clamp(&stats->active_regen_delay, 0, 1000);
+  clamp(&stats->shot_damage, 10, 1000);
   fixed_clamp(&stats->max_move_speed, fixed_new(1, 0), fixed_new(4, 0));
   fixed_clamp(&stats->reload_delay, fixed_new(0, 8), fixed_new(5, 0));
   fixed_clamp(&stats->shot_count, fixed_new(1, 0), fixed_new(8, 0));
@@ -140,7 +154,12 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   clamp(&stats->size, 10, 50);
   clamp(&stats->turn_speed, 1, 64);
   clamp(&stats->magnetism_dist, 16, 1000);
+  clamp(&stats->sight_range, 120, 240);
   clamp(&stats->view_distance, 120, 240);
+  clamp(&stats->shot_homing_percent, 0, 100);
+  clamp(&stats->shot_homing_power, 0, 100);
+  clamp(&stats->active_regen, 0, 1000);
+  clamp(&stats->passive_regen, 0, 1000);
 }
 
 int GsGetTextFxSlot(GameScene* GS) {
@@ -290,19 +309,19 @@ void GsUpdateShapes(GameScene* GS) {
 
     // player collision
     ++GS->shapes[s].ticks_since_damaged_player;
-    if (GS->shapes[s].ticks_since_damaged_player >= 60 &&
+    if (GS->shapes[s].ticks_since_damaged_player >= 6 &&
         GS->shapes[s].sqdist_to_player < int_sq(GS->player.stats.size)) {
       // damage self
-      GS->shapes[s].hp -= 50;
+      GS->shapes[s].hp -= GS->player.stats.contact_damage;
       GS->shapes[s].ticks_since_damaged = 0;
       GS->shapes[s].ticks_since_damaged_player = 0;
-      GS->shapes[s].move_speed = 0;
-      GS->shapes[s].kb_speed = fixed_new(2, 0);
-      GS->shapes[s].kb_angle = GS->shapes[s].angle_to_player + 128;
       GS->shapes[s].grant_xp_on_despawn = true;
+      GS->shapes[s].x += fixed_cos(GS->shapes[s].angle_to_player) * -1;
+      GS->shapes[s].y += fixed_sin(GS->shapes[s].angle_to_player) * -1;
+      GS->shapes[s].move_speed = (GS->shapes[s].max_move_speed * -2);  // use negative move speed instead of knockback stat so it doesn't override knockback
 
       // damage player
-      GS->player.hp -= 50;
+      GS->player.hp -= GS->shapes[s].contact_damage;
       GS->player.ticks_since_damaged = 0;
 
       // make text fx for shape dmg
@@ -310,14 +329,14 @@ void GsUpdateShapes(GameScene* GS) {
       GS->text_fx[t].x = GS->shapes[s].x;
       GS->text_fx[t].y = GS->shapes[s].y;
       GS->text_fx[t].despawn_timer = 60;
-      snprintf(GS->text_fx[t].text, LENGTHOF(GS->text_fx[t].text), "-%d", 50);
+      snprintf(GS->text_fx[t].text, LENGTHOF(GS->text_fx[t].text), "-%d", GS->player.stats.contact_damage);
 
       // make text fx for player dmg
-      t = GsGetTextFxSlot(GS);
-      GS->text_fx[t].x = GS->player.x;
-      GS->text_fx[t].y = GS->player.y;
-      GS->text_fx[t].despawn_timer = 60;
-      snprintf(GS->text_fx[t].text, LENGTHOF(GS->text_fx[t].text), "-%d", 50);
+      // int t = GsGetTextFxSlot(GS);
+      // GS->text_fx[t].x = GS->player.x;
+      // GS->text_fx[t].y = GS->player.y - GS->player.stats.size;
+      // GS->text_fx[t].despawn_timer = 120;
+      // snprintf(GS->text_fx[t].text, LENGTHOF(GS->text_fx[t].text), "-%d", GS->shapes[s].contact_damage);
     }
 
     if (GS->ticks % 4 == 0) {
@@ -405,18 +424,15 @@ void GsUpdatePlayer(GameScene* GS) {
   GS->player.dps -= GS->player.damage_history[next_entry];
   GS->player.damage_history[next_entry] = 0;
 
-  // update stat update timer
-  if (GS->player.stat_update_timer > 0) {
-    --GS->player.stat_update_timer;
-    if (GS->player.stat_update_timer == 0) {
-      GS->player.prev_stats = GS->player.stats;
-    }
-  }
-
   // regen
   ++GS->player.ticks_since_damaged;
-  if (GS->player.ticks_since_damaged >= GS->player.stats.regen_delay && GS->player.hp < GS->player.stats.max_hp) {
-    GS->player.hp += 1;
+  if (GS->player.ticks_since_damaged >= GS->player.stats.active_regen_delay &&
+      GS->player.hp < GS->player.stats.max_hp &&
+      GS->ticks % 10 == 0) {
+    GS->player.hp += GS->player.stats.active_regen;
+  }
+  if (GS->ticks % 10 == 5) {
+    GS->player.hp += GS->player.stats.passive_regen;
   }
 
   // misc
@@ -442,21 +458,23 @@ void GsSpawnNewProjs(GameScene* GS) {
       GS->projs[p].pierce = GS->player.stats.shot_pierce;
       GS->projs[p].x = GS->player.x;
       GS->projs[p].y = GS->player.y;
-      GS->projs[p].homing_max_dist = 64;
-      GS->projs[p].homing_power = GS->player.stats.shot_homing_power;
+      if (GetRandomValue(0, 99) < GS->player.stats.shot_homing_percent) {
+        GS->projs[p].homing_max_dist = 256;
+        GS->projs[p].homing_power = GS->player.stats.shot_homing_power;
+      }
       if (first_shot_in_volley) {
         GS->projs[p].move_speed = GS->player.stats.shot_speed;
         GS->projs[p].angle = GS->player.angle + GetRandomValue(-GS->player.stats.shot_spread, GS->player.stats.shot_spread);
-        GS->projs[p].size = 6 + (GS->player.stats.damage / 40);
-        GS->projs[p].damage = GS->player.stats.damage;
+        GS->projs[p].size = 6 + (GS->player.stats.shot_damage / 40);
+        GS->projs[p].damage = GS->player.stats.shot_damage;
         GS->projs[p].despawn_timer = 120;
         GS->projs[p].kb = GS->player.stats.shot_kb;
         first_shot_in_volley = false;
       } else {
         GS->projs[p].move_speed = GS->player.stats.shot_speed * GetRandomValue(50, 90) / 100;
         GS->projs[p].angle = GS->player.angle + GetRandomValue(-GS->player.stats.shot_spread * 2, GS->player.stats.shot_spread * 2);
-        GS->projs[p].size = 6 + (GS->player.stats.damage / 80);
-        GS->projs[p].damage = GS->player.stats.damage / 2;
+        GS->projs[p].size = 6 + (GS->player.stats.shot_damage / 80);
+        GS->projs[p].damage = GS->player.stats.shot_damage / 2;
         GS->projs[p].despawn_timer = 120;
         GS->projs[p].kb = GS->player.stats.shot_kb / 2;
       }
@@ -518,14 +536,13 @@ void GsUpdateProjs(GameScene* GS) {
           GS->projs[p].is_homing = true;
           angle_rotate_towards(&GS->projs[p].angle, target_angle, 8);
           --GS->projs[p].homing_power;
-
-          // make text fx
-          int t = GsGetTextFxSlot(GS);
-          GS->text_fx[t].x = GS->projs[p].x;
-          GS->text_fx[t].y = GS->projs[p].y - 64;
-          GS->text_fx[t].despawn_timer = 30;
-          snprintf(GS->text_fx[t].text, LENGTHOF(GS->text_fx[t].text), ".");
         }
+        // make text fx
+        int t = GsGetTextFxSlot(GS);
+        GS->text_fx[t].x = GS->projs[p].x;
+        GS->text_fx[t].y = GS->projs[p].y - 64;
+        GS->text_fx[t].despawn_timer = 30;
+        snprintf(GS->text_fx[t].text, LENGTHOF(GS->text_fx[t].text), ".");
       }
     }
 

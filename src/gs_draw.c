@@ -142,7 +142,7 @@ void GsDrawPlayer(GameScene* GS) {
     if (filled_width <= bar_width / 4) {
       color = RED;
     }
-    DrawRectangle(render_pos.x - bar_width / 2, render_pos.y + GS->player.stats.size + 2, bar_width, 3, BLACK);
+    DrawRectangle(render_pos.x - bar_width / 2 - 1, render_pos.y + GS->player.stats.size + 2 - 1, bar_width + 2, 5, BLACK);
     DrawRectangle(render_pos.x - bar_width / 2, render_pos.y + GS->player.stats.size + 2, filled_width, 3, color);
   }
 }
@@ -239,7 +239,10 @@ void GsDrawPickItemOverlay(GameScene* GS) {
       if (GS->player.stats.as_int[s] != GS->player.tmp_stats.as_int[s]) {
         bool is_upgrade = stat_lower_is_better[s] == (GS->player.tmp_stats.as_int[s] <= GS->player.stats.as_int[s]);
         DrawPrintf(text_x, text_y, (is_upgrade ? LIME : LIGHTGRAY),
-                   "%s: \n  %d -> %d", stat_names[s], GS->player.stats.as_int[s], GS->player.tmp_stats.as_int[s]);
+                   "%s:\n  %d -> %d",
+                   stat_names[s],
+                   GS->player.stats.as_int[s],
+                   GS->player.tmp_stats.as_int[s]);
         text_y += lh * 3;
       }
     }

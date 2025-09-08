@@ -8,8 +8,8 @@
 
 typedef enum GsPlayerStatType {
   STAT_MAX_HP,
-  STAT_REGEN_DELAY,
-  STAT_DAMAGE,
+  STAT_ACTIVE_REGEN_DELAY,
+  STAT_SHOT_DAMAGE,
   STAT_MAX_MOVE_SPEED,
   STAT_RELOAD_DELAY,
   STAT_SHOT_COUNT,
@@ -21,18 +21,23 @@ typedef enum GsPlayerStatType {
   STAT_SIZE,
   STAT_TURN_SPEED,
   STAT_MAGNETISM_DIST,
+  STAT_SHOT_HOMING_PERCENT,
   STAT_SHOT_HOMING_POWER,
   STAT_VIEW_DISTANCE,
+  STAT_CONTACT_DAMAGE,
+  STAT_ACTIVE_REGEN,
+  STAT_PASSIVE_REGEN,
   STAT_COUNT
 } GsPlayerStatType;
 
+// Access a stat statically by doing `stats.shot_damage` or dynamically with `stats.as_int[STAT_SHOT_DAMAGE]`.
 typedef union GsPlayerStats {
   int as_int[STAT_COUNT];
   fixed_t as_fixed[STAT_COUNT];
   struct {
     int max_hp;
-    int regen_delay;
-    int damage;
+    int active_regen_delay;
+    int shot_damage;
     fixed_t max_move_speed;
     fixed_t reload_delay;
     fixed_t shot_count;
@@ -45,8 +50,12 @@ typedef union GsPlayerStats {
     int turn_speed;
 
     int magnetism_dist;
+    int shot_homing_percent;
     int shot_homing_power;
     int view_distance;
+    int contact_damage;
+    int active_regen;
+    int passive_regen;
   };
 } GsPlayerStats;
 
@@ -59,10 +68,8 @@ typedef struct GsPlayer {
   fixed_t move_speed;
   angle_t angle;
 
-  GsPlayerStats prev_stats;
   GsPlayerStats stats;
   GsPlayerStats tmp_stats;
-  int stat_update_timer;
 
   int hp;
   int ticks_since_damaged;
@@ -117,6 +124,7 @@ typedef struct GsShape {
   int sqdist_to_player;
   angle_t angle_to_player;
   int ticks_since_damaged_player;
+  int contact_damage;
 
   bool always_target;
   fixed_t target_x;
@@ -129,6 +137,7 @@ typedef struct GsShape {
   int regen;
   int ticks_since_damaged;
   int i_frames;
+
 } GsShape;
 
 typedef struct GsProj {

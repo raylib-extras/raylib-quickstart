@@ -196,6 +196,7 @@ void SetShapeStats(GsShape* shape, int sides, GsShapeVariant variant) {
 
   shape->hp = shape->max_hp;
   shape->marked_for_despawn = false;
+  shape->contact_damage = 20;
 }
 
 void SpawnChildShapes(GameScene* GS, int parent) {

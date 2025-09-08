@@ -15,6 +15,7 @@ typedef enum ItemType {
   ITEM_SIGHT_UP,
   ITEM_MAX_HP_UP,
   ITEM_REGEN_UP,
+  ITEM_CONTACT_DAMAGE_UP,
   ITEM_COUNT
 } ItemType;
 
