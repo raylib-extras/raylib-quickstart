@@ -152,6 +152,11 @@ void GsDrawPlayer(GameScene* GS) {
     DrawRectangle(render_pos.x - bar_width / 2 - 1, render_pos.y + GS->player.stats.size + 2 - 1, bar_width + 2, 5, BLACK);
     DrawRectangle(render_pos.x - bar_width / 2, render_pos.y + GS->player.stats.size + 2, filled_width, 3, color);
   }
+
+  // magnetism
+  if (GS->player.ticks_since_magnetism < 2) {
+    DrawPolyLinesEx(render_pos, 8, GetRenderLength(GS, GS->player.stats.magnetism_dist, default_z), 22.5f, 2.0f, GREEN);
+  }
 }
 
 void GsDrawPickups(GameScene* GS) {

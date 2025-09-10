@@ -21,7 +21,7 @@ typedef enum GsPlayerStatType {
   STAT_SIZE,
   STAT_TURN_SPEED,
   STAT_MAGNETISM_DIST,
-  STAT_MAGNETISM_PERCENT,
+  STAT_MAGNETISM_FREQUENCY,
   STAT_SHOT_HOMING_PERCENT,
   STAT_SHOT_HOMING_POWER,
   STAT_VIEW_DISTANCE,
@@ -54,7 +54,7 @@ typedef union GsPlayerStats {
     int turn_speed;
 
     int magnetism_dist;
-    int magnetism_percent;
+    int magnetism_frequency;
     int shot_homing_percent;
     int shot_homing_power;
     int view_distance;
@@ -91,6 +91,8 @@ typedef struct GsPlayer {
   fixed_t reload_progress;
   fixed_t shot_progress;
   int ticks_since_last_shot;
+
+  int ticks_since_magnetism;
 
   ItemType item_counts[ITEM_COUNT];
   int items_collected;

@@ -15,7 +15,7 @@ const char* stat_names[STAT_COUNT + 1] = {
     [STAT_SIZE] = "Size",
     [STAT_TURN_SPEED] = "Turn Speed",
     [STAT_MAGNETISM_DIST] = "Magnetism Power",
-    [STAT_MAGNETISM_PERCENT] = "Magnetism %",
+    [STAT_MAGNETISM_FREQUENCY] = "Magnetism Frequency",
     [STAT_SHOT_HOMING_PERCENT] = "Homing %",
     [STAT_SHOT_HOMING_POWER] = "Homing Power",
     [STAT_VIEW_DISTANCE] = "View Distance",
@@ -32,4 +32,5 @@ const bool stat_lower_is_better[STAT_COUNT] = {
     [STAT_ACTIVE_REGEN_DELAY] = true,
     [STAT_RELOAD_DELAY] = true,
     [STAT_SHOT_SPREAD] = true,
+    [STAT_MAGNETISM_FREQUENCY] = true,
 };

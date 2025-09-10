@@ -62,8 +62,8 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->sight_range = render_h / 2;
   stats->size = 12;
   stats->turn_speed = 2;
-  stats->magnetism_dist = 16;
-  stats->magnetism_percent = 0;
+  stats->magnetism_dist = 64;
+  stats->magnetism_frequency = INT_MAX;
   stats->shot_homing_percent = 0;
   stats->shot_homing_power = 0;
   stats->view_distance = 120;
@@ -114,7 +114,11 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
           break;
         case ITEM_MAGNETISM_UP:
           stats->magnetism_dist += 16;
-          stats->magnetism_percent += 20;
+          if (stats->magnetism_frequency == INT_MAX) {
+            stats->magnetism_frequency = 300;
+          } else {
+            stats->magnetism_frequency = stats->magnetism_frequency * 4 / 5;
+          }
           break;
         case ITEM_HOMING_POWER:
           if (x == 0) {
@@ -171,8 +175,8 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   clamp(&stats->shot_spread, 0, 32);
   clamp(&stats->size, 10, 50);
   clamp(&stats->turn_speed, 1, 64);
-  clamp(&stats->magnetism_dist, 16, 1000);
-  clamp(&stats->magnetism_percent, 0, 100);
+  clamp(&stats->magnetism_dist, 0, stats->sight_range);
+  clamp(&stats->magnetism_frequency, 15, INT_MAX);
   clamp(&stats->sight_range, 120, 240);
   clamp(&stats->view_distance, 120, 240);
   clamp(&stats->shot_homing_percent, 0, 100);
@@ -216,9 +220,6 @@ void GsSpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
     GS->xp_orbs[o].x = x;
     GS->xp_orbs[o].y = y;
     GS->xp_orbs[o].xp = xp;
-    if (GetRandomValue(0, 99) < GS->player.stats.magnetism_percent) {
-      GS->xp_orbs[o].noticed_player = true;
-    }
     return;
   }
 
@@ -227,9 +228,6 @@ void GsSpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
   GS->xp_orbs[oldest_idx].x = x;
   GS->xp_orbs[oldest_idx].y = y;
   GS->xp_orbs[oldest_idx].xp = xp;
-  if (GetRandomValue(0, 99) < GS->player.stats.magnetism_percent) {
-    GS->xp_orbs[oldest_idx].noticed_player = true;
-  }
 }
 
 void GsUpdateShapes(GameScene* GS) {
@@ -240,6 +238,10 @@ void GsUpdateShapes(GameScene* GS) {
     }
 
     // hp and damage-related
+    if (GS->player.ticks_since_magnetism == 0 && GS->shapes[s].sqdist_to_player < int_sq(GS->player.stats.magnetism_dist)) {
+      GS->shapes[s].move_speed = 0;
+    }
+
     if (GS->shapes[s].hp <= 0) {
       GS->shapes[s].marked_for_despawn = true;
     }
@@ -404,7 +406,7 @@ void GsUpdateShapes(GameScene* GS) {
 }
 
 int GsXpForLevelUp(GameScene* GS) {
-  return 6 + 6 * GS->player.level;
+  return 6 + 4 * GS->player.level;
 }
 
 void GsUpdatePlayer(GameScene* GS) {
@@ -468,6 +470,10 @@ void GsUpdatePlayer(GameScene* GS) {
 
   // misc
   ++GS->player.ticks_since_last_shot;
+  ++GS->player.ticks_since_magnetism;
+  if (GS->player.ticks_since_magnetism >= GS->player.stats.magnetism_frequency) {
+    GS->player.ticks_since_magnetism = 0;
+  }
 }
 
 void GsSpawnNewProjs(GameScene* GS) {
@@ -792,7 +798,11 @@ void GsUpdateXpOrbs(GameScene* GS) {
     angle_rotate_towards(&GS->xp_orbs[o].angle, target_angle, 4);
 
     int sqdist_to_player = int_sq(dx) + int_sq(dy);
-    if (sqdist_to_player < int_sq(GS->player.stats.magnetism_dist) + int_sq(GS->player.stats.size)) {
+    if (GS->player.ticks_since_magnetism == 0 &&
+        sqdist_to_player < int_sq(GS->player.stats.magnetism_dist)) {
+      GS->xp_orbs[o].noticed_player = true;
+    }
+    if (sqdist_to_player < int_sq(GS->player.stats.size * 2)) {
       GS->xp_orbs[o].noticed_player = true;
     }
 
@@ -809,12 +819,12 @@ void GsUpdateXpOrbs(GameScene* GS) {
         if (GS->player.xp >= GsXpForLevelUp(GS)) {
           GsLevelUpPlayer(GS);
         }
-        for (int o2 = 0; o2 < LENGTHOF(GS->xp_orbs); ++o2) {
-          if (!GS->xp_orbs[o2].exists) {
-            continue;
-          }
-          GS->xp_orbs[o2].noticed_player = true;
-        }
+        // for (int o2 = 0; o2 < LENGTHOF(GS->xp_orbs); ++o2) {
+        //   if (!GS->xp_orbs[o2].exists) {
+        //     continue;
+        //   }
+        //   GS->xp_orbs[o2].noticed_player = true;
+        // }
 
         GS->xp_orbs[o] = (GsXpOrb){0};
         GS->xp_orbs[o].exists = false;
@@ -866,6 +876,7 @@ void GsUpdateOlPickItem(GameScene* GS) {
 }
 
 void GsInit(GameScene* GS) {
+  GS->player.item_counts[ITEM_MAGNETISM_UP] = 1;
   GsUpdatePlayerStats(GS, &GS->player.stats);
   GS->player.hp = GS->player.stats.max_hp;
   GS->camera.zoom = fixed_new(1, 0);
