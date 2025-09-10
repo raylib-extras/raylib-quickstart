@@ -226,9 +226,28 @@ void GsDrawPickItemOverlay(GameScene* GS) {
 
   for (int i = 0; i < GS->ol_pick_item.item_count; ++i) {
     int text_x = ol_x + lh;
-    int text_y = ol_y + lh * (4 + i);
+    int text_y = ol_y + lh * (4 + i * 4);
+
     bool is_selected = (i == GS->ol_pick_item.selected_item_idx);
-    DrawPrintf(text_x, text_y, WHITE, "%s %s", (is_selected ? "> " : " "), item_strs[GS->ol_pick_item.items[i]]);
+    const char* prefix = (is_selected ? "> " : " ");
+
+    char buf[256] = "";
+    strcpy(buf, prefix);
+    strcat(buf, "+");
+    strcat(buf, item_strs[GS->ol_pick_item.choices[i].item_a]);
+    if (GS->ol_pick_item.choices[i].item_b != ITEM_INVALID) {
+      strcat(buf, "\n");
+      strcat(buf, prefix);
+      strcat(buf, "+");
+      strcat(buf, item_strs[GS->ol_pick_item.choices[i].item_b]);
+    }
+    if (GS->ol_pick_item.choices[i].removed_item != ITEM_INVALID) {
+      strcat(buf, "\n");
+      strcat(buf, prefix);
+      strcat(buf, "-");
+      strcat(buf, item_strs[GS->ol_pick_item.choices[i].removed_item]);
+    }
+    DrawPrintf(text_x, text_y, WHITE, "%s", buf);
   }
 
   // Draw stat changes
@@ -238,7 +257,7 @@ void GsDrawPickItemOverlay(GameScene* GS) {
     for (GsPlayerStatType s = 0; s < STAT_COUNT; ++s) {
       if (GS->player.stats.as_int[s] != GS->player.tmp_stats.as_int[s]) {
         bool is_upgrade = stat_lower_is_better[s] == (GS->player.tmp_stats.as_int[s] <= GS->player.stats.as_int[s]);
-        DrawPrintf(text_x, text_y, (is_upgrade ? LIME : LIGHTGRAY),
+        DrawPrintf(text_x, text_y, (is_upgrade ? LIME : RED),
                    "%s:\n  %d -> %d",
                    stat_names[s],
                    GS->player.stats.as_int[s],

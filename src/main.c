@@ -41,7 +41,7 @@ int main() {
   // it as the current working directory so we can load from it
   SearchAndSetResourceDir("resources");
   ft_font = LoadFontEx("Kitchen Sink.ttf", ft_height, NULL, 0);
-  SetTextLineSpacing(ft_height / 2);
+  SetTextLineSpacing(1);
   GameData game_data;
 
   GameData* GD = &game_data;

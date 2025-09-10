@@ -21,12 +21,16 @@ typedef enum GsPlayerStatType {
   STAT_SIZE,
   STAT_TURN_SPEED,
   STAT_MAGNETISM_DIST,
+  STAT_MAGNETISM_PERCENT,
   STAT_SHOT_HOMING_PERCENT,
   STAT_SHOT_HOMING_POWER,
   STAT_VIEW_DISTANCE,
   STAT_CONTACT_DAMAGE,
   STAT_ACTIVE_REGEN,
   STAT_PASSIVE_REGEN,
+  STAT_CREATIVITY,
+  STAT_SHOT_SPLIT_FRAGMENTS,
+  STAT_SHOT_SPLIT_PERCENT,
   STAT_COUNT
 } GsPlayerStatType;
 
@@ -50,12 +54,18 @@ typedef union GsPlayerStats {
     int turn_speed;
 
     int magnetism_dist;
+    int magnetism_percent;
     int shot_homing_percent;
     int shot_homing_power;
     int view_distance;
     int contact_damage;
     int active_regen;
     int passive_regen;
+
+    int creativity;
+
+    int shot_split_fragments;
+    int shot_split_percent;
   };
 } GsPlayerStats;
 
@@ -158,6 +168,8 @@ typedef struct GsProj {
   int homing_max_dist;
   int homing_power;
 
+  int split_fragments;  // 0 for non-splitting shot
+
   uint8_t hit_shape_ids[16];
 } GsProj;
 
@@ -206,9 +218,18 @@ typedef enum GsOverlayType {
   GS_OVERLAY_PICK_ITEM,
 } GsOverlayType;
 
+typedef struct GsOlPickItemChoice {
+  ItemType item_a;
+  ItemType item_b;
+  ItemType removed_item;
+
+} GsOlPickItemChoice;
+
 typedef struct GsOlPickItem {
   int item_count;
-  ItemType items[8];
+
+  GsOlPickItemChoice choices[8];
+
   int selected_item_idx;
   int ticks;
 } GsOlPickItem;

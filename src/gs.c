@@ -15,12 +15,16 @@ const char* stat_names[STAT_COUNT + 1] = {
     [STAT_SIZE] = "Size",
     [STAT_TURN_SPEED] = "Turn Speed",
     [STAT_MAGNETISM_DIST] = "Magnetism Power",
+    [STAT_MAGNETISM_PERCENT] = "Magnetism %",
     [STAT_SHOT_HOMING_PERCENT] = "Homing %",
     [STAT_SHOT_HOMING_POWER] = "Homing Power",
     [STAT_VIEW_DISTANCE] = "View Distance",
     [STAT_CONTACT_DAMAGE] = "Contact Damage",
     [STAT_ACTIVE_REGEN] = "Active Regen",
     [STAT_PASSIVE_REGEN] = "Passive Regen",
+    [STAT_CREATIVITY] = "Creativity",
+    [STAT_SHOT_SPLIT_FRAGMENTS] = "Split Fragments",
+    [STAT_SHOT_SPLIT_PERCENT] = "Split %",
     [STAT_COUNT] = "ERROR",
 };
 

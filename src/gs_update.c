@@ -61,12 +61,16 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->size = 12;
   stats->turn_speed = 2;
   stats->magnetism_dist = 16;
+  stats->magnetism_percent = 0;
   stats->shot_homing_percent = 0;
   stats->shot_homing_power = 0;
   stats->view_distance = 120;
   stats->contact_damage = 20;
   stats->active_regen = 20;
   stats->passive_regen = 0;
+  stats->creativity = 0;
+  stats->shot_split_fragments = 0;  // will be clamped to 2
+  stats->shot_split_percent = 0;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GS->player.item_counts[i]; ++x) {
       switch (i) {
@@ -108,6 +112,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
           break;
         case ITEM_MAGNETISM_UP:
           stats->magnetism_dist += 16;
+          stats->magnetism_percent += 20;
           break;
         case ITEM_HOMING_POWER:
           if (x == 0) {
@@ -135,6 +140,13 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
         case ITEM_CONTACT_DAMAGE_UP:
           stats->contact_damage = (stats->contact_damage * 3 / 2);
           break;
+        case ITEM_CREATIVITY_UP:
+          stats->creativity += 12;
+          break;
+        case ITEM_SPLIT_SHOT:
+          stats->shot_split_fragments += 1;
+          stats->shot_split_percent += 8;
+          break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
       }
@@ -154,12 +166,16 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   clamp(&stats->size, 10, 50);
   clamp(&stats->turn_speed, 1, 64);
   clamp(&stats->magnetism_dist, 16, 1000);
+  clamp(&stats->magnetism_percent, 0, 100);
   clamp(&stats->sight_range, 120, 240);
   clamp(&stats->view_distance, 120, 240);
   clamp(&stats->shot_homing_percent, 0, 100);
   clamp(&stats->shot_homing_power, 0, 100);
   clamp(&stats->active_regen, 0, 1000);
   clamp(&stats->passive_regen, 0, 1000);
+  clamp(&stats->creativity, 0, 100);
+  clamp(&stats->shot_split_fragments, 2, 12);
+  clamp(&stats->shot_split_percent, 0, 100);
 }
 
 int GsGetTextFxSlot(GameScene* GS) {
@@ -194,6 +210,9 @@ void GsSpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
     GS->xp_orbs[o].x = x;
     GS->xp_orbs[o].y = y;
     GS->xp_orbs[o].xp = xp;
+    if (GetRandomValue(0, 99) < GS->player.stats.magnetism_percent) {
+      GS->xp_orbs[o].noticed_player = true;
+    }
     return;
   }
 
@@ -202,6 +221,9 @@ void GsSpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
   GS->xp_orbs[oldest_idx].x = x;
   GS->xp_orbs[oldest_idx].y = y;
   GS->xp_orbs[oldest_idx].xp = xp;
+  if (GetRandomValue(0, 99) < GS->player.stats.magnetism_percent) {
+    GS->xp_orbs[oldest_idx].noticed_player = true;
+  }
 }
 
 void GsUpdateShapes(GameScene* GS) {
@@ -373,7 +395,7 @@ void GsUpdateShapes(GameScene* GS) {
 }
 
 int GsXpForLevelUp(GameScene* GS) {
-  return 6 + 6 * GS->player.level;
+  return 6 + 3 * GS->player.level;
 }
 
 void GsUpdatePlayer(GameScene* GS) {
@@ -431,7 +453,7 @@ void GsUpdatePlayer(GameScene* GS) {
       GS->ticks % 10 == 0) {
     GS->player.hp += GS->player.stats.active_regen;
   }
-  if (GS->ticks % 10 == 5) {
+  if (GS->player.hp < GS->player.stats.max_hp && GS->ticks % 10 == 5) {
     GS->player.hp += GS->player.stats.passive_regen;
   }
 
@@ -446,10 +468,15 @@ void GsSpawnNewProjs(GameScene* GS) {
     GS->player.reload_progress -= fixed_factor;
     GS->player.shot_progress += GS->player.stats.shot_count;
   }
-  bool first_shot_in_volley = true;
+  // who knows, maybe you could shoot multiple volleys in one tick
   while (GS->player.shot_progress >= fixed_new(1, 0)) {
     GS->player.shot_progress -= fixed_new(1, 0);
     GS->player.ticks_since_last_shot = 0;
+
+    // volley of projectiles
+    bool first_shot_in_volley = true;
+    bool volley_is_homing = (GetRandomValue(0, 99) < GS->player.stats.shot_homing_percent);
+    bool volley_is_splitting = (GetRandomValue(0, 99) < GS->player.stats.shot_split_percent);
     for (int p = 0; p < LENGTHOF(GS->projs); ++p) {
       if (GS->projs[p].exists) {
         continue;
@@ -458,10 +485,8 @@ void GsSpawnNewProjs(GameScene* GS) {
       GS->projs[p].pierce = GS->player.stats.shot_pierce;
       GS->projs[p].x = GS->player.x;
       GS->projs[p].y = GS->player.y;
-      if (GetRandomValue(0, 99) < GS->player.stats.shot_homing_percent) {
-        GS->projs[p].homing_max_dist = 256;
-        GS->projs[p].homing_power = GS->player.stats.shot_homing_power;
-      }
+
+      // effects which only apply to the first shot of the volley
       if (first_shot_in_volley) {
         GS->projs[p].move_speed = GS->player.stats.shot_speed;
         GS->projs[p].angle = GS->player.angle + GetRandomValue(-GS->player.stats.shot_spread, GS->player.stats.shot_spread);
@@ -478,9 +503,40 @@ void GsSpawnNewProjs(GameScene* GS) {
         GS->projs[p].despawn_timer = 120;
         GS->projs[p].kb = GS->player.stats.shot_kb / 2;
       }
+
+      // special effects that apply to the entire volley
+      if (volley_is_homing) {
+        GS->projs[p].homing_max_dist = 256;
+        GS->projs[p].homing_power = GS->player.stats.shot_homing_power;
+        GS->projs[p].despawn_timer *= 2;
+        GS->projs[p].move_speed /= 2;
+      }
+      if (volley_is_splitting) {
+        GS->projs[p].split_fragments = GS->player.stats.shot_split_fragments;
+        GS->projs[p].size = (GS->projs[p].size * 3 / 2);
+      }
+
       GS->projs[p].x += fixed_cos(GS->projs[p].angle) * GS->player.stats.size;
       GS->projs[p].y += fixed_sin(GS->projs[p].angle) * GS->player.stats.size;
       // printf("Spawned proj %d\n", i);
+      break;
+    }
+  }
+}
+
+void GsSpawnSplitProjs(GameScene* GS, int p) {
+  for (int i = 0; i < GS->projs[p].split_fragments; ++i) {
+    for (int q = 0; q < LENGTHOF(GS->projs); ++q) {
+      if (GS->projs[q].exists) {
+        continue;
+      }
+      GS->projs[q] = GS->projs[p];
+      GS->projs[q].angle = GetRandomValue(0, 255);
+      GS->projs[q].split_fragments = 0;
+      GS->projs[q].size /= 2;
+      GS->projs[q].despawn_timer = 60;
+      GS->projs[q].pierce = 1;
+
       break;
     }
   }
@@ -551,6 +607,7 @@ void GsUpdateProjs(GameScene* GS) {
     GS->projs[p].y += fixed_sin(GS->projs[p].angle) * GS->projs[p].move_speed / fixed_factor;
 
     // shape collision
+    bool hit_something = false;
     for (int s = 0; s < LENGTHOF(GS->shapes); ++s) {
       if (!GS->shapes[s].exists) {
         continue;
@@ -582,6 +639,8 @@ void GsUpdateProjs(GameScene* GS) {
         continue;
       }
 
+      hit_something = true;
+
       // damage the shape
       GS->shapes[s].hp -= GS->projs[p].damage;
       GS->shapes[s].ticks_since_damaged = 0;
@@ -608,6 +667,10 @@ void GsUpdateProjs(GameScene* GS) {
         GS->projs[p].despawn_timer = 0;
         break;
       }
+    }
+
+    if (hit_something && GS->projs[p].split_fragments > 0) {
+      GsSpawnSplitProjs(GS, p);
     }
   }
 }
@@ -654,13 +717,43 @@ void GsUpdateTextFx(GameScene* GS) {
 
 void GsLevelUpPlayer(GameScene* GS) {
   GS->curr_overlay = GS_OVERLAY_PICK_ITEM;
-  int* seq = LoadRandomSequence(3, 0, ITEM_COUNT - 1);
-  GS->ol_pick_item = (GsOlPickItem){
-      .item_count = 3,
-      .items = {seq[0], seq[1], seq[2]},
-      .selected_item_idx = 0,
-      .ticks = 0};
-  UnloadRandomSequence(seq);
+  GS->ol_pick_item = (GsOlPickItem){0};
+  GS->ol_pick_item.item_count = 3;
+  for (int c = 0; c < GS->ol_pick_item.item_count; ++c) {
+    GsOlPickItemChoice* choice = &GS->ol_pick_item.choices[c];
+
+  reroll:
+    *choice = (GsOlPickItemChoice){
+        .item_a = GetRandomValue(0, ITEM_COUNT - 1),
+        .item_b = ITEM_INVALID,
+        .removed_item = ITEM_INVALID};
+
+    // reroll item_a until it's not equal to any other item_a
+    for (int c2 = 0; c2 < GS->ol_pick_item.item_count; ++c2) {
+      if (c != c2 && choice->item_a == GS->ol_pick_item.choices[c2].item_a) {
+        goto reroll;
+      }
+    }
+
+    // Creative choices
+    if (GetRandomValue(0, 99) < GS->player.stats.creativity) {
+      int quality = GetRandomValue(0, 2);
+      // traded item
+      if (quality == 0 || quality == 1) {
+        int traded = GetRandomValue(0, ITEM_COUNT - 1);
+        if (traded != choice->item_a && GS->player.item_counts[traded] > 0) {
+          choice->removed_item = traded;
+        }
+      }
+      // bonus item
+      if (quality == 1 || quality == 2) {
+        choice->item_b = GetRandomValue(0, ITEM_COUNT - 1);
+      }
+    }
+  }
+  if (GS->player.level > 80) {
+    GS->curr_overlay = GS_OVERLAY_NONE;
+  }
 
   GS->player.xp -= GsXpForLevelUp(GS);
   // GsSpawnPickup(GS, GS->player.x, GS->player.y - fixed_new(60, 0));
@@ -737,14 +830,20 @@ void GsUpdateOlPickItem(GameScene* GS) {
   };
   GS->ol_pick_item.selected_item_idx %= GS->ol_pick_item.item_count;
 
-  ItemType selected_item = GS->ol_pick_item.items[GS->ol_pick_item.selected_item_idx];
+  GsOlPickItemChoice choice = GS->ol_pick_item.choices[GS->ol_pick_item.selected_item_idx];
 
-  ++GS->player.item_counts[selected_item];
+  ++GS->player.item_counts[choice.item_a];
+  if (choice.item_b != ITEM_INVALID) ++GS->player.item_counts[choice.item_b];
+  if (choice.removed_item != ITEM_INVALID) --GS->player.item_counts[choice.removed_item];
   GsUpdatePlayerStats(GS, &GS->player.tmp_stats);
-  --GS->player.item_counts[selected_item];
+  --GS->player.item_counts[choice.item_a];
+  if (choice.item_b != ITEM_INVALID) --GS->player.item_counts[choice.item_b];
+  if (choice.removed_item != ITEM_INVALID) ++GS->player.item_counts[choice.removed_item];
 
   if (IsKeyPressed(KEY_SPACE)) {
-    ++GS->player.item_counts[selected_item];
+    ++GS->player.item_counts[choice.item_a];
+    if (choice.item_b != ITEM_INVALID) ++GS->player.item_counts[choice.item_b];
+    if (choice.removed_item != ITEM_INVALID) --GS->player.item_counts[choice.removed_item];
     GS->player.stats = GS->player.tmp_stats;
     GS->curr_overlay = GS_OVERLAY_NONE;
   }

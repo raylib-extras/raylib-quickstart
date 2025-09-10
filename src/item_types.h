@@ -1,7 +1,8 @@
 #pragma once
 
 typedef enum ItemType {
-  ITEM_SPEED_UP,
+  ITEM_INVALID = -1,
+  ITEM_SPEED_UP = 0,
   ITEM_FIRE_RATE_UP,
   ITEM_TURN_SPEED_UP,
   ITEM_DAMAGE_UP,
@@ -16,6 +17,8 @@ typedef enum ItemType {
   ITEM_MAX_HP_UP,
   ITEM_REGEN_UP,
   ITEM_CONTACT_DAMAGE_UP,
+  ITEM_CREATIVITY_UP,
+  ITEM_SPLIT_SHOT,
   ITEM_COUNT
 } ItemType;
 
