@@ -109,9 +109,10 @@ GsShapeVariant PickShapeVariant(GameScene* GS, int sides) {
   }
 }
 
-void SetShapeStats(GsShape* shape, int sides, GsShapeVariant variant) {
-  shape->sides = sides;
-  shape->variant = variant;
+void SetShapeStats(GameScene* GS, int s) {
+  GsShape* shape = &GS->shapes[s];
+  int sides = shape->sides;
+  GsShapeVariant variant = shape->variant;
   switch (sides) {
     case 3: {
       shape->max_hp = 200;
@@ -126,7 +127,7 @@ void SetShapeStats(GsShape* shape, int sides, GsShapeVariant variant) {
     } break;
     case 4: {
       shape->max_hp = 400;
-      shape->max_move_speed = fixed_new(24, 0) / target_fps;
+      shape->max_move_speed = fixed_new(48, 0) / target_fps;
       shape->regen = 4;
       shape->sides = 4;
       shape->size = 12;
@@ -137,7 +138,7 @@ void SetShapeStats(GsShape* shape, int sides, GsShapeVariant variant) {
     } break;
     case 5: {
       shape->max_hp = 1000;
-      shape->max_move_speed = fixed_new(16, 0) / target_fps;
+      shape->max_move_speed = fixed_new(32, 0) / target_fps;
       shape->regen = 12;
       shape->sides = 5;
       shape->size = 24;
@@ -148,7 +149,7 @@ void SetShapeStats(GsShape* shape, int sides, GsShapeVariant variant) {
     } break;
     case 6: {
       shape->max_hp = 5000;
-      shape->max_move_speed = fixed_new(16, 0) / target_fps;
+      shape->max_move_speed = fixed_new(32, 0) / target_fps;
       shape->regen = 50;
       shape->sides = 6;
       shape->size = 40;
@@ -169,7 +170,7 @@ void SetShapeStats(GsShape* shape, int sides, GsShapeVariant variant) {
       shape->fg = DARKGRAY;
       shape->bg = BLACK;
       shape->size *= 2;
-      shape->max_hp *= 4;
+      shape->max_hp *= 8;
       shape->regen /= 2;
       shape->max_move_speed;
       shape->xp *= 2;
@@ -177,7 +178,7 @@ void SetShapeStats(GsShape* shape, int sides, GsShapeVariant variant) {
     case SHAPE_VARIANT_FAST: {
       shape->fg = ORANGE;
       shape->bg = BLACK;
-      shape->max_hp *= 2;
+      shape->max_hp *= 4;
       shape->regen = 0;
       shape->max_move_speed *= 3;
       shape->xp *= 2;
@@ -185,7 +186,7 @@ void SetShapeStats(GsShape* shape, int sides, GsShapeVariant variant) {
     case SHAPE_VARIANT_HEALING: {
       shape->fg = RED;
       shape->bg = WHITE;
-      shape->max_hp *= 2;
+      shape->max_hp *= 4;
       shape->regen += 10;
       shape->xp *= 2;
     } break;
@@ -195,6 +196,8 @@ void SetShapeStats(GsShape* shape, int sides, GsShapeVariant variant) {
   }
 
   shape->hp = shape->max_hp;
+  shape->max_move_speed += fixed_new(GS->player.level, 0) / target_fps;
+  fixed_clamp(&shape->max_move_speed, 0, fixed_new(128, 0) / target_fps);
   shape->marked_for_despawn = false;
   shape->contact_damage = 20;
 }
@@ -215,7 +218,10 @@ void SpawnChildShapes(GameScene* GS, int parent) {
     GS->shapes[s].kb_angle = ang;
     GS->shapes[s].i_frames = 30;
     GS->shapes[s].ticks_since_damaged = 0;
-    SetShapeStats(&GS->shapes[s], parent_sides - 1, GS->shapes[parent].variant);
+    GS->shapes[s].sides = parent_sides - 1;
+    GS->shapes[s].variant = GS->shapes[parent].variant;
+    SetShapeStats(GS, s);
     GS->shapes[s].hp = GS->shapes[s].max_hp / 2;
+    GS->shapes[s].xp /= 2;
   }
 }

@@ -7,7 +7,8 @@
 #include "shape_util.h"
 
 void GsSpawnNewShapes(GameScene* GS) {
-  if (GS->ticks % 15 == 0 && GS->shape_count < (LENGTHOF(GS->shapes) / 2)) {
+  int shape_limit = 25 + GS->player.level;
+  if (GS->ticks % 2 == 0 && GS->shape_count < (LENGTHOF(GS->shapes) / 2) && GS->shape_count < shape_limit) {
     fixed_t new_x = GS->player.x + fixed_new(GetRandomValue(-render_w, render_w), 0);
     fixed_t new_y = GS->player.y + fixed_new(GetRandomValue(-render_h, render_h), 0);
     if (fixed_abs(new_x - GS->player.x) / fixed_factor < render_w / 2 &&
@@ -22,8 +23,9 @@ void GsSpawnNewShapes(GameScene* GS) {
     GS->shapes[s].y = new_y;
     GS->shapes[s].move_angle = GetRandomValue(0, angle_factor - 1);
     GS->shapes[s].ticks_since_damaged = 1000;
-    int sides = PickShapeSides(GS);
-    SetShapeStats(&GS->shapes[s], sides, PickShapeVariant(GS, sides));
+    GS->shapes[s].sides = PickShapeSides(GS);
+    GS->shapes[s].variant = PickShapeVariant(GS, GS->shapes[s].sides);
+    SetShapeStats(GS, s);
     // printf("Spawned shape %d\n", s);
   }
 }
@@ -51,7 +53,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->active_regen_delay = 300;
   stats->shot_damage = 40;
   stats->max_move_speed = fixed_new(1, 128);
-  stats->reload_delay = fixed_new(0, 128);
+  stats->reload_delay = fixed_new(0, 64);
   stats->shot_count = fixed_new(1, 0);
   stats->shot_kb = fixed_new(0, 0);
   stats->shot_pierce = 1;
@@ -69,7 +71,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->active_regen = 20;
   stats->passive_regen = 0;
   stats->creativity = 0;
-  stats->shot_split_fragments = 0;  // will be clamped to 2
+  stats->shot_split_fragments = 2;
   stats->shot_split_percent = 0;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GS->player.item_counts[i]; ++x) {
@@ -134,18 +136,22 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
           break;
         case ITEM_REGEN_UP:
           stats->active_regen_delay = stats->active_regen_delay * 75 / 100;
-          stats->active_regen = stats->active_regen * 3 / 2;
+          stats->active_regen = (stats->active_regen + 10) * 11 / 10;
           stats->passive_regen += 2;
           break;
         case ITEM_CONTACT_DAMAGE_UP:
-          stats->contact_damage = (stats->contact_damage * 3 / 2);
+          stats->contact_damage = (stats->contact_damage + 10) * 11 / 10;
           break;
         case ITEM_CREATIVITY_UP:
           stats->creativity += 12;
           break;
         case ITEM_SPLIT_SHOT:
-          stats->shot_split_fragments += 1;
-          stats->shot_split_percent += 8;
+          if (x == 0) {
+            stats->shot_split_percent += 20;
+          } else {
+            stats->shot_split_percent += 5;
+            stats->shot_split_fragments += 1;
+          }
           break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
@@ -331,20 +337,23 @@ void GsUpdateShapes(GameScene* GS) {
 
     // player collision
     ++GS->shapes[s].ticks_since_damaged_player;
-    if (GS->shapes[s].ticks_since_damaged_player >= 6 &&
-        GS->shapes[s].sqdist_to_player < int_sq(GS->player.stats.size)) {
+    if (GS->shapes[s].i_frames <= 0 &&
+        GS->shapes[s].ticks_since_damaged_player >= 6 &&
+        GS->shapes[s].sqdist_to_player < int_sq(GS->player.stats.size + GS->shapes[s].size - 8)) {
       // damage self
       GS->shapes[s].hp -= GS->player.stats.contact_damage;
       GS->shapes[s].ticks_since_damaged = 0;
       GS->shapes[s].ticks_since_damaged_player = 0;
       GS->shapes[s].grant_xp_on_despawn = true;
-      GS->shapes[s].x += fixed_cos(GS->shapes[s].angle_to_player) * -1;
-      GS->shapes[s].y += fixed_sin(GS->shapes[s].angle_to_player) * -1;
-      GS->shapes[s].move_speed = (GS->shapes[s].max_move_speed * -2);  // use negative move speed instead of knockback stat so it doesn't override knockback
+      // GS->shapes[s].x += fixed_cos(GS->shapes[s].angle_to_player) * -1;
+      // GS->shapes[s].y += fixed_sin(GS->shapes[s].angle_to_player) * -1;
+      // GS->shapes[s].move_speed = (GS->shapes[s].max_move_speed * -2);  // use negative move speed instead of knockback stat so it doesn't override knockback
 
       // damage player
-      GS->player.hp -= GS->shapes[s].contact_damage;
-      GS->player.ticks_since_damaged = 0;
+      if (GS->shapes[s].hp > 0) {
+        GS->player.hp -= GS->shapes[s].contact_damage;
+        GS->player.ticks_since_damaged = 0;
+      }
 
       // make text fx for shape dmg
       int t = GsGetTextFxSlot(GS);
@@ -395,7 +404,7 @@ void GsUpdateShapes(GameScene* GS) {
 }
 
 int GsXpForLevelUp(GameScene* GS) {
-  return 6 + 3 * GS->player.level;
+  return 6 + 6 * GS->player.level;
 }
 
 void GsUpdatePlayer(GameScene* GS) {
@@ -477,6 +486,10 @@ void GsSpawnNewProjs(GameScene* GS) {
     bool first_shot_in_volley = true;
     bool volley_is_homing = (GetRandomValue(0, 99) < GS->player.stats.shot_homing_percent);
     bool volley_is_splitting = (GetRandomValue(0, 99) < GS->player.stats.shot_split_percent);
+    if (volley_is_splitting) {
+      // double reload delay after a splitting shot
+      GS->player.shot_progress -= fixed_new(1, 0);
+    }
     for (int p = 0; p < LENGTHOF(GS->projs); ++p) {
       if (GS->projs[p].exists) {
         continue;
@@ -503,7 +516,6 @@ void GsSpawnNewProjs(GameScene* GS) {
         GS->projs[p].despawn_timer = 120;
         GS->projs[p].kb = GS->player.stats.shot_kb / 2;
       }
-
       // special effects that apply to the entire volley
       if (volley_is_homing) {
         GS->projs[p].homing_max_dist = 256;
@@ -512,6 +524,7 @@ void GsSpawnNewProjs(GameScene* GS) {
         GS->projs[p].move_speed /= 2;
       }
       if (volley_is_splitting) {
+        GS->projs[p].damage *= 2;
         GS->projs[p].split_fragments = GS->player.stats.shot_split_fragments;
         GS->projs[p].size = (GS->projs[p].size * 3 / 2);
       }
@@ -525,13 +538,16 @@ void GsSpawnNewProjs(GameScene* GS) {
 }
 
 void GsSpawnSplitProjs(GameScene* GS, int p) {
+  int delta = angle_factor / GS->projs[p].split_fragments;
+  angle_t ang = GS->projs[p].angle + delta / 2;
   for (int i = 0; i < GS->projs[p].split_fragments; ++i) {
+    ang += delta;
     for (int q = 0; q < LENGTHOF(GS->projs); ++q) {
       if (GS->projs[q].exists) {
         continue;
       }
       GS->projs[q] = GS->projs[p];
-      GS->projs[q].angle = GetRandomValue(0, 255);
+      GS->projs[q].angle = ang;
       GS->projs[q].split_fragments = 0;
       GS->projs[q].size /= 2;
       GS->projs[q].despawn_timer = 60;

@@ -243,7 +243,7 @@ typedef struct GameScene {
 
   GsCamera camera;
 
-  GsShape shapes[100];
+  GsShape shapes[150];
   int shape_count;
 
   GsProj projs[60];

@@ -42,9 +42,16 @@ void GsDrawProjs(GameScene* GS) {
     if (render_size < 2) {
       render_size = 2;
     }
-    Color color = (GS->projs[p].is_homing && GS->projs[p].despawn_timer % 2 == 0 ? MAGENTA : GRAY);
-    DrawPoly(render_pos, 4, render_size, GS->ticks + p * 15, color);
-    DrawPolyLinesEx(render_pos, 4, render_size, GS->ticks + p * 15, 2.0f, BLACK);
+    Color color = GRAY;
+    if (GS->projs[p].homing_power > 0 && GS->projs[p].despawn_timer % 2 == 0) {
+      color = MAGENTA;
+    }
+    int sides = 4;
+    if (GS->projs[p].split_fragments > 0) {
+      sides = 3;
+    }
+    DrawPoly(render_pos, sides, render_size, GS->ticks + p * 15, color);
+    DrawPolyLinesEx(render_pos, sides, render_size, GS->ticks + p * 15, 2.0f, BLACK);
   }
 }
 
