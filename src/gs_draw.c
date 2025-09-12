@@ -46,6 +46,9 @@ void GsDrawProjs(GameScene* GS) {
     if (GS->projs[p].homing_power > 0 && GS->projs[p].despawn_timer % 2 == 0) {
       color = MAGENTA;
     }
+    if (GS->projs[p].frost_power > 0) {
+      color = SKYBLUE;
+    }
     int sides = 4;
     if (GS->projs[p].split_fragments > 0) {
       sides = 3;
@@ -63,6 +66,14 @@ void GsDrawShapes(GameScene* GS) {
     int rx, ry;
     GetRenderCoords(GS, GS->shapes[i].x, GS->shapes[i].y, default_z, &rx, &ry);
     Vector2 render_pos = {rx, ry};
+
+    // frost background
+    if (GS->shapes[i].frost_ticks > 0) {
+      int frost_size = GetRenderLength(GS, GS->shapes[i].size - 6 + min(10, GS->shapes[i].frost_ticks / 8), default_z);
+      DrawPoly(render_pos, 3, frost_size, GS->ticks * 4, SKYBLUE);
+      DrawPoly(render_pos, 3, frost_size, -GS->ticks * 4, SKYBLUE);
+    }
+
     // shape
     Color fg = (GS->shapes[i].ticks_since_damaged >= 8) ? GS->shapes[i].fg : WHITE;
     Color bg = (GS->shapes[i].ticks_since_damaged >= 8) ? GS->shapes[i].bg : PINK;
@@ -72,6 +83,13 @@ void GsDrawShapes(GameScene* GS) {
     }
     if (GS->shapes[i].variant == SHAPE_VARIANT_HEALING) {
       rotation = -GS->ticks;
+    }
+    if (GS->shapes[i].frost_ticks > 0) {
+      rotation = 0;
+      fg = WHITE;
+      // render_pos.x += GetRandomValue(0, 1);
+      render_pos.x += GS->shapes[i].frost_ticks % 2;
+      render_pos.y += GS->shapes[i].frost_ticks % 2;
     }
     int render_size = GetRenderLength(GS, GS->shapes[i].size, default_z);
     if (render_size < 3) {

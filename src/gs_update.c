@@ -73,6 +73,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->creativity = 0;
   stats->shot_split_fragments = 2;
   stats->shot_split_percent = 0;
+  stats->shot_frost_percent = 0;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GS->player.item_counts[i]; ++x) {
       switch (i) {
@@ -157,6 +158,9 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
             stats->shot_split_fragments += 1;
           }
           break;
+        case ITEM_FROST_SHOT:
+          stats->shot_frost_percent += 8;
+          break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
       }
@@ -186,6 +190,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   clamp(&stats->creativity, 0, 100);
   clamp(&stats->shot_split_fragments, 2, 12);
   clamp(&stats->shot_split_percent, 0, 100);
+  clamp(&stats->shot_frost_percent, 0, 100);
 }
 
 int GsGetTextFxSlot(GameScene* GS) {
@@ -237,11 +242,12 @@ void GsUpdateShapes(GameScene* GS) {
       continue;
     }
 
-    // hp and damage-related
+    // magnet pulse
     if (GS->player.ticks_since_magnetism == 0 && GS->shapes[s].sqdist_to_player < int_sq(GS->player.stats.magnetism_dist)) {
       GS->shapes[s].move_speed = 0;
     }
 
+    // hp and damage-related
     if (GS->shapes[s].hp <= 0) {
       GS->shapes[s].marked_for_despawn = true;
     }
@@ -249,8 +255,10 @@ void GsUpdateShapes(GameScene* GS) {
     if (GS->shapes[s].i_frames > 0) {
       --GS->shapes[s].i_frames;
     }
-    if (GS->ticks % 60 < GS->shapes[s].regen && (GS->shapes[s].hp < GS->shapes[s].max_hp)) {
-      GS->shapes[s].hp += 10;
+    if (GS->shapes[s].frost_ticks <= 0) {
+      if (GS->ticks % 60 < GS->shapes[s].regen && (GS->shapes[s].hp < GS->shapes[s].max_hp)) {
+        GS->shapes[s].hp += 10;
+      }
     }
     if (GS->shapes[s].variant == SHAPE_VARIANT_HEALING && (GS->shapes[s].hp < GS->shapes[s].max_hp)) {
       GS->shapes[s].hp += GS->shapes[s].max_hp / 240;
@@ -271,6 +279,24 @@ void GsUpdateShapes(GameScene* GS) {
       GS->shapes[s].exists = false;
       --GS->shape_count;
       continue;
+    }
+
+    // frost
+    if (GS->shapes[s].frost_ticks > 0) {
+      --GS->shapes[s].frost_ticks;
+      GS->shapes[s].move_speed = 0;
+    }
+    if (GS->shapes[s].frost_ticks == 1) {
+      // damage self
+      GS->shapes[s].hp -= 200;
+      GS->shapes[s].ticks_since_damaged = 0;
+      GS->shapes[s].grant_xp_on_despawn = true;
+      // make text fx for shape dmg
+      int t = GsGetTextFxSlot(GS);
+      GS->text_fx[t].x = GS->shapes[s].x;
+      GS->text_fx[t].y = GS->shapes[s].y;
+      GS->text_fx[t].despawn_timer = 60;
+      snprintf(GS->text_fx[t].text, LENGTHOF(GS->text_fx[t].text), "-%d", 200);
     }
 
     // movement
@@ -492,6 +518,7 @@ void GsSpawnNewProjs(GameScene* GS) {
     bool first_shot_in_volley = true;
     bool volley_is_homing = (GetRandomValue(0, 99) < GS->player.stats.shot_homing_percent);
     bool volley_is_splitting = (GetRandomValue(0, 99) < GS->player.stats.shot_split_percent);
+    bool volley_is_frost = (GetRandomValue(0, 99) < GS->player.stats.shot_frost_percent);
     if (volley_is_splitting) {
       // double reload delay after a splitting shot
       GS->player.shot_progress -= fixed_new(1, 0);
@@ -533,6 +560,10 @@ void GsSpawnNewProjs(GameScene* GS) {
         GS->projs[p].damage *= 2;
         GS->projs[p].split_fragments = GS->player.stats.shot_split_fragments;
         GS->projs[p].size = (GS->projs[p].size * 3 / 2);
+      }
+      if (volley_is_frost) {
+        GS->projs[p].frost_power = target_fps * 8;
+        GS->projs[p].move_speed *= 2;
       }
 
       GS->projs[p].x += fixed_cos(GS->projs[p].angle) * GS->player.stats.size;
@@ -666,6 +697,7 @@ void GsUpdateProjs(GameScene* GS) {
       // damage the shape
       GS->shapes[s].hp -= GS->projs[p].damage;
       GS->shapes[s].ticks_since_damaged = 0;
+      GS->shapes[s].frost_ticks = max(GS->shapes[s].frost_ticks, GS->projs[p].frost_power);
       GS->shapes[s].kb_angle = GS->projs[p].angle;
       GS->shapes[s].kb_speed = fixed_max(GS->shapes[s].kb_speed, GS->projs[p].kb * GS->shapes[s].max_move_speed / fixed_factor);
 
@@ -876,7 +908,7 @@ void GsUpdateOlPickItem(GameScene* GS) {
 }
 
 void GsInit(GameScene* GS) {
-  GS->player.item_counts[ITEM_MAGNETISM_UP] = 1;
+  for (int i = 0; i < ITEM_COUNT; ++i) GS->player.item_counts[i] = 0;
   GsUpdatePlayerStats(GS, &GS->player.stats);
   GS->player.hp = GS->player.stats.max_hp;
   GS->camera.zoom = fixed_new(1, 0);

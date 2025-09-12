@@ -19,6 +19,7 @@ typedef enum ItemType {
   ITEM_CONTACT_DAMAGE_UP,
   ITEM_CREATIVITY_UP,
   ITEM_SPLIT_SHOT,
+  ITEM_FROST_SHOT,
   ITEM_COUNT
 } ItemType;
 

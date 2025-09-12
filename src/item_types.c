@@ -18,5 +18,6 @@ const char* const item_strs[] = {
     [ITEM_CONTACT_DAMAGE_UP] = "CDmg",
     [ITEM_CREATIVITY_UP] = "Create",
     [ITEM_SPLIT_SHOT] = "Split",
+    [ITEM_FROST_SHOT] = "Frost",
     [ITEM_COUNT] = "ERROR",
 };

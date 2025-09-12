@@ -31,6 +31,7 @@ typedef enum GsPlayerStatType {
   STAT_CREATIVITY,
   STAT_SHOT_SPLIT_FRAGMENTS,
   STAT_SHOT_SPLIT_PERCENT,
+  STAT_SHOT_FROST_PERCENT,
   STAT_COUNT
 } GsPlayerStatType;
 
@@ -66,6 +67,7 @@ typedef union GsPlayerStats {
 
     int shot_split_fragments;
     int shot_split_percent;
+    int shot_frost_percent;
   };
 } GsPlayerStats;
 
@@ -150,6 +152,8 @@ typedef struct GsShape {
   int ticks_since_damaged;
   int i_frames;
 
+  int frost_ticks;
+
 } GsShape;
 
 typedef struct GsProj {
@@ -169,6 +173,8 @@ typedef struct GsProj {
   bool is_homing;
   int homing_max_dist;
   int homing_power;
+
+  int frost_power;
 
   int split_fragments;  // 0 for non-splitting shot
 
