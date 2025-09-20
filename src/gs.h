@@ -251,17 +251,17 @@ typedef struct GameScene {
 
   GsCamera camera;
 
-  GsShape shapes[150];
+  GsShape shapes[160];
   int shape_count;
 
-  GsProj projs[60];
+  GsProj projs[80];
 
   GsPickup pickups[40];
   int pickups_spawned;
 
   GsTextFx text_fx[40];
 
-  GsXpOrb xp_orbs[40];
+  GsXpOrb xp_orbs[80];
 
   GsOverlayType curr_overlay;
   GsOlPickItem ol_pick_item;

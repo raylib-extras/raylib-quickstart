@@ -148,7 +148,11 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
           stats->contact_damage = (stats->contact_damage + 10) * 11 / 10;
           break;
         case ITEM_CREATIVITY_UP:
-          stats->creativity += 12;
+          if (x == 0) {
+            stats->creativity = 12;
+          } else {
+            stats->creativity += 6;
+          }
           break;
         case ITEM_SPLIT_SHOT:
           if (x == 0) {
@@ -159,7 +163,11 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
           }
           break;
         case ITEM_FROST_SHOT:
-          stats->shot_frost_percent += 8;
+          if (x == 0) {
+            stats->shot_frost_percent = 8;
+          } else {
+            stats->shot_frost_percent += 4;
+          }
           break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
@@ -190,7 +198,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   clamp(&stats->creativity, 0, 100);
   clamp(&stats->shot_split_fragments, 2, 12);
   clamp(&stats->shot_split_percent, 0, 100);
-  clamp(&stats->shot_frost_percent, 0, 100);
+  clamp(&stats->shot_frost_percent, 0, 50);
 }
 
 int GsGetTextFxSlot(GameScene* GS) {
@@ -221,6 +229,7 @@ void GsSpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
       continue;
     }
 
+    GS->xp_orbs[o] = (GsXpOrb){0};
     GS->xp_orbs[o].exists = true;
     GS->xp_orbs[o].x = x;
     GS->xp_orbs[o].y = y;
@@ -229,6 +238,7 @@ void GsSpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
   }
 
   // override oldest XP orb if all slots are full
+  GS->xp_orbs[oldest_idx] = (GsXpOrb){0};
   GS->xp_orbs[oldest_idx].exists = true;
   GS->xp_orbs[oldest_idx].x = x;
   GS->xp_orbs[oldest_idx].y = y;
@@ -358,7 +368,7 @@ void GsUpdateShapes(GameScene* GS) {
     }
 
     // player distance-related despawning
-    if (GS->shapes[s].sqdist_to_player > int_sq(render_w)) {
+    if (GS->shapes[s].sqdist_to_player > int_sq(render_w * 2)) {
       GS->shapes[s].marked_for_despawn = true;
       GS->shapes[s].spawn_children_on_despawn = false;
     }
@@ -562,7 +572,7 @@ void GsSpawnNewProjs(GameScene* GS) {
         GS->projs[p].size = (GS->projs[p].size * 3 / 2);
       }
       if (volley_is_frost) {
-        GS->projs[p].frost_power = target_fps * 8;
+        GS->projs[p].frost_power = target_fps * 4;
         GS->projs[p].move_speed *= 2;
       }
 
@@ -836,6 +846,14 @@ void GsUpdateXpOrbs(GameScene* GS) {
     }
     if (sqdist_to_player < int_sq(GS->player.stats.size * 2)) {
       GS->xp_orbs[o].noticed_player = true;
+    }
+
+    angle_t angle_to_player = angle_from_line(GS->xp_orbs[o].x, GS->xp_orbs[o].y, GS->player.x, GS->player.y);
+
+    // move faraway off-screen orbs closer
+    if (sqdist_to_player > int_sq(render_w * 2)) {
+      GS->xp_orbs[o].x += fixed_cos(angle_to_player) * render_w;
+      GS->xp_orbs[o].y += fixed_sin(angle_to_player) * render_w;
     }
 
     if (GS->xp_orbs[o].noticed_player) {
