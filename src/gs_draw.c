@@ -1,7 +1,6 @@
 #include "gs_draw.h"
 
 #include <string.h>
-#include <strings.h>
 
 #include "camera_util.h"
 
@@ -114,7 +113,7 @@ void GsDrawShapes(GameScene* GS) {
 
     // healthbar
     if (GS->shapes[i].hp < GS->shapes[i].max_hp) {
-      int bar_width = GetRenderLength(GS, GS->shapes[i].max_hp / 20, default_z);
+      int bar_width = int_min(render_w / 2, GetRenderLength(GS, GS->shapes[i].max_hp / 20, default_z));
       int filled_width = bar_width * GS->shapes[i].hp / GS->shapes[i].max_hp;
       Color color = GREEN;
       if (filled_width <= bar_width / 2) {
@@ -254,6 +253,10 @@ void GsDrawUi(GameScene* GS) {
     DrawRectangle(0, render_h - 4, bar_width, 4, BLACK);
     DrawRectangle(0, render_h - 4, fixed_whole(GS->draw_data.xp_bar_filled_width), 4, color);
     DrawPrintf(0, render_h - 4 - ft_height, BLACK, "Level %d, %d/%d XP", GS->player.level, GS->player.xp, GsXpForLevelUp(GS));
+    if (GS->player.upgrades_pending > 0) {
+      DrawPrintf(0, render_h - 4 - ft_height * 2, DARKBLUE, "Press [SPACE] to receive %d upgrade%s!",
+                 GS->player.upgrades_pending, GS->player.upgrades_pending == 1 ? "" : "s");
+    }
   }
 }
 
@@ -265,8 +268,8 @@ void GsDrawPickItemOverlay(GameScene* GS) {
   const int lh = ft_height;  // line height
   DrawRectangle(ol_x, ol_y, ol_w, ol_h, BLACK);
 
-  DrawPrintf(ol_x + lh, ol_y + lh, YELLOW, "You are now level %d!", GS->player.level);
-  DrawPrintf(ol_x + lh, ol_y + lh + lh, GRAY, "Pick an upgrade!");
+  DrawPrintf(ol_x + lh, ol_y + lh, YELLOW, "Pick an upgrade!");
+  DrawPrintf(ol_x + lh, ol_y + lh + lh, GRAY, "Upgrades remaining: %d", GS->player.upgrades_pending);
 
   for (int i = 0; i < GS->ol_pick_item.item_count; ++i) {
     int text_x = ol_x + lh;

@@ -53,7 +53,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->active_regen_delay = 300;
   stats->shot_damage = 40;
   stats->max_move_speed = fixed_new(1, 128);
-  stats->reload_delay = fixed_new(0, 64);
+  stats->reload_delay = fixed_new(0, 80);
   stats->shot_count = fixed_new(1, 0);
   stats->shot_kb = fixed_new(0, 0);
   stats->shot_pierce = 1;
@@ -450,6 +450,47 @@ int GsXpForLevelUp(GameScene* GS) {
   return 6 + 4 * GS->player.level;
 }
 
+void GsOfferUpgrade(GameScene* GS) {
+  GS->curr_overlay = GS_OVERLAY_PICK_ITEM;
+  GS->ol_pick_item = (GsOlPickItem){0};
+  GS->ol_pick_item.item_count = 3;
+  for (int c = 0; c < GS->ol_pick_item.item_count; ++c) {
+    GsOlPickItemChoice* choice = &GS->ol_pick_item.choices[c];
+
+  reroll:
+    *choice = (GsOlPickItemChoice){
+        .item_a = GetRandomValue(0, ITEM_COUNT - 1),
+        .item_b = ITEM_INVALID,
+        .removed_item = ITEM_INVALID};
+
+    // reroll item_a until it's not equal to any other item_a
+    for (int c2 = 0; c2 < GS->ol_pick_item.item_count; ++c2) {
+      if (c != c2 && choice->item_a == GS->ol_pick_item.choices[c2].item_a) {
+        goto reroll;
+      }
+    }
+
+    // Creative choices
+    if (GetRandomValue(0, 99) < GS->player.stats.creativity) {
+      int quality = GetRandomValue(0, 2);
+      // traded item
+      if (quality == 0 || quality == 1) {
+        int traded = GetRandomValue(0, ITEM_COUNT - 1);
+        if (traded != choice->item_a && GS->player.item_counts[traded] > 0) {
+          choice->removed_item = traded;
+        }
+      }
+      // bonus item
+      if (quality == 1 || quality == 2) {
+        choice->item_b = GetRandomValue(0, ITEM_COUNT - 1);
+      }
+    }
+  }
+  if (GS->player.level > 80) {
+    GS->curr_overlay = GS_OVERLAY_NONE;
+  }
+}
+
 void GsUpdatePlayer(GameScene* GS) {
   // player movement
   GS->player.move_speed = GS->player.stats.max_move_speed;
@@ -457,6 +498,10 @@ void GsUpdatePlayer(GameScene* GS) {
   if (IsKeyDown(KEY_D)) GS->player.x += GS->player.move_speed;
   if (IsKeyDown(KEY_S)) GS->player.y += GS->player.move_speed;
   if (IsKeyDown(KEY_W)) GS->player.y -= GS->player.move_speed;
+
+  if (IsKeyPressed(KEY_SPACE) && GS->player.upgrades_pending > 0) {
+    GsOfferUpgrade(GS);
+  }
 
   // find index of closest shape
   int closest_sqdist = INT_MAX;
@@ -587,7 +632,7 @@ void GsSpawnNewProjs(GameScene* GS) {
             .cx = GS->player.x,
             .cy = GS->player.y,
             .radius = GS->player.stats.size * 2,
-            .target_radius = GS->player.stats.size * 2 + GetRandomValue(10, 50),
+            .target_radius = GS->player.stats.size * 2 + GetRandomValue(0, 10),
             .angle = GS->projs[p].move_angle,
             .rot_speed = 2,
             .track_player_angle = false,
@@ -833,48 +878,10 @@ void GsUpdateTextFx(GameScene* GS) {
 }
 
 void GsLevelUpPlayer(GameScene* GS) {
-  GS->curr_overlay = GS_OVERLAY_PICK_ITEM;
-  GS->ol_pick_item = (GsOlPickItem){0};
-  GS->ol_pick_item.item_count = 3;
-  for (int c = 0; c < GS->ol_pick_item.item_count; ++c) {
-    GsOlPickItemChoice* choice = &GS->ol_pick_item.choices[c];
-
-  reroll:
-    *choice = (GsOlPickItemChoice){
-        .item_a = GetRandomValue(0, ITEM_COUNT - 1),
-        .item_b = ITEM_INVALID,
-        .removed_item = ITEM_INVALID};
-
-    // reroll item_a until it's not equal to any other item_a
-    for (int c2 = 0; c2 < GS->ol_pick_item.item_count; ++c2) {
-      if (c != c2 && choice->item_a == GS->ol_pick_item.choices[c2].item_a) {
-        goto reroll;
-      }
-    }
-
-    // Creative choices
-    if (GetRandomValue(0, 99) < GS->player.stats.creativity) {
-      int quality = GetRandomValue(0, 2);
-      // traded item
-      if (quality == 0 || quality == 1) {
-        int traded = GetRandomValue(0, ITEM_COUNT - 1);
-        if (traded != choice->item_a && GS->player.item_counts[traded] > 0) {
-          choice->removed_item = traded;
-        }
-      }
-      // bonus item
-      if (quality == 1 || quality == 2) {
-        choice->item_b = GetRandomValue(0, ITEM_COUNT - 1);
-      }
-    }
-  }
-  if (GS->player.level > 80) {
-    GS->curr_overlay = GS_OVERLAY_NONE;
-  }
-
   GS->player.xp -= GsXpForLevelUp(GS);
   // GsSpawnPickup(GS, GS->player.x, GS->player.y - fixed_new(60, 0));
   ++GS->player.level;
+  ++GS->player.upgrades_pending;
 }
 
 void GsUpdateXpOrbs(GameScene* GS) {
@@ -974,12 +981,17 @@ void GsUpdateOlPickItem(GameScene* GS) {
     if (choice.item_b != ITEM_INVALID) ++GS->player.item_counts[choice.item_b];
     if (choice.removed_item != ITEM_INVALID) --GS->player.item_counts[choice.removed_item];
     GS->player.stats = GS->player.tmp_stats;
-    GS->curr_overlay = GS_OVERLAY_NONE;
+    --GS->player.upgrades_pending;
+    if (GS->player.upgrades_pending > 0) {
+      GsOfferUpgrade(GS);
+    } else {
+      GS->curr_overlay = GS_OVERLAY_NONE;
+    }
   }
 }
 
 void GsInit(GameScene* GS) {
-  for (int i = 0; i < ITEM_COUNT; ++i) GS->player.item_counts[i] = 1;
+  // for (int i = 0; i < ITEM_COUNT; ++i) GS->player.item_counts[i] = 1;
   // GS->player.item_counts[ITEM_HOMING_POWER] = 8;
   // GS->player.item_counts[ITEM_PIERCE_UP] = 8;
   GsUpdatePlayerStats(GS, &GS->player.stats);

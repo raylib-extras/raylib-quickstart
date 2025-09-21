@@ -90,6 +90,7 @@ typedef struct GsPlayer {
   int ticks_since_damaged;
 
   int level;
+  int upgrades_pending;
   int xp;
   int total_xp;
 
