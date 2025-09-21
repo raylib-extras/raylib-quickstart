@@ -74,6 +74,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->shot_split_fragments = 2;
   stats->shot_split_percent = 0;
   stats->shot_frost_percent = 0;
+  stats->max_orbitals = 0;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GS->player.item_counts[i]; ++x) {
       switch (i) {
@@ -169,6 +170,9 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
             stats->shot_frost_percent += 4;
           }
           break;
+        case ITEM_ORBITALS_UP:
+          stats->max_orbitals += 2;
+          break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
       }
@@ -199,6 +203,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   clamp(&stats->shot_split_fragments, 2, 12);
   clamp(&stats->shot_split_percent, 0, 100);
   clamp(&stats->shot_frost_percent, 0, 50);
+  clamp(&stats->max_orbitals, 0, LENGTHOF(GS->projs) / 2);
 }
 
 int GsGetTextFxSlot(GameScene* GS) {
@@ -529,6 +534,7 @@ void GsSpawnNewProjs(GameScene* GS) {
     bool volley_is_homing = (GetRandomValue(0, 99) < GS->player.stats.shot_homing_percent);
     bool volley_is_splitting = (GetRandomValue(0, 99) < GS->player.stats.shot_split_percent);
     bool volley_is_frost = (GetRandomValue(0, 99) < GS->player.stats.shot_frost_percent);
+    bool volley_is_orbit = (GS->orbital_proj_count < GS->player.stats.max_orbitals);
     if (volley_is_splitting) {
       // double reload delay after a splitting shot
       GS->player.shot_progress -= fixed_new(1, 0);
@@ -545,7 +551,7 @@ void GsSpawnNewProjs(GameScene* GS) {
       // effects which only apply to the first shot of the volley
       if (first_shot_in_volley) {
         GS->projs[p].move_speed = GS->player.stats.shot_speed;
-        GS->projs[p].angle = GS->player.angle + GetRandomValue(-GS->player.stats.shot_spread, GS->player.stats.shot_spread);
+        GS->projs[p].move_angle = GS->player.angle + GetRandomValue(-GS->player.stats.shot_spread, GS->player.stats.shot_spread);
         GS->projs[p].size = 6 + (GS->player.stats.shot_damage / 40);
         GS->projs[p].damage = GS->player.stats.shot_damage;
         GS->projs[p].despawn_timer = 120;
@@ -553,7 +559,7 @@ void GsSpawnNewProjs(GameScene* GS) {
         first_shot_in_volley = false;
       } else {
         GS->projs[p].move_speed = GS->player.stats.shot_speed * GetRandomValue(50, 90) / 100;
-        GS->projs[p].angle = GS->player.angle + GetRandomValue(-GS->player.stats.shot_spread * 2, GS->player.stats.shot_spread * 2);
+        GS->projs[p].move_angle = GS->player.angle + GetRandomValue(-GS->player.stats.shot_spread * 2, GS->player.stats.shot_spread * 2);
         GS->projs[p].size = 6 + (GS->player.stats.shot_damage / 80);
         GS->projs[p].damage = GS->player.stats.shot_damage / 2;
         GS->projs[p].despawn_timer = 120;
@@ -561,10 +567,10 @@ void GsSpawnNewProjs(GameScene* GS) {
       }
       // special effects that apply to the entire volley
       if (volley_is_homing) {
-        GS->projs[p].homing_max_dist = 256;
+        GS->projs[p].homing_max_dist = 120;
         GS->projs[p].homing_power = GS->player.stats.shot_homing_power;
         GS->projs[p].despawn_timer *= 2;
-        GS->projs[p].move_speed /= 2;
+        GS->projs[p].move_speed = GS->projs[p].move_speed * 2 / 3;
       }
       if (volley_is_splitting) {
         GS->projs[p].damage *= 2;
@@ -575,9 +581,23 @@ void GsSpawnNewProjs(GameScene* GS) {
         GS->projs[p].frost_power = target_fps * 4;
         GS->projs[p].move_speed *= 2;
       }
+      if (volley_is_orbit) {
+        GS->projs[p].orbit = (GsProjOrbit){
+            .timer = 8 * target_fps,
+            .cx = GS->player.x,
+            .cy = GS->player.y,
+            .radius = GS->player.stats.size * 2,
+            .target_radius = GS->player.stats.size * 2 + GetRandomValue(10, 50),
+            .angle = GS->projs[p].move_angle,
+            .rot_speed = 2,
+            .track_player_angle = false,
+            // .track_player_angle_offset = GetRandomValue(-16, 16),
+        };
+        GS->projs[p].despawn_timer += GS->projs[p].orbit.timer;
+      }
 
-      GS->projs[p].x += fixed_cos(GS->projs[p].angle) * GS->player.stats.size;
-      GS->projs[p].y += fixed_sin(GS->projs[p].angle) * GS->player.stats.size;
+      GS->projs[p].x += fixed_cos(GS->projs[p].move_angle) * GS->player.stats.size;
+      GS->projs[p].y += fixed_sin(GS->projs[p].move_angle) * GS->player.stats.size;
       // printf("Spawned proj %d\n", i);
       break;
     }
@@ -586,7 +606,7 @@ void GsSpawnNewProjs(GameScene* GS) {
 
 void GsSpawnSplitProjs(GameScene* GS, int p) {
   int delta = angle_factor / GS->projs[p].split_fragments;
-  angle_t ang = GS->projs[p].angle + delta / 2;
+  angle_t ang = GS->projs[p].move_angle + delta / 2;
   for (int i = 0; i < GS->projs[p].split_fragments; ++i) {
     ang += delta;
     for (int q = 0; q < LENGTHOF(GS->projs); ++q) {
@@ -594,11 +614,16 @@ void GsSpawnSplitProjs(GameScene* GS, int p) {
         continue;
       }
       GS->projs[q] = GS->projs[p];
-      GS->projs[q].angle = ang;
+      GS->projs[q].move_angle = ang;
       GS->projs[q].split_fragments = 0;
       GS->projs[q].size /= 2;
       GS->projs[q].despawn_timer = 60;
       GS->projs[q].pierce = 1;
+
+      if (GS->projs[q].orbit.timer > 0) {
+        GS->projs[q].orbit.target_radius += GetRandomValue(0, 20);
+        GS->projs[q].orbit.timer += target_fps;
+      }
 
       break;
     }
@@ -606,11 +631,17 @@ void GsSpawnSplitProjs(GameScene* GS, int p) {
 }
 
 void GsUpdateProjs(GameScene* GS) {
+  GS->orbital_proj_count = 0;
+
   // proj logic
   for (int p = 0; p < LENGTHOF(GS->projs); ++p) {
     if (!GS->projs[p].exists) {
       continue;
     }
+    if (GS->projs[p].orbit.timer > 0) {
+      ++GS->orbital_proj_count;
+    }
+
     // despawn timer
     --GS->projs[p].despawn_timer;
     if (GS->projs[p].despawn_timer <= 0) {
@@ -625,7 +656,7 @@ void GsUpdateProjs(GameScene* GS) {
     if (GS->projs[p].homing_max_dist > 0 && GS->projs[p].homing_power > 0) {
       // find nearest shape we haven't hit yet
       int nearest_shape_idx = -1;
-      int s_sqdist = INT_MAX;
+      int nearest_shape_sqdist = INT_MAX;
       for (int s = 0; s < LENGTHOF(GS->shapes); ++s) {
         if (!GS->shapes[s].exists) {
           continue;
@@ -643,19 +674,20 @@ void GsUpdateProjs(GameScene* GS) {
         int dx = fixed_whole(GS->shapes[s].x) - fixed_whole(GS->projs[p].x);
         int dy = fixed_whole(GS->shapes[s].y) - fixed_whole(GS->projs[p].y);
         int sqdist = int_sq(dx) + int_sq(dy);
-        if (sqdist < s_sqdist) {
-          s_sqdist = sqdist;
+        if (sqdist < nearest_shape_sqdist) {
+          nearest_shape_sqdist = sqdist;
           nearest_shape_idx = s;
         }
       }
       // home, then update homing power
-      if (nearest_shape_idx != -1 && s_sqdist < int_sq(GS->projs[p].homing_max_dist + GS->shapes[nearest_shape_idx].size)) {
+      if (nearest_shape_idx != -1 && nearest_shape_sqdist < int_sq(GS->projs[p].homing_max_dist + GS->shapes[nearest_shape_idx].size)) {
         angle_t target_angle = angle_from_line(GS->projs[p].x, GS->projs[p].y, GS->shapes[nearest_shape_idx].x, GS->shapes[nearest_shape_idx].y);
-        if (target_angle != GS->projs[p].angle) {
-          GS->projs[p].is_homing = true;
-          angle_rotate_towards(&GS->projs[p].angle, target_angle, 8);
-          --GS->projs[p].homing_power;
-        }
+
+        // home
+        GS->projs[p].is_homing = true;
+        angle_rotate_towards(&GS->projs[p].move_angle, target_angle, 8);
+        --GS->projs[p].homing_power;
+
         // make text fx
         int t = GsGetTextFxSlot(GS);
         GS->text_fx[t].x = GS->projs[p].x;
@@ -665,9 +697,30 @@ void GsUpdateProjs(GameScene* GS) {
       }
     }
 
+    if (GS->projs[p].orbit.timer > 0) {
+      --GS->projs[p].orbit.timer;
+    }
     // movement
-    GS->projs[p].x += fixed_cos(GS->projs[p].angle) * GS->projs[p].move_speed / fixed_factor;
-    GS->projs[p].y += fixed_sin(GS->projs[p].angle) * GS->projs[p].move_speed / fixed_factor;
+    if (GS->projs[p].orbit.timer == 0 || GS->projs[p].is_homing) {
+      // movement using move_speed and move_angle
+      GS->projs[p].x += fixed_cos(GS->projs[p].move_angle) * GS->projs[p].move_speed / fixed_factor;
+      GS->projs[p].y += fixed_sin(GS->projs[p].move_angle) * GS->projs[p].move_speed / fixed_factor;
+
+    } else {
+      // movement using orbit
+      if (GS->projs[p].orbit.track_player_angle) {
+        angle_rotate_towards(&GS->projs[p].orbit.angle, GS->player.angle + GS->projs[p].orbit.track_player_angle_offset, GS->projs[p].orbit.rot_speed);
+      } else {
+        GS->projs[p].orbit.angle += GS->projs[p].orbit.rot_speed;
+      }
+
+      GS->projs[p].move_angle = GS->projs[p].orbit.angle;
+      nudge(&GS->projs[p].orbit.radius, GS->projs[p].orbit.target_radius, 1);
+      GS->projs[p].orbit.cx = GS->player.x;
+      GS->projs[p].orbit.cy = GS->player.y;
+      GS->projs[p].x = fixed_lerp(GS->projs[p].x, GS->projs[p].orbit.cx + fixed_cos(GS->projs[p].orbit.angle) * GS->projs[p].orbit.radius, fixed_new(0, 24));
+      GS->projs[p].y = fixed_lerp(GS->projs[p].y, GS->projs[p].orbit.cy + fixed_sin(GS->projs[p].orbit.angle) * GS->projs[p].orbit.radius, fixed_new(0, 24));
+    }
 
     // shape collision
     bool hit_something = false;
@@ -707,8 +760,8 @@ void GsUpdateProjs(GameScene* GS) {
       // damage the shape
       GS->shapes[s].hp -= GS->projs[p].damage;
       GS->shapes[s].ticks_since_damaged = 0;
-      GS->shapes[s].frost_ticks = max(GS->shapes[s].frost_ticks, GS->projs[p].frost_power);
-      GS->shapes[s].kb_angle = GS->projs[p].angle;
+      GS->shapes[s].frost_ticks = int_max(GS->shapes[s].frost_ticks, GS->projs[p].frost_power);
+      GS->shapes[s].kb_angle = GS->projs[p].move_angle;
       GS->shapes[s].kb_speed = fixed_max(GS->shapes[s].kb_speed, GS->projs[p].kb * GS->shapes[s].max_move_speed / fixed_factor);
 
       // make text fx
@@ -844,7 +897,7 @@ void GsUpdateXpOrbs(GameScene* GS) {
         sqdist_to_player < int_sq(GS->player.stats.magnetism_dist)) {
       GS->xp_orbs[o].noticed_player = true;
     }
-    if (sqdist_to_player < int_sq(GS->player.stats.size * 2)) {
+    if (sqdist_to_player < int_sq(GS->player.stats.size + GS->xp_orbs[o].xp / 2 + 12)) {
       GS->xp_orbs[o].noticed_player = true;
     }
 
@@ -926,7 +979,9 @@ void GsUpdateOlPickItem(GameScene* GS) {
 }
 
 void GsInit(GameScene* GS) {
-  for (int i = 0; i < ITEM_COUNT; ++i) GS->player.item_counts[i] = 0;
+  for (int i = 0; i < ITEM_COUNT; ++i) GS->player.item_counts[i] = 1;
+  // GS->player.item_counts[ITEM_HOMING_POWER] = 8;
+  // GS->player.item_counts[ITEM_PIERCE_UP] = 8;
   GsUpdatePlayerStats(GS, &GS->player.stats);
   GS->player.hp = GS->player.stats.max_hp;
   GS->camera.zoom = fixed_new(1, 0);

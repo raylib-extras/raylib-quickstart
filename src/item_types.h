@@ -20,6 +20,7 @@ typedef enum ItemType {
   ITEM_CREATIVITY_UP,
   ITEM_SPLIT_SHOT,
   ITEM_FROST_SHOT,
+  ITEM_ORBITALS_UP,
   ITEM_COUNT
 } ItemType;
 

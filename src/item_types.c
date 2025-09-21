@@ -19,5 +19,6 @@ const char* const item_strs[] = {
     [ITEM_CREATIVITY_UP] = "Create",
     [ITEM_SPLIT_SHOT] = "Split",
     [ITEM_FROST_SHOT] = "Frost",
+    [ITEM_ORBITALS_UP] = "Orbit",
     [ITEM_COUNT] = "ERROR",
 };

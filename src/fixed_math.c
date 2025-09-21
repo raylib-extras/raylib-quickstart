@@ -56,9 +56,9 @@ fixed_t fixed_sq(fixed_t fix) {
 }
 
 void nudge(int* num, int target, int delta) {
-  if (*num + target < delta) {
+  if (*num + delta < target) {
     *num += delta;
-  } else if (*num - target < delta) {
+  } else if (*num - delta > target) {
     *num -= delta;
   } else {
     *num = target;
@@ -100,14 +100,14 @@ void angle_rotate_towards(angle_t* ang, angle_t target, int turn_speed) {
   }
 }
 
-int min(int a, int b) {
+int int_min(int a, int b) {
   return a < b ? a : b;
 }
 fixed_t fixed_min(fixed_t a, fixed_t b) {
   return a < b ? a : b;
 }
 
-int max(int a, int b) {
+int int_max(int a, int b) {
   return a > b ? a : b;
 }
 fixed_t fixed_max(fixed_t a, fixed_t b) {

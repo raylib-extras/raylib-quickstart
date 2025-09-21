@@ -43,8 +43,12 @@ void GsDrawProjs(GameScene* GS) {
       render_size = 2;
     }
     Color color = GRAY;
-    if (GS->projs[p].homing_power > 0 && GS->projs[p].despawn_timer % 2 == 0) {
-      color = MAGENTA;
+    if (GS->projs[p].homing_power > 0) {
+      if (GS->projs[p].is_homing && GS->projs[p].despawn_timer % 2 == 0) {
+        color = WHITE;
+      } else {
+        color = MAGENTA;
+      }
     }
     if (GS->projs[p].frost_power > 0) {
       color = SKYBLUE;
@@ -55,6 +59,16 @@ void GsDrawProjs(GameScene* GS) {
     }
     DrawPoly(render_pos, sides, render_size, GS->ticks + p * 15, color);
     DrawPolyLinesEx(render_pos, sides, render_size, GS->ticks + p * 15, 2.0f, BLACK);
+
+    // debug info
+    // DrawLine(render_pos.x, render_pos.y,
+    //          render_pos.x + fixed_whole(fixed_cos(GS->projs[p].move_angle) * GS->projs[p].move_speed * target_fps / fixed_factor / 4),
+    //          render_pos.y + fixed_whole(fixed_sin(GS->projs[p].move_angle) * GS->projs[p].move_speed * target_fps / fixed_factor / 4),
+    //          RED);
+    // DrawLine(render_pos.x, render_pos.y,
+    //          render_pos.x + fixed_whole(fixed_cos(GS->projs[p].orbit.angle) * 16),
+    //          render_pos.y + fixed_whole(fixed_sin(GS->projs[p].orbit.angle) * 16),
+    //          BLUE);
   }
 }
 
@@ -69,7 +83,7 @@ void GsDrawShapes(GameScene* GS) {
 
     // frost background
     if (GS->shapes[i].frost_ticks > 0) {
-      int frost_size = GetRenderLength(GS, GS->shapes[i].size - 6 + min(10, GS->shapes[i].frost_ticks / 8), default_z);
+      int frost_size = GetRenderLength(GS, GS->shapes[i].size - 6 + int_min(10, GS->shapes[i].frost_ticks / 8), default_z);
       DrawPoly(render_pos, 3, frost_size, GS->ticks * 4, SKYBLUE);
       DrawPoly(render_pos, 3, frost_size, -GS->ticks * 4, SKYBLUE);
     }

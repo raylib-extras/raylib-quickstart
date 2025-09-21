@@ -32,6 +32,7 @@ typedef enum GsPlayerStatType {
   STAT_SHOT_SPLIT_FRAGMENTS,
   STAT_SHOT_SPLIT_PERCENT,
   STAT_SHOT_FROST_PERCENT,
+  STAT_MAX_ORBITALS,
   STAT_COUNT
 } GsPlayerStatType;
 
@@ -68,6 +69,8 @@ typedef union GsPlayerStats {
     int shot_split_fragments;
     int shot_split_percent;
     int shot_frost_percent;
+
+    int max_orbitals;
   };
 } GsPlayerStats;
 
@@ -156,13 +159,32 @@ typedef struct GsShape {
 
 } GsShape;
 
+typedef struct GsProjOrbit {
+  int timer;  // 0 means inactive
+
+  fixed_t cx;  // center x, center y
+  fixed_t cy;
+
+  int radius;
+  int target_radius;
+  angle_t angle;
+
+  int rot_speed;
+
+  bool track_player_angle;
+  angle_t track_player_angle_offset;
+
+} GsProjOrbit;
+
 typedef struct GsProj {
   bool exists;
 
   fixed_t x;
   fixed_t y;
   fixed_t move_speed;
-  angle_t angle;
+  angle_t move_angle;
+
+  GsProjOrbit orbit;
 
   int damage;
   int pierce;
@@ -255,6 +277,7 @@ typedef struct GameScene {
   int shape_count;
 
   GsProj projs[80];
+  int orbital_proj_count;
 
   GsPickup pickups[40];
   int pickups_spawned;

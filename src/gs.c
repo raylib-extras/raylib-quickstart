@@ -26,6 +26,7 @@ const char* stat_names[STAT_COUNT + 1] = {
     [STAT_SHOT_SPLIT_FRAGMENTS] = "Split Fragments",
     [STAT_SHOT_SPLIT_PERCENT] = "Split %",
     [STAT_SHOT_FROST_PERCENT] = "Frost %",
+    [STAT_MAX_ORBITALS] = "Orbital Count",
     [STAT_COUNT] = "ERROR",
 };
 

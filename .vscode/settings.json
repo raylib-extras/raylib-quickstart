@@ -28,6 +28,7 @@
 		"system_error": "c",
 		"bit": "c",
 		"functional": "c",
-		"numeric": "c"
+		"numeric": "c",
+		"utility": "c"
 	}
 }
