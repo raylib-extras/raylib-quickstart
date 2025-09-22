@@ -2,8 +2,8 @@
 
 #include <raylib.h>
 
-#include "fixed_math.h"
 #include "item_types.h"
+#include "math_util.h"
 #include "stddef.h"
 
 typedef enum GsPlayerStatType {

@@ -4,9 +4,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "fixed_math.h"
 #include "gs.h"
 #include "item_types.h"
+#include "math_util.h"
 
 #define LENGTHOF(arr) (sizeof((arr)) / sizeof((arr)[0]))
 

@@ -116,7 +116,7 @@ void SetShapeStats(GameScene* GS, int s) {
   switch (sides) {
     case 3: {
       shape->max_hp = 200;
-      shape->max_move_speed = fixed_new(64, 0) / target_fps;
+      shape->max_move_speed = FixNew(64, 0) / target_fps;
       shape->regen = 0;
       shape->sides = 3;
       shape->size = 8;
@@ -127,7 +127,7 @@ void SetShapeStats(GameScene* GS, int s) {
     } break;
     case 4: {
       shape->max_hp = 400;
-      shape->max_move_speed = fixed_new(48, 0) / target_fps;
+      shape->max_move_speed = FixNew(48, 0) / target_fps;
       shape->regen = 4;
       shape->sides = 4;
       shape->size = 12;
@@ -138,7 +138,7 @@ void SetShapeStats(GameScene* GS, int s) {
     } break;
     case 5: {
       shape->max_hp = 1000;
-      shape->max_move_speed = fixed_new(32, 0) / target_fps;
+      shape->max_move_speed = FixNew(32, 0) / target_fps;
       shape->regen = 12;
       shape->sides = 5;
       shape->size = 24;
@@ -149,7 +149,7 @@ void SetShapeStats(GameScene* GS, int s) {
     } break;
     case 6: {
       shape->max_hp = 5000;
-      shape->max_move_speed = fixed_new(32, 0) / target_fps;
+      shape->max_move_speed = FixNew(32, 0) / target_fps;
       shape->regen = 50;
       shape->sides = 6;
       shape->size = 40;
@@ -196,8 +196,8 @@ void SetShapeStats(GameScene* GS, int s) {
   }
 
   shape->hp = shape->max_hp;
-  shape->max_move_speed += fixed_new(GS->player.level, 0) / target_fps;
-  fixed_clamp(&shape->max_move_speed, 0, fixed_new(128, 0) / target_fps);
+  shape->max_move_speed += FixNew(GS->player.level, 0) / target_fps;
+  FixClamp(&shape->max_move_speed, 0, FixNew(128, 0) / target_fps);
   shape->marked_for_despawn = false;
   shape->contact_damage = 20;
 }
@@ -214,7 +214,7 @@ void SpawnChildShapes(GameScene* GS, int parent) {
     }
     GS->shapes[s].x = GS->shapes[parent].x;
     GS->shapes[s].y = GS->shapes[parent].y;
-    GS->shapes[s].kb_speed = fixed_new(75, 0) / target_fps;
+    GS->shapes[s].kb_speed = FixNew(75, 0) / target_fps;
     GS->shapes[s].kb_angle = ang;
     GS->shapes[s].i_frames = 30;
     GS->shapes[s].ticks_since_damaged = 0;

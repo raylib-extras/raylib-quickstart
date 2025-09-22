@@ -13,10 +13,10 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include <time.h>
 
 #include "camera_util.h"
-#include "fixed_math.h"
 #include "gd.h"
 #include "gd_draw.h"
 #include "gd_update.h"
+#include "math_util.h"
 #include "perf.h"
 #include "resource_dir.h"  // utility header for SearchAndSetResourceDir
 

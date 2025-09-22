@@ -8,15 +8,15 @@ void GsDrawCheckerboard(GameScene* GS) {
   const int check_size = 128;
   const fixed_t check_z = default_z;
 
-  fixed_t check_center_x = (uint32_t)GS->player.x / fixed_new(check_size, 0) / 2 * fixed_new(check_size, 0) * 2;
-  fixed_t check_center_y = (uint32_t)GS->player.y / fixed_new(check_size, 0) / 2 * fixed_new(check_size, 0) * 2;
+  fixed_t check_center_x = (uint32_t)GS->player.x / FixNew(check_size, 0) / 2 * FixNew(check_size, 0) * 2;
+  fixed_t check_center_y = (uint32_t)GS->player.y / FixNew(check_size, 0) / 2 * FixNew(check_size, 0) * 2;
 
   for (int yidx = -4; yidx <= 3; ++yidx) {
     for (int xidx = -3; xidx <= 2; ++xidx) {
-      fixed_t check_x = check_center_x - (xidx * fixed_new(check_size, 0) * 2);
-      fixed_t check_y = check_center_y - (yidx * fixed_new(check_size, 0));
+      fixed_t check_x = check_center_x - (xidx * FixNew(check_size, 0) * 2);
+      fixed_t check_y = check_center_y - (yidx * FixNew(check_size, 0));
       if (yidx % 2 == 0) {
-        check_x -= fixed_new(check_size, 0);
+        check_x -= FixNew(check_size, 0);
       }
 
       int render_x, render_y;
@@ -61,12 +61,12 @@ void GsDrawProjs(GameScene* GS) {
 
     // debug info
     // DrawLine(render_pos.x, render_pos.y,
-    //          render_pos.x + fixed_whole(fixed_cos(GS->projs[p].move_angle) * GS->projs[p].move_speed * target_fps / fixed_factor / 4),
-    //          render_pos.y + fixed_whole(fixed_sin(GS->projs[p].move_angle) * GS->projs[p].move_speed * target_fps / fixed_factor / 4),
+    //          render_pos.x + FixWhole(FixCos(GS->projs[p].move_angle) * GS->projs[p].move_speed * target_fps / fixed_factor / 4),
+    //          render_pos.y + FixWhole(FixSin(GS->projs[p].move_angle) * GS->projs[p].move_speed * target_fps / fixed_factor / 4),
     //          RED);
     // DrawLine(render_pos.x, render_pos.y,
-    //          render_pos.x + fixed_whole(fixed_cos(GS->projs[p].orbit.angle) * 16),
-    //          render_pos.y + fixed_whole(fixed_sin(GS->projs[p].orbit.angle) * 16),
+    //          render_pos.x + FixWhole(FixCos(GS->projs[p].orbit.angle) * 16),
+    //          render_pos.y + FixWhole(FixSin(GS->projs[p].orbit.angle) * 16),
     //          BLUE);
   }
 }
@@ -82,7 +82,7 @@ void GsDrawShapes(GameScene* GS) {
 
     // frost background
     if (GS->shapes[i].frost_ticks > 0) {
-      int frost_size = GetRenderLength(GS, GS->shapes[i].size - 6 + int_min(10, GS->shapes[i].frost_ticks / 8), default_z);
+      int frost_size = GetRenderLength(GS, GS->shapes[i].size - 6 + IntMin(10, GS->shapes[i].frost_ticks / 8), default_z);
       DrawPoly(render_pos, 3, frost_size, GS->ticks * 4, SKYBLUE);
       DrawPoly(render_pos, 3, frost_size, -GS->ticks * 4, SKYBLUE);
     }
@@ -113,7 +113,7 @@ void GsDrawShapes(GameScene* GS) {
 
     // healthbar
     if (GS->shapes[i].hp < GS->shapes[i].max_hp) {
-      int bar_width = int_min(render_w / 2, GetRenderLength(GS, GS->shapes[i].max_hp / 20, default_z));
+      int bar_width = IntMin(render_w / 2, GetRenderLength(GS, GS->shapes[i].max_hp / 20, default_z));
       int filled_width = bar_width * GS->shapes[i].hp / GS->shapes[i].max_hp;
       Color color = GREEN;
       if (filled_width <= bar_width / 2) {
@@ -129,12 +129,12 @@ void GsDrawShapes(GameScene* GS) {
     // debug info
     // DrawPrintf(render_pos.x, render_pos.y, BLACK, "[%d]", i);
     // DrawLine(render_pos.x, render_pos.y,
-    //          render_pos.x + fixed_whole(fixed_cos(GS->shapes[i].move_angle) * GS->shapes[i].move_speed * target_fps / fixed_factor),
-    //          render_pos.y + fixed_whole(fixed_sin(GS->shapes[i].move_angle) * GS->shapes[i].move_speed * target_fps / fixed_factor),
+    //          render_pos.x + FixWhole(FixCos(GS->shapes[i].move_angle) * GS->shapes[i].move_speed * target_fps / fixed_factor),
+    //          render_pos.y + FixWhole(FixSin(GS->shapes[i].move_angle) * GS->shapes[i].move_speed * target_fps / fixed_factor),
     //          RED);
     // DrawLine(render_pos.x, render_pos.y,
-    //          render_pos.x + fixed_whole(fixed_cos(GS->shapes[i].kb_angle) * GS->shapes[i].kb_speed * target_fps / fixed_factor),
-    //          render_pos.y + fixed_whole(fixed_sin(GS->shapes[i].kb_angle) * GS->shapes[i].kb_speed * target_fps / fixed_factor),
+    //          render_pos.x + FixWhole(FixCos(GS->shapes[i].kb_angle) * GS->shapes[i].kb_speed * target_fps / fixed_factor),
+    //          render_pos.y + FixWhole(FixSin(GS->shapes[i].kb_angle) * GS->shapes[i].kb_speed * target_fps / fixed_factor),
     //          BLUE);
   }
 }
@@ -147,10 +147,10 @@ void GsDrawPlayer(GameScene* GS) {
   GetRenderCoords(GS, GS->player.x, GS->player.y, default_z, &rx, &ry);
   Vector2 render_pos = {rx, ry};
   int cannon_distance = GS->player.stats.size * 3 / 4 + GS->player.ticks_since_last_shot;
-  clamp(&cannon_distance, GS->player.stats.size * 3 / 4, GS->player.stats.size * 5 / 4);
+  IntClamp(&cannon_distance, GS->player.stats.size * 3 / 4, GS->player.stats.size * 5 / 4);
   GetRenderCoords(GS,
-                  GS->player.x + fixed_cos(GS->player.angle) * cannon_distance,
-                  GS->player.y + fixed_sin(GS->player.angle) * cannon_distance,
+                  GS->player.x + FixCos(GS->player.angle) * cannon_distance,
+                  GS->player.y + FixSin(GS->player.angle) * cannon_distance,
                   default_z,
                   &rx, &ry);
   Vector2 cannon_pos = {rx, ry};
@@ -165,8 +165,8 @@ void GsDrawPlayer(GameScene* GS) {
 
   // DrawLine(render_pos.x,
   //          render_pos.y,
-  //          render_pos.x + fixed_whole(fixed_cos(GS->player.angle) * 16),
-  //          render_pos.y + fixed_whole(fixed_sin(GS->player.angle) * 16),
+  //          render_pos.x + FixWhole(FixCos(GS->player.angle) * 16),
+  //          render_pos.y + FixWhole(FixSin(GS->player.angle) * 16),
   //          GREEN);
 
   // healthbar
@@ -206,12 +206,12 @@ void GsDrawPickups(GameScene* GS) {
     DrawPoly(render_pos, 4, render_size, 0, WHITE);
     DrawPolyLinesEx(render_pos, 4, render_size, 0, 2.0f, SKYBLUE);
     DrawPrintf(render_pos.x - 3 * strlen(item_strs[GS->pickups[p].type]), render_pos.y, BLACK, "%s", item_strs[GS->pickups[p].type]);
-    if (fixed_abs(GS->pickups[p].x - GS->player.x) > fixed_new(render_w / 2, 0) ||
-        fixed_abs(GS->pickups[p].y - GS->player.y) > fixed_new(render_h / 2, 0)) {
-      Vector2 marker_pos = {fixed_whole(GS->player.x - GS->camera.x) + render_w / 2,
-                            fixed_whole(GS->player.y - GS->camera.y) + render_h / 2};
-      marker_pos.x += fixed_whole(fixed_cos(GS->pickups[p].angle_to_player) * -150);
-      marker_pos.y += fixed_whole(fixed_sin(GS->pickups[p].angle_to_player) * -110);
+    if (FixAbs(GS->pickups[p].x - GS->player.x) > FixNew(render_w / 2, 0) ||
+        FixAbs(GS->pickups[p].y - GS->player.y) > FixNew(render_h / 2, 0)) {
+      Vector2 marker_pos = {FixWhole(GS->player.x - GS->camera.x) + render_w / 2,
+                            FixWhole(GS->player.y - GS->camera.y) + render_h / 2};
+      marker_pos.x += FixWhole(FixCos(GS->pickups[p].angle_to_player) * -150);
+      marker_pos.y += FixWhole(FixSin(GS->pickups[p].angle_to_player) * -110);
       DrawPrintf(marker_pos.x, marker_pos.y, BLACK, "!");
     }
   }
@@ -248,10 +248,10 @@ void GsDrawUi(GameScene* GS) {
   {
     int bar_width = render_w;
     int target_filled_width = bar_width * GS->player.xp / GsXpForLevelUp(GS);
-    GS->draw_data.xp_bar_filled_width = fixed_lerp(GS->draw_data.xp_bar_filled_width, fixed_new(target_filled_width, 0), fixed_new(0, 32));
+    FixLerp(&GS->draw_data.xp_bar_filled_width, FixNew(target_filled_width, 0), FixNew(0, 32));
     Color color = MAGENTA;
     DrawRectangle(0, render_h - 4, bar_width, 4, BLACK);
-    DrawRectangle(0, render_h - 4, fixed_whole(GS->draw_data.xp_bar_filled_width), 4, color);
+    DrawRectangle(0, render_h - 4, FixWhole(GS->draw_data.xp_bar_filled_width), 4, color);
     DrawPrintf(0, render_h - 4 - ft_height, BLACK, "Level %d, %d/%d XP", GS->player.level, GS->player.xp, GsXpForLevelUp(GS));
     if (GS->player.upgrades_pending > 0) {
       DrawPrintf(0, render_h - 4 - ft_height * 2, DARKBLUE, "Press [SPACE] to receive %d upgrade%s!",

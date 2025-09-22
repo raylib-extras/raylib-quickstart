@@ -9,10 +9,10 @@
 void GsSpawnNewShapes(GameScene* GS) {
   int shape_limit = 25 + GS->player.level;
   if (GS->ticks % 2 == 0 && GS->shape_count < (LENGTHOF(GS->shapes) / 2) && GS->shape_count < shape_limit) {
-    fixed_t new_x = GS->player.x + fixed_new(GetRandomValue(-render_w, render_w), 0);
-    fixed_t new_y = GS->player.y + fixed_new(GetRandomValue(-render_h, render_h), 0);
-    if (fixed_abs(new_x - GS->player.x) / fixed_factor < render_w / 2 &&
-        fixed_abs(new_y - GS->player.y) / fixed_factor < render_h / 2) {
+    fixed_t new_x = GS->player.x + FixNew(GetRandomValue(-render_w, render_w), 0);
+    fixed_t new_y = GS->player.y + FixNew(GetRandomValue(-render_h, render_h), 0);
+    if (FixAbs(new_x - GS->player.x) / fixed_factor < render_w / 2 &&
+        FixAbs(new_y - GS->player.y) / fixed_factor < render_h / 2) {
       return;
     }
     int s = ClaimEmptyShapeSlot(GS);
@@ -52,12 +52,12 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->max_hp = 400;
   stats->active_regen_delay = 300;
   stats->shot_damage = 40;
-  stats->max_move_speed = fixed_new(1, 128);
-  stats->reload_delay = fixed_new(0, 80);
-  stats->shot_count = fixed_new(1, 0);
-  stats->shot_kb = fixed_new(0, 0);
+  stats->max_move_speed = FixNew(1, 128);
+  stats->reload_delay = FixNew(0, 80);
+  stats->shot_count = FixNew(1, 0);
+  stats->shot_kb = FixNew(0, 0);
   stats->shot_pierce = 1;
-  stats->shot_speed = fixed_new(2, 0);
+  stats->shot_speed = FixNew(2, 0);
   stats->shot_spread = 1;
   stats->sight_range = render_h / 2;
   stats->size = 12;
@@ -79,7 +79,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
     for (int x = 0; x < GS->player.item_counts[i]; ++x) {
       switch (i) {
         case ITEM_SPEED_UP:
-          stats->max_move_speed += fixed_new(0, 96);
+          stats->max_move_speed += FixNew(0, 96);
           break;
         case ITEM_FIRE_RATE_UP:
           stats->reload_delay = stats->reload_delay * 80 / 100;
@@ -96,17 +96,17 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
           stats->shot_spread -= 4;
           break;
         case ITEM_SHOT_SPEED_UP:
-          stats->shot_speed += fixed_new(0, 128);
+          stats->shot_speed += FixNew(0, 128);
           stats->shot_damage = stats->shot_damage * 105 / 100;
-          stats->shot_kb += fixed_new(0, 16);
+          stats->shot_kb += FixNew(0, 16);
           break;
         case ITEM_SHOT_COUNT_UP:
-          stats->shot_count += fixed_new(0, 64);
+          stats->shot_count += FixNew(0, 64);
           stats->reload_delay = stats->reload_delay * 105 / 100;
           stats->shot_spread += 2;
           break;
         case ITEM_SHOT_KB_UP:
-          stats->shot_kb += fixed_new(0, 64);
+          stats->shot_kb += FixNew(0, 64);
           break;
         case ITEM_PIERCE_UP:
           stats->shot_pierce += 1;
@@ -179,31 +179,31 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
     }
   }
 
-  clamp(&stats->max_hp, 10, 10000);
-  clamp(&stats->active_regen_delay, 0, 1000);
-  clamp(&stats->shot_damage, 10, 1000);
-  fixed_clamp(&stats->max_move_speed, fixed_new(1, 0), fixed_new(4, 0));
-  fixed_clamp(&stats->reload_delay, fixed_new(0, 8), fixed_new(5, 0));
-  fixed_clamp(&stats->shot_count, fixed_new(1, 0), fixed_new(8, 0));
-  fixed_clamp(&stats->shot_kb, fixed_new(0, 0), fixed_new(4, 0));
-  clamp(&stats->shot_pierce, 1, 8);
-  fixed_clamp(&stats->shot_speed, fixed_new(0, 128), fixed_new(8, 0));
-  clamp(&stats->shot_spread, 0, 32);
-  clamp(&stats->size, 10, 50);
-  clamp(&stats->turn_speed, 1, 64);
-  clamp(&stats->magnetism_dist, 0, stats->sight_range);
-  clamp(&stats->magnetism_frequency, 15, INT_MAX);
-  clamp(&stats->sight_range, 120, 240);
-  clamp(&stats->view_distance, 120, 240);
-  clamp(&stats->shot_homing_percent, 0, 100);
-  clamp(&stats->shot_homing_power, 0, 100);
-  clamp(&stats->active_regen, 0, 1000);
-  clamp(&stats->passive_regen, 0, 1000);
-  clamp(&stats->creativity, 0, 100);
-  clamp(&stats->shot_split_fragments, 2, 12);
-  clamp(&stats->shot_split_percent, 0, 100);
-  clamp(&stats->shot_frost_percent, 0, 50);
-  clamp(&stats->max_orbitals, 0, LENGTHOF(GS->projs) / 2);
+  IntClamp(&stats->max_hp, 10, 10000);
+  IntClamp(&stats->active_regen_delay, 0, 1000);
+  IntClamp(&stats->shot_damage, 10, 1000);
+  FixClamp(&stats->max_move_speed, FixNew(1, 0), FixNew(4, 0));
+  FixClamp(&stats->reload_delay, FixNew(0, 8), FixNew(5, 0));
+  FixClamp(&stats->shot_count, FixNew(1, 0), FixNew(8, 0));
+  FixClamp(&stats->shot_kb, FixNew(0, 0), FixNew(4, 0));
+  IntClamp(&stats->shot_pierce, 1, 8);
+  FixClamp(&stats->shot_speed, FixNew(0, 128), FixNew(8, 0));
+  IntClamp(&stats->shot_spread, 0, 32);
+  IntClamp(&stats->size, 10, 50);
+  IntClamp(&stats->turn_speed, 1, 64);
+  IntClamp(&stats->magnetism_dist, 0, stats->sight_range);
+  IntClamp(&stats->magnetism_frequency, 15, INT_MAX);
+  IntClamp(&stats->sight_range, 120, 240);
+  IntClamp(&stats->view_distance, 120, 240);
+  IntClamp(&stats->shot_homing_percent, 0, 100);
+  IntClamp(&stats->shot_homing_power, 0, 100);
+  IntClamp(&stats->active_regen, 0, 1000);
+  IntClamp(&stats->passive_regen, 0, 1000);
+  IntClamp(&stats->creativity, 0, 100);
+  IntClamp(&stats->shot_split_fragments, 2, 12);
+  IntClamp(&stats->shot_split_percent, 0, 100);
+  IntClamp(&stats->shot_frost_percent, 0, 50);
+  IntClamp(&stats->max_orbitals, 0, LENGTHOF(GS->projs) / 2);
 }
 
 int GsGetTextFxSlot(GameScene* GS) {
@@ -258,7 +258,7 @@ void GsUpdateShapes(GameScene* GS) {
     }
 
     // magnet pulse
-    if (GS->player.ticks_since_magnetism == 0 && GS->shapes[s].sqdist_to_player < int_sq(GS->player.stats.magnetism_dist)) {
+    if (GS->player.ticks_since_magnetism == 0 && GS->shapes[s].sqdist_to_player < IntSq(GS->player.stats.magnetism_dist)) {
       GS->shapes[s].move_speed = 0;
     }
 
@@ -316,27 +316,27 @@ void GsUpdateShapes(GameScene* GS) {
 
     // movement
     fixed_t real_move_speed = GS->shapes[s].move_speed;
-    if (GS->shapes[s].sqdist_to_target < int_sq(64) && GS->shapes[s].move_speed > GS->player.stats.max_move_speed) {
+    if (GS->shapes[s].sqdist_to_target < IntSq(64) && GS->shapes[s].move_speed > GS->player.stats.max_move_speed) {
       real_move_speed = GS->player.stats.max_move_speed;
     }
-    GS->shapes[s].x += fixed_cos(GS->shapes[s].move_angle) * real_move_speed / fixed_factor;
-    GS->shapes[s].y += fixed_sin(GS->shapes[s].move_angle) * real_move_speed / fixed_factor;
+    GS->shapes[s].x += FixCos(GS->shapes[s].move_angle) * real_move_speed / fixed_factor;
+    GS->shapes[s].y += FixSin(GS->shapes[s].move_angle) * real_move_speed / fixed_factor;
 
     // kb
-    GS->shapes[s].x += fixed_cos(GS->shapes[s].kb_angle) * GS->shapes[s].kb_speed / fixed_factor;
-    GS->shapes[s].y += fixed_sin(GS->shapes[s].kb_angle) * GS->shapes[s].kb_speed / fixed_factor;
-    GS->shapes[s].kb_speed -= fixed_new(0, 4);
-    if (GS->shapes[s].sqdist_to_player > int_sq(render_w / 2)) {
+    GS->shapes[s].x += FixCos(GS->shapes[s].kb_angle) * GS->shapes[s].kb_speed / fixed_factor;
+    GS->shapes[s].y += FixSin(GS->shapes[s].kb_angle) * GS->shapes[s].kb_speed / fixed_factor;
+    GS->shapes[s].kb_speed -= FixNew(0, 4);
+    if (GS->shapes[s].sqdist_to_player > IntSq(render_w / 2)) {
       GS->shapes[s].kb_speed = GS->shapes[s].kb_speed * 7 / 8;
     }
-    fixed_clamp(&GS->shapes[s].kb_speed, 0, fixed_new(64, 0));
+    FixClamp(&GS->shapes[s].kb_speed, 0, FixNew(64, 0));
 
     // update sqdist_to_player, angle_to_player
     {
-      int dx = fixed_whole(GS->player.x) - fixed_whole(GS->shapes[s].x);
-      int dy = fixed_whole(GS->player.y) - fixed_whole(GS->shapes[s].y);
-      GS->shapes[s].sqdist_to_player = int_sq(dx) + int_sq(dy);
-      GS->shapes[s].angle_to_player = angle_from_slope(dx, dy);
+      int dx = FixWhole(GS->player.x) - FixWhole(GS->shapes[s].x);
+      int dy = FixWhole(GS->player.y) - FixWhole(GS->shapes[s].y);
+      GS->shapes[s].sqdist_to_player = IntSq(dx) + IntSq(dy);
+      GS->shapes[s].angle_to_player = AngFromSlope(dx, dy);
     }
 
     // targeting
@@ -345,38 +345,38 @@ void GsUpdateShapes(GameScene* GS) {
       aggro_time = 600;
     }
     if (GS->shapes[s].always_target || GS->shapes[s].ticks_since_damaged < aggro_time ||
-        GS->shapes[s].sqdist_to_player < int_sq(80)) {
+        GS->shapes[s].sqdist_to_player < IntSq(80)) {
       // update target_x, target_y
       GS->shapes[s].target_x = GS->player.x;
       GS->shapes[s].target_y = GS->player.y;
 
       // update sqdist_to_target, angle_to_target
       {
-        int dx = fixed_whole(GS->shapes[s].target_x) - fixed_whole(GS->shapes[s].x);
-        int dy = fixed_whole(GS->shapes[s].target_y) - fixed_whole(GS->shapes[s].y);
-        GS->shapes[s].sqdist_to_target = int_sq(dx) + int_sq(dy);
-        GS->shapes[s].angle_to_target = angle_from_slope(dx, dy);
+        int dx = FixWhole(GS->shapes[s].target_x) - FixWhole(GS->shapes[s].x);
+        int dy = FixWhole(GS->shapes[s].target_y) - FixWhole(GS->shapes[s].y);
+        GS->shapes[s].sqdist_to_target = IntSq(dx) + IntSq(dy);
+        GS->shapes[s].angle_to_target = AngFromSlope(dx, dy);
       }
 
       // FAST variants have a slower turn speed
       if (GS->shapes[s].variant == SHAPE_VARIANT_FAST) {
-        angle_rotate_towards(&GS->shapes[s].move_angle, GS->shapes[s].angle_to_target, 2);
+        AngRotateTowards(&GS->shapes[s].move_angle, GS->shapes[s].angle_to_target, 2);
       } else {
-        angle_rotate_towards(&GS->shapes[s].move_angle, GS->shapes[s].angle_to_target, 3);
+        AngRotateTowards(&GS->shapes[s].move_angle, GS->shapes[s].angle_to_target, 3);
       }
 
       // shapes use a slower max move speed when not facing target
-      if (abs(angle_diff(GS->shapes[s].move_angle, GS->shapes[s].angle_to_target)) > 15) {
-        fixed_nudge(&GS->shapes[s].move_speed, GS->shapes[s].max_move_speed / 2, fixed_new(0, 16));
+      if (abs(AngDiff(GS->shapes[s].move_angle, GS->shapes[s].angle_to_target)) > 15) {
+        FixNudge(&GS->shapes[s].move_speed, GS->shapes[s].max_move_speed / 2, FixNew(0, 16));
       } else {
-        fixed_nudge(&GS->shapes[s].move_speed, GS->shapes[s].max_move_speed, fixed_new(0, 8));
+        FixNudge(&GS->shapes[s].move_speed, GS->shapes[s].max_move_speed, FixNew(0, 8));
       }
     } else {
-      fixed_nudge(&GS->shapes[s].move_speed, GS->shapes[s].max_move_speed / 2, fixed_new(0, 8));
+      FixNudge(&GS->shapes[s].move_speed, GS->shapes[s].max_move_speed / 2, FixNew(0, 8));
     }
 
     // player distance-related despawning
-    if (GS->shapes[s].sqdist_to_player > int_sq(render_w * 2)) {
+    if (GS->shapes[s].sqdist_to_player > IntSq(render_w * 2)) {
       GS->shapes[s].marked_for_despawn = true;
       GS->shapes[s].spawn_children_on_despawn = false;
     }
@@ -385,14 +385,14 @@ void GsUpdateShapes(GameScene* GS) {
     ++GS->shapes[s].ticks_since_damaged_player;
     if (GS->shapes[s].i_frames <= 0 &&
         GS->shapes[s].ticks_since_damaged_player >= 6 &&
-        GS->shapes[s].sqdist_to_player < int_sq(GS->player.stats.size + GS->shapes[s].size - 8)) {
+        GS->shapes[s].sqdist_to_player < IntSq(GS->player.stats.size + GS->shapes[s].size - 8)) {
       // damage self
       GS->shapes[s].hp -= GS->player.stats.contact_damage;
       GS->shapes[s].ticks_since_damaged = 0;
       GS->shapes[s].ticks_since_damaged_player = 0;
       GS->shapes[s].grant_xp_on_despawn = true;
-      // GS->shapes[s].x += fixed_cos(GS->shapes[s].angle_to_player) * -1;
-      // GS->shapes[s].y += fixed_sin(GS->shapes[s].angle_to_player) * -1;
+      // GS->shapes[s].x += FixCos(GS->shapes[s].angle_to_player) * -1;
+      // GS->shapes[s].y += FixSin(GS->shapes[s].angle_to_player) * -1;
       // GS->shapes[s].move_speed = (GS->shapes[s].max_move_speed * -2);  // use negative move speed instead of knockback stat so it doesn't override knockback
 
       // damage player
@@ -422,16 +422,16 @@ void GsUpdateShapes(GameScene* GS) {
         if (!GS->shapes[j].exists) {
           continue;
         }
-        int dx = abs(fixed_whole(GS->shapes[s].x) - fixed_whole(GS->shapes[j].x));
-        int dy = abs(fixed_whole(GS->shapes[s].y) - fixed_whole(GS->shapes[j].y));
-        int sqdist = int_sq(dx) + int_sq(dy);
-        if (sqdist < int_sq((GS->shapes[s].size + GS->shapes[j].size) / 2)) {
+        int dx = abs(FixWhole(GS->shapes[s].x) - FixWhole(GS->shapes[j].x));
+        int dy = abs(FixWhole(GS->shapes[s].y) - FixWhole(GS->shapes[j].y));
+        int sqdist = IntSq(dx) + IntSq(dy);
+        if (sqdist < IntSq((GS->shapes[s].size + GS->shapes[j].size) / 2)) {
           if (GS->shapes[s].x < GS->shapes[j].x) {
-            GS->shapes[s].x -= fixed_new(1, 0);
-            GS->shapes[j].x += fixed_new(1, 0);
+            GS->shapes[s].x -= FixNew(1, 0);
+            GS->shapes[j].x += FixNew(1, 0);
           } else {
-            GS->shapes[s].x += fixed_new(1, 0);
-            GS->shapes[j].x -= fixed_new(1, 0);
+            GS->shapes[s].x += FixNew(1, 0);
+            GS->shapes[j].x -= FixNew(1, 0);
           }
         }
       }
@@ -508,7 +508,7 @@ void GsUpdatePlayer(GameScene* GS) {
   int closest_shape_idx = -1;
   for (int s = 0; s < LENGTHOF(GS->shapes); ++s) {
     if (GS->shapes[s].exists) {
-      if (GS->shapes[s].sqdist_to_player < int_sq(GS->player.stats.sight_range) &&
+      if (GS->shapes[s].sqdist_to_player < IntSq(GS->player.stats.sight_range) &&
           GS->shapes[s].sqdist_to_player < closest_sqdist) {
         closest_shape_idx = s;
         closest_sqdist = GS->shapes[s].sqdist_to_player;
@@ -517,8 +517,8 @@ void GsUpdatePlayer(GameScene* GS) {
   }
   // rotate player towards closest shape
   if (closest_shape_idx != -1) {
-    angle_t target_angle = angle_from_line(GS->player.x, GS->player.y, GS->shapes[closest_shape_idx].x, GS->shapes[closest_shape_idx].y);
-    angle_rotate_towards(&GS->player.angle, target_angle, GS->player.stats.turn_speed);
+    angle_t target_angle = AngFromLine(GS->player.x, GS->player.y, GS->shapes[closest_shape_idx].x, GS->shapes[closest_shape_idx].y);
+    AngRotateTowards(&GS->player.angle, target_angle, GS->player.stats.turn_speed);
   }
 
   // collect pickups
@@ -526,10 +526,10 @@ void GsUpdatePlayer(GameScene* GS) {
     if (!GS->pickups[p].exists) {
       continue;
     }
-    int dx = abs(fixed_whole(GS->pickups[p].x) - fixed_whole(GS->player.x));
-    int dy = abs(fixed_whole(GS->pickups[p].y) - fixed_whole(GS->player.y));
-    int sqdist = int_sq(dx) + int_sq(dy);
-    if (sqdist < int_sq(GS->player.stats.size)) {
+    int dx = abs(FixWhole(GS->pickups[p].x) - FixWhole(GS->player.x));
+    int dy = abs(FixWhole(GS->pickups[p].y) - FixWhole(GS->player.y));
+    int sqdist = IntSq(dx) + IntSq(dy);
+    if (sqdist < IntSq(GS->player.stats.size)) {
       GS->pickups[p].exists = false;
       ++GS->player.item_counts[GS->pickups[p].type];
       ++GS->player.items_collected;
@@ -570,8 +570,8 @@ void GsSpawnNewProjs(GameScene* GS) {
     GS->player.shot_progress += GS->player.stats.shot_count;
   }
   // who knows, maybe you could shoot multiple volleys in one tick
-  while (GS->player.shot_progress >= fixed_new(1, 0)) {
-    GS->player.shot_progress -= fixed_new(1, 0);
+  while (GS->player.shot_progress >= FixNew(1, 0)) {
+    GS->player.shot_progress -= FixNew(1, 0);
     GS->player.ticks_since_last_shot = 0;
 
     // volley of projectiles
@@ -582,7 +582,7 @@ void GsSpawnNewProjs(GameScene* GS) {
     bool volley_is_orbit = (GS->orbital_proj_count < GS->player.stats.max_orbitals);
     if (volley_is_splitting) {
       // double reload delay after a splitting shot
-      GS->player.shot_progress -= fixed_new(1, 0);
+      GS->player.shot_progress -= FixNew(1, 0);
     }
     for (int p = 0; p < LENGTHOF(GS->projs); ++p) {
       if (GS->projs[p].exists) {
@@ -641,8 +641,8 @@ void GsSpawnNewProjs(GameScene* GS) {
         GS->projs[p].despawn_timer += GS->projs[p].orbit.timer;
       }
 
-      GS->projs[p].x += fixed_cos(GS->projs[p].move_angle) * GS->player.stats.size;
-      GS->projs[p].y += fixed_sin(GS->projs[p].move_angle) * GS->player.stats.size;
+      GS->projs[p].x += FixCos(GS->projs[p].move_angle) * GS->player.stats.size;
+      GS->projs[p].y += FixSin(GS->projs[p].move_angle) * GS->player.stats.size;
       // printf("Spawned proj %d\n", i);
       break;
     }
@@ -749,25 +749,25 @@ void GsUpdateProjs(GameScene* GS) {
         }
 
         // ignore shapes outside of player sight range
-        if (GS->shapes[s].sqdist_to_player > int_sq(GS->player.stats.sight_range)) {
+        if (GS->shapes[s].sqdist_to_player > IntSq(GS->player.stats.sight_range)) {
           continue;
         }
 
-        int dx = fixed_whole(GS->shapes[s].x) - fixed_whole(GS->projs[p].x);
-        int dy = fixed_whole(GS->shapes[s].y) - fixed_whole(GS->projs[p].y);
-        int sqdist = int_sq(dx) + int_sq(dy);
+        int dx = FixWhole(GS->shapes[s].x) - FixWhole(GS->projs[p].x);
+        int dy = FixWhole(GS->shapes[s].y) - FixWhole(GS->projs[p].y);
+        int sqdist = IntSq(dx) + IntSq(dy);
         if (sqdist < nearest_shape_sqdist) {
           nearest_shape_sqdist = sqdist;
           nearest_shape_idx = s;
         }
       }
       // home, then update homing power
-      if (nearest_shape_idx != -1 && nearest_shape_sqdist < int_sq(GS->projs[p].homing_max_dist + GS->shapes[nearest_shape_idx].size)) {
-        angle_t target_angle = angle_from_line(GS->projs[p].x, GS->projs[p].y, GS->shapes[nearest_shape_idx].x, GS->shapes[nearest_shape_idx].y);
+      if (nearest_shape_idx != -1 && nearest_shape_sqdist < IntSq(GS->projs[p].homing_max_dist + GS->shapes[nearest_shape_idx].size)) {
+        angle_t target_angle = AngFromLine(GS->projs[p].x, GS->projs[p].y, GS->shapes[nearest_shape_idx].x, GS->shapes[nearest_shape_idx].y);
 
         // home
         GS->projs[p].is_homing = true;
-        angle_rotate_towards(&GS->projs[p].move_angle, target_angle, 8);
+        AngRotateTowards(&GS->projs[p].move_angle, target_angle, 8);
         --GS->projs[p].homing_power;
 
         // make text fx
@@ -785,23 +785,23 @@ void GsUpdateProjs(GameScene* GS) {
     // movement
     if (GS->projs[p].orbit.timer == 0 || GS->projs[p].is_homing) {
       // movement using move_speed and move_angle
-      GS->projs[p].x += fixed_cos(GS->projs[p].move_angle) * GS->projs[p].move_speed / fixed_factor;
-      GS->projs[p].y += fixed_sin(GS->projs[p].move_angle) * GS->projs[p].move_speed / fixed_factor;
+      GS->projs[p].x += FixCos(GS->projs[p].move_angle) * GS->projs[p].move_speed / fixed_factor;
+      GS->projs[p].y += FixSin(GS->projs[p].move_angle) * GS->projs[p].move_speed / fixed_factor;
 
     } else {
       // movement using orbit
       if (GS->projs[p].orbit.track_player_angle) {
-        angle_rotate_towards(&GS->projs[p].orbit.angle, GS->player.angle + GS->projs[p].orbit.track_player_angle_offset, GS->projs[p].orbit.rot_speed);
+        AngRotateTowards(&GS->projs[p].orbit.angle, GS->player.angle + GS->projs[p].orbit.track_player_angle_offset, GS->projs[p].orbit.rot_speed);
       } else {
         GS->projs[p].orbit.angle += GS->projs[p].orbit.rot_speed;
       }
 
       GS->projs[p].move_angle = GS->projs[p].orbit.angle;
-      nudge(&GS->projs[p].orbit.radius, GS->projs[p].orbit.target_radius, 1);
+      IntNudge(&GS->projs[p].orbit.radius, GS->projs[p].orbit.target_radius, 1);
       GS->projs[p].orbit.cx = GS->player.x;
       GS->projs[p].orbit.cy = GS->player.y;
-      GS->projs[p].x = fixed_lerp(GS->projs[p].x, GS->projs[p].orbit.cx + fixed_cos(GS->projs[p].orbit.angle) * GS->projs[p].orbit.radius, fixed_new(0, 24));
-      GS->projs[p].y = fixed_lerp(GS->projs[p].y, GS->projs[p].orbit.cy + fixed_sin(GS->projs[p].orbit.angle) * GS->projs[p].orbit.radius, fixed_new(0, 24));
+      FixLerp(&GS->projs[p].x, GS->projs[p].orbit.cx + FixCos(GS->projs[p].orbit.angle) * GS->projs[p].orbit.radius, FixNew(0, 24));
+      FixLerp(&GS->projs[p].y, GS->projs[p].orbit.cy + FixSin(GS->projs[p].orbit.angle) * GS->projs[p].orbit.radius, FixNew(0, 24));
     }
 
     // shape collision
@@ -813,10 +813,10 @@ void GsUpdateProjs(GameScene* GS) {
       if (GS->shapes[s].i_frames > 0) {
         continue;
       }
-      int dx = abs(fixed_whole(GS->shapes[s].x) - fixed_whole(GS->projs[p].x));
-      int dy = abs(fixed_whole(GS->shapes[s].y) - fixed_whole(GS->projs[p].y));
-      int sqdist = int_sq(dx) + int_sq(dy);
-      if (sqdist >= int_sq(GS->shapes[s].size + GS->projs[p].size)) {
+      int dx = abs(FixWhole(GS->shapes[s].x) - FixWhole(GS->projs[p].x));
+      int dy = abs(FixWhole(GS->shapes[s].y) - FixWhole(GS->projs[p].y));
+      int sqdist = IntSq(dx) + IntSq(dy);
+      if (sqdist >= IntSq(GS->shapes[s].size + GS->projs[p].size)) {
         continue;
       }
       // see if shape has been hit already
@@ -843,9 +843,9 @@ void GsUpdateProjs(GameScene* GS) {
       // damage the shape
       GS->shapes[s].hp -= GS->projs[p].damage;
       GS->shapes[s].ticks_since_damaged = 0;
-      GS->shapes[s].frost_ticks = int_max(GS->shapes[s].frost_ticks, GS->projs[p].frost_power);
+      GS->shapes[s].frost_ticks = IntMax(GS->shapes[s].frost_ticks, GS->projs[p].frost_power);
       GS->shapes[s].kb_angle = GS->projs[p].move_angle;
-      GS->shapes[s].kb_speed = fixed_max(GS->shapes[s].kb_speed, GS->projs[p].kb * GS->shapes[s].max_move_speed / fixed_factor);
+      GS->shapes[s].kb_speed = FixMax(GS->shapes[s].kb_speed, GS->projs[p].kb * GS->shapes[s].max_move_speed / fixed_factor);
 
       // make text fx
       int t = GsGetTextFxSlot(GS);
@@ -883,21 +883,21 @@ void GsUpdatePickups(GameScene* GS) {
 
     // update sqdist_to_player
     {
-      int dx = fixed_whole(GS->player.x) - fixed_whole(GS->pickups[p].x);
-      int dy = fixed_whole(GS->player.y) - fixed_whole(GS->pickups[p].y);
-      GS->pickups[p].sqdist_to_player = int_sq(dx) + int_sq(dy);
-      GS->pickups[p].angle_to_player = angle_from_slope(dx, dy);
+      int dx = FixWhole(GS->player.x) - FixWhole(GS->pickups[p].x);
+      int dy = FixWhole(GS->player.y) - FixWhole(GS->pickups[p].y);
+      GS->pickups[p].sqdist_to_player = IntSq(dx) + IntSq(dy);
+      GS->pickups[p].angle_to_player = AngFromSlope(dx, dy);
     }
 
-    if (GS->pickups[p].sqdist_to_player < int_sq(GS->player.stats.magnetism_dist)) {
-      GS->pickups[p].x += fixed_cos(GS->pickups[p].angle_to_player) * GS->player.stats.max_move_speed / fixed_factor;
-      GS->pickups[p].y += fixed_sin(GS->pickups[p].angle_to_player) * GS->player.stats.max_move_speed / fixed_factor;
+    if (GS->pickups[p].sqdist_to_player < IntSq(GS->player.stats.magnetism_dist)) {
+      GS->pickups[p].x += FixCos(GS->pickups[p].angle_to_player) * GS->player.stats.max_move_speed / fixed_factor;
+      GS->pickups[p].y += FixSin(GS->pickups[p].angle_to_player) * GS->player.stats.max_move_speed / fixed_factor;
     }
 
     // move faraway off-screen items closer
-    if (GS->pickups[p].sqdist_to_player > int_sq(render_w * 2)) {
-      GS->pickups[p].x += fixed_cos(GS->pickups[p].angle_to_player) * render_w;
-      GS->pickups[p].y += fixed_sin(GS->pickups[p].angle_to_player) * render_w;
+    if (GS->pickups[p].sqdist_to_player > IntSq(render_w * 2)) {
+      GS->pickups[p].x += FixCos(GS->pickups[p].angle_to_player) * render_w;
+      GS->pickups[p].y += FixSin(GS->pickups[p].angle_to_player) * render_w;
     }
   }
 }
@@ -908,7 +908,7 @@ void GsUpdateTextFx(GameScene* GS) {
       continue;
     }
     --GS->text_fx[t].despawn_timer;
-    GS->text_fx[t].y -= fixed_new(0, 128);
+    GS->text_fx[t].y -= FixNew(0, 128);
     if (GS->text_fx[t].despawn_timer <= 0) {
       GS->text_fx[t].exists = false;
     }
@@ -917,7 +917,7 @@ void GsUpdateTextFx(GameScene* GS) {
 
 void GsLevelUpPlayer(GameScene* GS) {
   GS->player.xp -= GsXpForLevelUp(GS);
-  // GsSpawnPickup(GS, GS->player.x, GS->player.y - fixed_new(60, 0));
+  // GsSpawnPickup(GS, GS->player.x, GS->player.y - FixNew(60, 0));
   ++GS->player.level;
   ++GS->player.upgrades_pending;
 }
@@ -928,40 +928,40 @@ void GsUpdateXpOrbs(GameScene* GS) {
       continue;
     }
 
-    GS->xp_orbs[o].x += fixed_cos(GS->xp_orbs[o].angle) * GS->xp_orbs[o].move_speed / fixed_factor;
-    GS->xp_orbs[o].y += fixed_sin(GS->xp_orbs[o].angle) * GS->xp_orbs[o].move_speed / fixed_factor;
+    GS->xp_orbs[o].x += FixCos(GS->xp_orbs[o].angle) * GS->xp_orbs[o].move_speed / fixed_factor;
+    GS->xp_orbs[o].y += FixSin(GS->xp_orbs[o].angle) * GS->xp_orbs[o].move_speed / fixed_factor;
     ++GS->xp_orbs[o].age;
 
-    int dx = fixed_whole(GS->player.x) - fixed_whole(GS->xp_orbs[o].x);
-    int dy = fixed_whole(GS->player.y) - fixed_whole(GS->xp_orbs[o].y);
-    angle_t target_angle = angle_from_slope(dx, dy);
-    angle_rotate_towards(&GS->xp_orbs[o].angle, target_angle, 4);
+    int dx = FixWhole(GS->player.x) - FixWhole(GS->xp_orbs[o].x);
+    int dy = FixWhole(GS->player.y) - FixWhole(GS->xp_orbs[o].y);
+    angle_t target_angle = AngFromSlope(dx, dy);
+    AngRotateTowards(&GS->xp_orbs[o].angle, target_angle, 4);
 
-    int sqdist_to_player = int_sq(dx) + int_sq(dy);
+    int sqdist_to_player = IntSq(dx) + IntSq(dy);
     if (GS->player.ticks_since_magnetism == 0 &&
-        sqdist_to_player < int_sq(GS->player.stats.magnetism_dist)) {
+        sqdist_to_player < IntSq(GS->player.stats.magnetism_dist)) {
       GS->xp_orbs[o].noticed_player = true;
     }
-    if (sqdist_to_player < int_sq(GS->player.stats.size + GS->xp_orbs[o].xp / 2 + 12)) {
+    if (sqdist_to_player < IntSq(GS->player.stats.size + GS->xp_orbs[o].xp / 2 + 12)) {
       GS->xp_orbs[o].noticed_player = true;
     }
 
-    angle_t angle_to_player = angle_from_line(GS->xp_orbs[o].x, GS->xp_orbs[o].y, GS->player.x, GS->player.y);
+    angle_t angle_to_player = AngFromLine(GS->xp_orbs[o].x, GS->xp_orbs[o].y, GS->player.x, GS->player.y);
 
     // move faraway off-screen orbs closer
-    if (sqdist_to_player > int_sq(render_w * 2)) {
-      GS->xp_orbs[o].x += fixed_cos(angle_to_player) * render_w;
-      GS->xp_orbs[o].y += fixed_sin(angle_to_player) * render_w;
+    if (sqdist_to_player > IntSq(render_w * 2)) {
+      GS->xp_orbs[o].x += FixCos(angle_to_player) * render_w;
+      GS->xp_orbs[o].y += FixSin(angle_to_player) * render_w;
     }
 
     if (GS->xp_orbs[o].noticed_player) {
-      if (angle_diff(GS->xp_orbs[o].angle, target_angle) > 15) {
-        fixed_nudge(&GS->xp_orbs[o].move_speed, 0, fixed_new(0, 16));
+      if (AngDiff(GS->xp_orbs[o].angle, target_angle) > 15) {
+        FixNudge(&GS->xp_orbs[o].move_speed, 0, FixNew(0, 16));
       } else {
-        fixed_nudge(&GS->xp_orbs[o].move_speed, fixed_new(256, 0) / target_fps, fixed_new(0, 16));
+        FixNudge(&GS->xp_orbs[o].move_speed, FixNew(256, 0) / target_fps, FixNew(0, 16));
       }
 
-      if (sqdist_to_player < int_sq(GS->player.stats.size)) {
+      if (sqdist_to_player < IntSq(GS->player.stats.size)) {
         GS->player.total_xp += GS->xp_orbs[o].xp;
         GS->player.xp += GS->xp_orbs[o].xp;
         if (GS->player.xp >= GsXpForLevelUp(GS)) {
@@ -986,7 +986,7 @@ void GsUpdateCamera(GameScene* GS) {
   GS->camera.y = GS->player.y - GetRenderLength(GS, render_h / 2, default_z);
 
   fixed_t target_zoom = 256 * 256 / (GS->player.stats.view_distance * fixed_factor * 2 / render_h);
-  fixed_nudge(&GS->camera.zoom, target_zoom, 1);
+  FixNudge(&GS->camera.zoom, target_zoom, 1);
 }
 
 void GsUpdateOlPickItem(GameScene* GS) {
@@ -1037,7 +1037,7 @@ void GsInit(GameScene* GS) {
   // GS->player.item_counts[ITEM_FIRE_RATE_UP] = 8;
   GsUpdatePlayerStats(GS, &GS->player.stats);
   GS->player.hp = GS->player.stats.max_hp;
-  GS->camera.zoom = fixed_new(0, 128);
+  GS->camera.zoom = FixNew(0, 128);
 }
 
 void GsUpdate(GameScene* GS) {
