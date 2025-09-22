@@ -202,6 +202,7 @@ typedef struct GsProj {
   int split_fragments;  // 0 for non-splitting shot
 
   uint8_t hit_shape_ids[16];
+  uint8_t hit_shape_timers[16];
 } GsProj;
 
 typedef struct GsPickup {
@@ -274,10 +275,10 @@ typedef struct GameScene {
 
   GsCamera camera;
 
-  GsShape shapes[160];
+  GsShape shapes[200];
   int shape_count;
 
-  GsProj projs[80];
+  GsProj projs[100];
   int orbital_proj_count;
 
   GsPickup pickups[40];

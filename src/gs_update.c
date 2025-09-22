@@ -124,16 +124,16 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
           break;
         case ITEM_HOMING_POWER:
           if (x == 0) {
+            stats->shot_homing_percent += 16;
             stats->shot_homing_power += 20;
-            stats->shot_homing_percent += 20;
           } else {
-            stats->shot_homing_power += 4;
-            stats->shot_homing_percent += 4;
+            stats->shot_homing_percent += 8;
+            stats->shot_homing_power += 12;
           }
           break;
         case ITEM_SIGHT_UP:
-          stats->sight_range += 8;
-          stats->view_distance += 8;
+          stats->sight_range += 12;
+          stats->view_distance += 12;
           break;
         case ITEM_MAX_HP_UP:
           stats->max_hp += 100;
@@ -326,6 +326,9 @@ void GsUpdateShapes(GameScene* GS) {
     GS->shapes[s].x += fixed_cos(GS->shapes[s].kb_angle) * GS->shapes[s].kb_speed / fixed_factor;
     GS->shapes[s].y += fixed_sin(GS->shapes[s].kb_angle) * GS->shapes[s].kb_speed / fixed_factor;
     GS->shapes[s].kb_speed -= fixed_new(0, 4);
+    if (GS->shapes[s].sqdist_to_player > int_sq(render_w / 2)) {
+      GS->shapes[s].kb_speed = GS->shapes[s].kb_speed * 7 / 8;
+    }
     fixed_clamp(&GS->shapes[s].kb_speed, 0, fixed_new(64, 0));
 
     // update sqdist_to_player, angle_to_player
@@ -485,9 +488,6 @@ void GsOfferUpgrade(GameScene* GS) {
         choice->item_b = GetRandomValue(0, ITEM_COUNT - 1);
       }
     }
-  }
-  if (GS->player.level > 80) {
-    GS->curr_overlay = GS_OVERLAY_NONE;
   }
 }
 
@@ -696,26 +696,63 @@ void GsUpdateProjs(GameScene* GS) {
       continue;
     }
 
+    // decrement hit-shape timers and zero hit-shape ids for zeroed timers
+    for (int h = 0; h < LENGTHOF(GS->projs[p].hit_shape_timers); ++h) {
+      if (GS->projs[p].hit_shape_ids[h] == 0) {
+        break;
+      }
+      if (GS->projs[p].hit_shape_timers[h] > 0) {
+        --GS->projs[p].hit_shape_timers[h];
+        if (GS->projs[p].hit_shape_timers[h] == 0) {
+          GS->projs[p].hit_shape_ids[h] = 0;
+        }
+      }
+    }
+    // compact the hit-shape entries
+    {
+      int d = 0;
+      for (int h = 0; h < LENGTHOF(GS->projs[p].hit_shape_timers); ++h) {
+        GS->projs[p].hit_shape_ids[d] = GS->projs[p].hit_shape_ids[h];
+        GS->projs[p].hit_shape_timers[d] = GS->projs[p].hit_shape_timers[h];
+        if (GS->projs[p].hit_shape_ids[h] != 0) {
+          ++d;
+        }
+      }
+      while (d < LENGTHOF(GS->projs[p].hit_shape_timers)) {
+        GS->projs[p].hit_shape_ids[d] = 0;
+        GS->projs[p].hit_shape_timers[d] = 0;
+        ++d;
+      }
+    }
+
     // homing
     GS->projs[p].is_homing = false;
     if (GS->projs[p].homing_max_dist > 0 && GS->projs[p].homing_power > 0) {
-      // find nearest shape we haven't hit yet
+      // find nearest eligible shape for homing
       int nearest_shape_idx = -1;
       int nearest_shape_sqdist = INT_MAX;
       for (int s = 0; s < LENGTHOF(GS->shapes); ++s) {
         if (!GS->shapes[s].exists) {
           continue;
         }
-        bool already_hit = false;
+
+        // ignore recently-hit shapes
+        bool recently_hit = false;
         for (int h = 0; h < LENGTHOF(GS->projs[p].hit_shape_ids); ++h) {
           if (GS->projs[p].hit_shape_ids[h] == GS->shapes[s].id) {
-            already_hit = true;
+            recently_hit = true;
             break;
           }
         }
-        if (already_hit) {
+        if (recently_hit) {
           continue;
         }
+
+        // ignore shapes outside of player sight range
+        if (GS->shapes[s].sqdist_to_player > int_sq(GS->player.stats.sight_range)) {
+          continue;
+        }
+
         int dx = fixed_whole(GS->shapes[s].x) - fixed_whole(GS->projs[p].x);
         int dy = fixed_whole(GS->shapes[s].y) - fixed_whole(GS->projs[p].y);
         int sqdist = int_sq(dx) + int_sq(dy);
@@ -793,6 +830,7 @@ void GsUpdateProjs(GameScene* GS) {
         if (GS->projs[p].hit_shape_ids[h] == 0) {
           // reached end of hit-shapes list, add new shape
           GS->projs[p].hit_shape_ids[h] = GS->shapes[s].id;
+          GS->projs[p].hit_shape_timers[h] = 15;
           break;
         }
       }
@@ -992,11 +1030,14 @@ void GsUpdateOlPickItem(GameScene* GS) {
 
 void GsInit(GameScene* GS) {
   // for (int i = 0; i < ITEM_COUNT; ++i) GS->player.item_counts[i] = 1;
-  // GS->player.item_counts[ITEM_HOMING_POWER] = 8;
-  // GS->player.item_counts[ITEM_PIERCE_UP] = 8;
+  // GS->player.item_counts[ITEM_ORBITALS_UP] = 8;
+  GS->player.item_counts[ITEM_HOMING_POWER] = 8;
+  // GS->player.item_counts[ITEM_SHOT_SPEED_UP] = 8;
+  GS->player.item_counts[ITEM_PIERCE_UP] = 8;
+  // GS->player.item_counts[ITEM_FIRE_RATE_UP] = 8;
   GsUpdatePlayerStats(GS, &GS->player.stats);
   GS->player.hp = GS->player.stats.max_hp;
-  GS->camera.zoom = fixed_new(1, 0);
+  GS->camera.zoom = fixed_new(0, 128);
 }
 
 void GsUpdate(GameScene* GS) {

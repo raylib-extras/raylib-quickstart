@@ -20,16 +20,6 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include "perf.h"
 #include "resource_dir.h"  // utility header for SearchAndSetResourceDir
 
-#define FIELD(obj, field) ((obj).field)
-#define PRINT_STAT(index, name)                                                                                                                  \
-  do {                                                                                                                                           \
-    if (FIELD(GD->GS.player.stats, name) != FIELD(GD->GS.player.tmp_stats, name)) {                                                              \
-      DrawPrintf(0, (index) * ft_height, VIOLET, "%s: %d -> %d", #name, FIELD(GD->GS.player.stats, name), FIELD(GD->GS.player.tmp_stats, name)); \
-    } else {                                                                                                                                     \
-      DrawPrintf(0, (index) * ft_height, BLACK, "%s: %d", #name, FIELD(GD->GS.player.stats, name));                                              \
-    }                                                                                                                                            \
-  } while (0);
-
 int main() {
   SetTraceLogLevel(LOG_WARNING);
   SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
@@ -98,9 +88,11 @@ int main() {
     }
 
     // ------[Game Logic]------
+    PerfStart("UPDATE");
     for (int t = 0; t < game_speed; ++t) {
-      PERF_EXPR("UPDATE", GdUpdate(GD));
+      GdUpdate(GD);
     }
+    PerfEnd("UPDATE");
 
     // ------[Drawing]------
     BeginTextureMode(canvas);
@@ -115,21 +107,11 @@ int main() {
     DrawPrintf(0, ft_height, BLACK, "%d pickups spawned", GD->GS.pickups_spawned);
     // DrawPrintf(0, 16, BLACK, "Lvl %d - XP %d/%d", GD->GS.player.level, GD->GS.player.xp, GsXpForLevelUp(GS));
     if (show_stats) {
-      int i = 5;
-      PRINT_STAT(i++, shot_damage);
-      PRINT_STAT(i++, max_move_speed);
-      PRINT_STAT(i++, reload_delay);
-      PRINT_STAT(i++, shot_count);
-      PRINT_STAT(i++, shot_kb);
-      PRINT_STAT(i++, shot_pierce);
-      PRINT_STAT(i++, shot_speed);
-      PRINT_STAT(i++, shot_spread);
-      PRINT_STAT(i++, sight_range);
-      PRINT_STAT(i++, size);
-      PRINT_STAT(i++, turn_speed);
-      PRINT_STAT(i++, magnetism_dist);
-      PRINT_STAT(i++, shot_homing_power);
-      PRINT_STAT(i++, view_distance);
+      int l = 2;
+      for (int i = 0; i < STAT_COUNT; ++i) {
+        DrawPrintf(0, ft_height * l, BLACK, "%s: %d", stat_names[i], GS->player.stats.as_int[i]);
+        ++l;
+      }
       // DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->GS.camera.x, GD->GS.camera.y, GD->GS.camera.zoom);
 
       const int entries = LENGTHOF(perf_entries[0].us_entries);
