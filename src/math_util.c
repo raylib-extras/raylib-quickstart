@@ -77,6 +77,11 @@ void FixNudge(fixed_t* fix, fixed_t target, fixed_t delta) {
 
 void FixLerp(fixed_t* val, fixed_t target, fixed_t n) { *val = *val + (((target - *val) * n) >> fixed_bits); }
 
+void FixMove(fixed_t* x, fixed_t* y, fixed_t dist, angle_t ang) {
+  *x += (FixCos(ang) * dist) / fixed_factor;
+  *y += (FixSin(ang) * dist) / fixed_factor;
+}
+
 angle_t AngFromSlope(fixed_t dx, fixed_t dy) { return atan2(dy, dx) * angle_factor / (2 * M_PI); }
 
 angle_t AngFromLine(fixed_t ax, fixed_t ay, fixed_t bx, fixed_t by) {

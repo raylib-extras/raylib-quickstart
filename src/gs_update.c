@@ -319,12 +319,10 @@ void GsUpdateShapes(GameScene* GS) {
     if (GS->shapes[s].sqdist_to_target < IntSq(64) && GS->shapes[s].move_speed > GS->player.stats.max_move_speed) {
       real_move_speed = GS->player.stats.max_move_speed;
     }
-    GS->shapes[s].x += FixCos(GS->shapes[s].move_angle) * real_move_speed / fixed_factor;
-    GS->shapes[s].y += FixSin(GS->shapes[s].move_angle) * real_move_speed / fixed_factor;
+    FixMove(&GS->shapes[s].x, &GS->shapes[s].y, real_move_speed, GS->shapes[s].move_angle);
 
     // kb
-    GS->shapes[s].x += FixCos(GS->shapes[s].kb_angle) * GS->shapes[s].kb_speed / fixed_factor;
-    GS->shapes[s].y += FixSin(GS->shapes[s].kb_angle) * GS->shapes[s].kb_speed / fixed_factor;
+    FixMove(&GS->shapes[s].x, &GS->shapes[s].y, GS->shapes[s].kb_speed, GS->shapes[s].kb_angle);
     GS->shapes[s].kb_speed -= FixNew(0, 4);
     if (GS->shapes[s].sqdist_to_player > IntSq(render_w / 2)) {
       GS->shapes[s].kb_speed = GS->shapes[s].kb_speed * 7 / 8;
@@ -641,8 +639,7 @@ void GsSpawnNewProjs(GameScene* GS) {
         GS->projs[p].despawn_timer += GS->projs[p].orbit.timer;
       }
 
-      GS->projs[p].x += FixCos(GS->projs[p].move_angle) * GS->player.stats.size;
-      GS->projs[p].y += FixSin(GS->projs[p].move_angle) * GS->player.stats.size;
+      FixMove(&GS->projs[p].x, &GS->projs[p].y, FixNew(GS->player.stats.size, 0), GS->projs[p].move_angle);
       // printf("Spawned proj %d\n", i);
       break;
     }
@@ -785,8 +782,7 @@ void GsUpdateProjs(GameScene* GS) {
     // movement
     if (GS->projs[p].orbit.timer == 0 || GS->projs[p].is_homing) {
       // movement using move_speed and move_angle
-      GS->projs[p].x += FixCos(GS->projs[p].move_angle) * GS->projs[p].move_speed / fixed_factor;
-      GS->projs[p].y += FixSin(GS->projs[p].move_angle) * GS->projs[p].move_speed / fixed_factor;
+      FixMove(&GS->projs[p].x, &GS->projs[p].y, GS->projs[p].move_speed, GS->projs[p].move_angle);
 
     } else {
       // movement using orbit
@@ -890,14 +886,12 @@ void GsUpdatePickups(GameScene* GS) {
     }
 
     if (GS->pickups[p].sqdist_to_player < IntSq(GS->player.stats.magnetism_dist)) {
-      GS->pickups[p].x += FixCos(GS->pickups[p].angle_to_player) * GS->player.stats.max_move_speed / fixed_factor;
-      GS->pickups[p].y += FixSin(GS->pickups[p].angle_to_player) * GS->player.stats.max_move_speed / fixed_factor;
+      FixMove(&GS->pickups[p].x, &GS->pickups[p].y, GS->player.stats.max_move_speed, GS->pickups[p].angle_to_player);
     }
 
     // move faraway off-screen items closer
     if (GS->pickups[p].sqdist_to_player > IntSq(render_w * 2)) {
-      GS->pickups[p].x += FixCos(GS->pickups[p].angle_to_player) * render_w;
-      GS->pickups[p].y += FixSin(GS->pickups[p].angle_to_player) * render_w;
+      FixMove(&GS->pickups[p].x, &GS->pickups[p].y, FixNew(render_w, 0), GS->pickups[p].angle_to_player);
     }
   }
 }
@@ -928,8 +922,7 @@ void GsUpdateXpOrbs(GameScene* GS) {
       continue;
     }
 
-    GS->xp_orbs[o].x += FixCos(GS->xp_orbs[o].angle) * GS->xp_orbs[o].move_speed / fixed_factor;
-    GS->xp_orbs[o].y += FixSin(GS->xp_orbs[o].angle) * GS->xp_orbs[o].move_speed / fixed_factor;
+    FixMove(&GS->xp_orbs[o].x, &GS->xp_orbs[o].y, GS->xp_orbs[o].move_speed, GS->xp_orbs[o].angle);
     ++GS->xp_orbs[o].age;
 
     int dx = FixWhole(GS->player.x) - FixWhole(GS->xp_orbs[o].x);
@@ -950,8 +943,7 @@ void GsUpdateXpOrbs(GameScene* GS) {
 
     // move faraway off-screen orbs closer
     if (sqdist_to_player > IntSq(render_w * 2)) {
-      GS->xp_orbs[o].x += FixCos(angle_to_player) * render_w;
-      GS->xp_orbs[o].y += FixSin(angle_to_player) * render_w;
+      FixMove(&GS->xp_orbs[o].x, &GS->xp_orbs[o].y, FixNew(render_w, 0), angle_to_player);
     }
 
     if (GS->xp_orbs[o].noticed_player) {

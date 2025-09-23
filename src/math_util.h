@@ -29,6 +29,7 @@ fixed_t FixSq(fixed_t fix);
 void IntNudge(int* num, int target, int delta);
 void FixNudge(fixed_t* fix, fixed_t target, fixed_t delta);
 void FixLerp(fixed_t* val, fixed_t target, fixed_t n);
+void FixMove(fixed_t* x, fixed_t* y, fixed_t dist, angle_t ang);
 
 angle_t AngFromSlope(fixed_t dx, fixed_t dy);
 angle_t AngFromLine(fixed_t ax, fixed_t ay, fixed_t bx, fixed_t by);
