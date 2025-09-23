@@ -16,7 +16,8 @@
             ],
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "gcc-x64"
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "C:/msys64/ucrt64/bin/gcc.exe"
         },
         {
             "name": "Mac",

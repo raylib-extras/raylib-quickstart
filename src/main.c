@@ -68,6 +68,12 @@ int main() {
         game_speed = 1;
       }
 
+    } else if (IsKeyPressed(KEY_F7)) {
+      // gain experience
+      // GD->GS.player.xp = 100;
+      ++GD->GS.player.level;
+      ++GD->GS.player.upgrades_pending;
+
     } else if (IsKeyPressed(KEY_F9)) {
       for (int p = 0; p < LENGTHOF(GD->GS.pickups); ++p) {
         if (GD->GS.pickups[p].exists) {

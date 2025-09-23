@@ -87,14 +87,15 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
           break;
         case ITEM_TURN_SPEED_UP:
           ++stats->turn_speed;
+          stats->shot_spread -= 4;
           break;
         case ITEM_DAMAGE_UP:
           stats->shot_damage += 10;
           stats->reload_delay = stats->reload_delay * 105 / 100;
           break;
-        case ITEM_ACCURACY_UP:
-          stats->shot_spread -= 4;
-          break;
+        // case ITEM_ACCURACY_UP:
+        //   stats->shot_spread -= 4;
+        //   break;
         case ITEM_SHOT_SPEED_UP:
           stats->shot_speed += FixNew(0, 128);
           stats->shot_damage = stats->shot_damage * 105 / 100;
@@ -111,7 +112,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
         case ITEM_PIERCE_UP:
           stats->shot_pierce += 1;
           if (stats->shot_pierce < 5) {
-            stats->reload_delay = stats->reload_delay * 115 / 100;
+            stats->reload_delay = stats->reload_delay * 130 / 100;
           }
           break;
         case ITEM_MAGNETISM_UP:
@@ -225,11 +226,16 @@ int GsGetTextFxSlot(GameScene* GS) {
 }
 
 void GsSpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
-  int oldest_idx = 0;
+  int furthest_idx = 0;
+  int furthest_sqdist = 0;
   for (int o = 0; o < LENGTHOF(GS->xp_orbs); ++o) {
     if (GS->xp_orbs[o].exists) {
-      if (GS->xp_orbs[o].age > GS->xp_orbs[oldest_idx].age) {
-        oldest_idx = o;
+      // get square distance of orb to player
+      int sqdist = IntSq(GS->xp_orbs[o].x - GS->player.x) + IntSq(GS->xp_orbs[o].y - GS->player.y);
+
+      if (sqdist > furthest_sqdist) {
+        furthest_idx = o;
+        furthest_sqdist = sqdist;
       }
       continue;
     }
@@ -242,12 +248,12 @@ void GsSpawnXpOrb(GameScene* GS, fixed_t x, fixed_t y, int xp) {
     return;
   }
 
-  // override oldest XP orb if all slots are full
-  GS->xp_orbs[oldest_idx] = (GsXpOrb){0};
-  GS->xp_orbs[oldest_idx].exists = true;
-  GS->xp_orbs[oldest_idx].x = x;
-  GS->xp_orbs[oldest_idx].y = y;
-  GS->xp_orbs[oldest_idx].xp = xp;
+  // override farthest XP orb if all slots are full
+  GS->xp_orbs[furthest_idx] = (GsXpOrb){0};
+  GS->xp_orbs[furthest_idx].exists = true;
+  GS->xp_orbs[furthest_idx].x = x;
+  GS->xp_orbs[furthest_idx].y = y;
+  GS->xp_orbs[furthest_idx].xp = xp;
 }
 
 void GsUpdateShapes(GameScene* GS) {

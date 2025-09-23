@@ -3,9 +3,8 @@
 const char* const item_strs[] = {
     [ITEM_SPEED_UP] = "Speed",
     [ITEM_FIRE_RATE_UP] = "FR",
-    [ITEM_TURN_SPEED_UP] = "Rot",
-    [ITEM_DAMAGE_UP] = "SDmg",
-    [ITEM_ACCURACY_UP] = "Acc",
+    [ITEM_TURN_SPEED_UP] = "RotAcc",
+    [ITEM_DAMAGE_UP] = "SDmg", //    [ITEM_ACCURACY_UP] = "Acc",
     [ITEM_SHOT_SPEED_UP] = "SSpeed",
     [ITEM_SHOT_COUNT_UP] = "SCount",
     [ITEM_SHOT_KB_UP] = "KB",
