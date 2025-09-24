@@ -225,8 +225,7 @@ void GsDrawTextFx(GameScene* GS) {
     int rx, ry;
     GetRenderCoords(GS, GS->text_fx[t].x, GS->text_fx[t].y, default_z, &rx, &ry);
     Vector2 render_pos = {rx, ry};
-    // DrawPrintf(render_pos.x - 3 * strlen(GS->text_fx[t].text), render_pos.y + 1, WHITE, "%s", GS->text_fx[t].text);
-    DrawPrintf(render_pos.x - 3 * strlen(GS->text_fx[t].text), render_pos.y, BLACK, "%s", GS->text_fx[t].text);
+    DrawPrintf(render_pos.x - 3 * strlen(GS->text_fx[t].text), render_pos.y, GS->text_fx[t].color, "%s", GS->text_fx[t].text);
   }
 }
 

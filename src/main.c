@@ -53,7 +53,7 @@ int main() {
       show_stats = !show_stats;
 
     } else if (IsKeyPressed(KEY_F4)) {
-      window_scale = (window_scale % 4) + 1;
+      window_scale = (window_scale % 6) + 1;
       window_w = render_w * window_scale;
       window_h = render_h * window_scale;
       SetWindowSize(window_w, window_h);

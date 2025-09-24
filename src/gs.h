@@ -223,6 +223,8 @@ typedef struct GsTextFx {
   fixed_t y;
   int despawn_timer;
   char text[8];
+
+  Color color;
 } GsTextFx;
 
 typedef struct GsXpOrb {

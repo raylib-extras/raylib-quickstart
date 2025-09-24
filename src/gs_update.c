@@ -197,7 +197,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   IntClamp(&stats->sight_range, 120, 240);
   IntClamp(&stats->view_distance, 120, 240);
   IntClamp(&stats->shot_homing_percent, 0, 100);
-  IntClamp(&stats->shot_homing_power, 0, 100);
+  IntClamp(&stats->shot_homing_power, 0, 10000);
   IntClamp(&stats->active_regen, 0, 1000);
   IntClamp(&stats->passive_regen, 0, 1000);
   IntClamp(&stats->creativity, 0, 100);
@@ -211,7 +211,9 @@ int GsGetTextFxSlot(GameScene* GS) {
   int oldest_idx = 0;
   for (int t = 0; t < LENGTHOF(GS->text_fx); ++t) {
     if (!GS->text_fx[t].exists) {
+      GS->text_fx[t] = (GsTextFx){0};
       GS->text_fx[t].exists = true;
+      GS->text_fx[t].color = BLACK;
       return t;
     }
     if (GS->text_fx[t].despawn_timer < GS->text_fx[oldest_idx].despawn_timer) {
@@ -222,6 +224,7 @@ int GsGetTextFxSlot(GameScene* GS) {
   // force-override oldest text effect if there were no slots available
   GS->text_fx[oldest_idx] = (GsTextFx){0};
   GS->text_fx[oldest_idx].exists = true;
+  GS->text_fx[oldest_idx].color = BLACK;
   return oldest_idx;
 }
 
@@ -665,11 +668,12 @@ void GsSpawnSplitProjs(GameScene* GS, int p) {
       GS->projs[q].move_angle = ang;
       GS->projs[q].split_fragments = 0;
       GS->projs[q].size /= 2;
-      GS->projs[q].despawn_timer = 60;
+      GS->projs[q].despawn_timer = IntMax(GS->projs[q].despawn_timer, 60);
       GS->projs[q].pierce = 1;
 
       if (GS->projs[q].orbit.timer > 0) {
         GS->projs[q].orbit.target_radius += GetRandomValue(0, 20);
+        GS->projs[q].orbit.angle = GetRandomValue(0, angle_factor - 1);
         GS->projs[q].orbit.timer += target_fps;
       }
 
@@ -1029,9 +1033,12 @@ void GsUpdateOlPickItem(GameScene* GS) {
 void GsInit(GameScene* GS) {
   // for (int i = 0; i < ITEM_COUNT; ++i) GS->player.item_counts[i] = 1;
   // GS->player.item_counts[ITEM_ORBITALS_UP] = 8;
-  GS->player.item_counts[ITEM_HOMING_POWER] = 8;
-  // GS->player.item_counts[ITEM_SHOT_SPEED_UP] = 8;
-  GS->player.item_counts[ITEM_PIERCE_UP] = 8;
+  // GS->player.item_counts[ITEM_HOMING_POWER] = 80;
+  // // GS->player.item_counts[ITEM_SHOT_SPEED_UP] = 12;
+  // GS->player.item_counts[ITEM_FROST_SHOT] = 12;
+  // GS->player.item_counts[ITEM_SPLIT_SHOT] = 12;
+  // GS->player.item_counts[ITEM_SIGHT_UP] = 12;
+  // GS->player.item_counts[ITEM_PIERCE_UP] = 8;
   // GS->player.item_counts[ITEM_FIRE_RATE_UP] = 8;
   GsUpdatePlayerStats(GS, &GS->player.stats);
   GS->player.hp = GS->player.stats.max_hp;
