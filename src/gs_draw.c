@@ -38,9 +38,8 @@ void GsDrawProjs(GameScene* GS) {
     GetRenderCoords(GS, GS->projs[p].x, GS->projs[p].y, default_z, &rx, &ry);
     Vector2 render_pos = {rx, ry};
     int render_size = GetRenderLength(GS, GS->projs[p].size, default_z);
-    if (render_size < 2) {
-      render_size = 2;
-    }
+    IntClamp(&render_size, 4, 100);
+
     Color color = GRAY;
     if (GS->projs[p].homing_power > 0) {
       if (GS->projs[p].is_homing && GS->projs[p].despawn_timer % 2 == 0) {
@@ -54,6 +53,9 @@ void GsDrawProjs(GameScene* GS) {
     }
     int sides = 4;
     if (GS->projs[p].split_fragments > 0) {
+      sides = 5;
+    }
+    if (GS->projs[p].is_spike) {
       sides = 3;
     }
     DrawPoly(render_pos, sides, render_size, GS->ticks + p * 15, color);
@@ -217,6 +219,22 @@ void GsDrawPickups(GameScene* GS) {
   }
 }
 
+// wip
+void GsDrawLineFx(GameScene* GS) {
+  for (int t = 0; t < LENGTHOF(GS->line_fx); ++t) {
+    if (!GS->line_fx[t].exists) {
+      continue;
+    }
+    int rx1, ry1;
+    GetRenderCoords(GS, GS->line_fx[t].x1, GS->line_fx[t].y1, default_z, &rx1, &ry1);
+
+    int rx2, ry2;
+    GetRenderCoords(GS, GS->line_fx[t].x2, GS->line_fx[t].y2, default_z, &rx2, &ry2);
+
+    DrawLine(rx1, ry1, rx2, ry2, GS->line_fx[t].color);
+  }
+}
+
 void GsDrawTextFx(GameScene* GS) {
   for (int t = 0; t < LENGTHOF(GS->text_fx); ++t) {
     if (!GS->text_fx[t].exists) {
@@ -260,10 +278,10 @@ void GsDrawUi(GameScene* GS) {
 }
 
 void GsDrawPickItemOverlay(GameScene* GS) {
-  const int ol_x = render_w / 8;
-  const int ol_y = render_h / 8;
-  const int ol_w = render_w * 3 / 4;
-  const int ol_h = render_h * 3 / 4;
+  const int ol_x = render_w / 12;
+  const int ol_y = render_h / 12;
+  const int ol_w = render_w * 10 / 12;
+  const int ol_h = render_h * 10 / 12;
   const int lh = ft_height;  // line height
   DrawRectangle(ol_x, ol_y, ol_w, ol_h, BLACK);
 
@@ -316,6 +334,55 @@ void GsDrawPickItemOverlay(GameScene* GS) {
   DrawPrintf(ol_x + lh, ol_y + ol_h - lh * 3, GRAY, "W/S to select, \nSPACE to confirm");
 }
 
+void GsDrawStatScreen(GameScene* GS) {
+  const int ol_x = render_w / 12;
+  const int ol_y = render_h / 12;
+  const int ol_w = render_w * 10 / 12;
+  const int ol_h = render_h * 10 / 12;
+  const int lh = ft_height;  // line height
+  DrawRectangle(ol_x, ol_y, ol_w, ol_h, BROWN);
+  DrawRectangle(ol_x + 3, ol_y + 3, ol_w - 6, ol_h - 6, BEIGE);
+  DrawPrintf(ol_x + lh, ol_y + lh, BLACK, "Stats Screen");
+
+  int l = 2;
+  for (int i = 0; i < STAT_COUNT / 2 + 4; ++i) {
+    DrawPrintf(ol_x + lh, ft_height * l + ol_y + 10, BLACK, "%s: %d", stat_names[i], GS->player.stats.as_int[i]);
+    ++l;
+  }
+  l = 2;
+  for (int i = STAT_COUNT / 2 + 4; i < STAT_COUNT; ++i) {
+    DrawPrintf(ol_x + lh + ol_w / 2, ft_height * l + ol_y + 10, BLACK, "%s: %d", stat_names[i], GS->player.stats.as_int[i]);
+    ++l;
+  }
+  // DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->GS.camera.x, GD->GS.camera.y, GD->GS.camera.zoom);
+}
+
+void GsDrawItemsScreen(GameScene* GS) {
+  const int ol_x = render_w / 12;
+  const int ol_y = render_h / 12;
+  const int ol_w = render_w * 10 / 12;
+  const int ol_h = render_h * 10 / 12;
+  const int lh = ft_height;  // line height
+  DrawRectangle(ol_x, ol_y, ol_w, ol_h, BROWN);
+  DrawRectangle(ol_x + 3, ol_y + 3, ol_w - 6, ol_h - 6, BEIGE);
+  DrawPrintf(ol_x + lh, ol_y + lh, BLACK, "%d Items Owned", GS->player.items_collected);
+
+  int items_to_list = 0;
+
+  for (int i = 0; i < ITEM_COUNT; ++i) {
+    if (GS->player.item_counts[i] != 0) {
+      if (items_to_list <= 5) {
+        DrawPrintf(ol_x + lh, ft_height * items_to_list + ol_y + 30, BLACK, "%s: %d", item_strs[i], GS->player.item_counts[i]);
+      } else {
+        DrawPrintf(ol_x + lh + ol_w / 2, ft_height * (items_to_list - 5) + ol_y + 30, BLACK, "%s: %d", item_strs[i], GS->player.item_counts[i]);
+      }
+      ++items_to_list;
+    }
+  }
+
+  // DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->GS.camera.x, GD->GS.camera.y, GD->GS.camera.zoom);
+}
+
 void GsDraw(GameScene* GS) {
   // Always draw the main screen.
   GsDrawCheckerboard(GS);
@@ -326,6 +393,7 @@ void GsDraw(GameScene* GS) {
   GsDrawXpOrbs(GS);
   GsDrawUi(GS);
   GsDrawTextFx(GS);
+  GsDrawLineFx(GS);
 
   switch (GS->curr_overlay) {
     case GS_OVERLAY_NONE: {
@@ -333,6 +401,15 @@ void GsDraw(GameScene* GS) {
 
     case GS_OVERLAY_PICK_ITEM: {
       GsDrawPickItemOverlay(GS);
+    } break;
+
+    case GS_OVERLAY_STATS: {
+      GsDrawStatScreen(GS);
+    } break;
+
+      // wip
+    case GS_OVERLAY_ITEMS: {
+      GsDrawItemsScreen(GS);
     } break;
 
     default: {

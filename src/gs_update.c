@@ -75,6 +75,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->shot_split_percent = 0;
   stats->shot_frost_percent = 0;
   stats->max_orbitals = 0;
+  stats->max_spikes = 0;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GS->player.item_counts[i]; ++x) {
       switch (i) {
@@ -174,6 +175,13 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
         case ITEM_ORBITALS_UP:
           stats->max_orbitals += 2;
           break;
+        case ITEM_SPIKE_SHIELD:
+          if (x == 0) {
+            stats->max_spikes += 3;
+          } else {
+            stats->max_spikes += 2;
+          }
+          break;
         default:
           TraceLog(LOG_WARNING, "Unhandled item with id %d", i);
       }
@@ -205,6 +213,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   IntClamp(&stats->shot_split_percent, 0, 100);
   IntClamp(&stats->shot_frost_percent, 0, 50);
   IntClamp(&stats->max_orbitals, 0, LENGTHOF(GS->projs) / 2);
+  IntClamp(&stats->max_spikes, 0, LENGTHOF(GS->projs) / 2);
 }
 
 int GsGetTextFxSlot(GameScene* GS) {
@@ -225,6 +234,27 @@ int GsGetTextFxSlot(GameScene* GS) {
   GS->text_fx[oldest_idx] = (GsTextFx){0};
   GS->text_fx[oldest_idx].exists = true;
   GS->text_fx[oldest_idx].color = BLACK;
+  return oldest_idx;
+}
+
+int GsGetLineFxSlot(GameScene* GS) {
+  int oldest_idx = 0;
+  for (int t = 0; t < LENGTHOF(GS->line_fx); ++t) {
+    if (!GS->line_fx[t].exists) {
+      GS->line_fx[t] = (GsLineFx){0};
+      GS->line_fx[t].exists = true;
+      GS->line_fx[t].color = BLACK;
+      return t;
+    }
+    if (GS->line_fx[t].despawn_timer < GS->line_fx[oldest_idx].despawn_timer) {
+      oldest_idx = t;
+    }
+  }
+
+  // force-override oldest line effect if there were no slots available
+  GS->line_fx[oldest_idx] = (GsLineFx){0};
+  GS->line_fx[oldest_idx].exists = true;
+  GS->line_fx[oldest_idx].color = BLACK;
   return oldest_idx;
 }
 
@@ -576,17 +606,20 @@ void GsSpawnNewProjs(GameScene* GS) {
     GS->player.reload_progress -= fixed_factor;
     GS->player.shot_progress += GS->player.stats.shot_count;
   }
+
+  // volley of projectiles
+  bool first_shot_in_volley = true;
+  bool volley_is_homing = (GetRandomValue(0, 99) < GS->player.stats.shot_homing_percent);
+  bool volley_is_splitting = (GetRandomValue(0, 99) < GS->player.stats.shot_split_percent);
+  bool volley_is_frost = (GetRandomValue(0, 99) < GS->player.stats.shot_frost_percent);
+  bool volley_is_orbit = (GS->orbital_proj_count < GS->player.stats.max_orbitals);
+  bool volley_is_spike = (GS->spike_proj_count < GS->player.stats.max_spikes) && !volley_is_orbit;
+
   // who knows, maybe you could shoot multiple volleys in one tick
   while (GS->player.shot_progress >= FixNew(1, 0)) {
     GS->player.shot_progress -= FixNew(1, 0);
     GS->player.ticks_since_last_shot = 0;
 
-    // volley of projectiles
-    bool first_shot_in_volley = true;
-    bool volley_is_homing = (GetRandomValue(0, 99) < GS->player.stats.shot_homing_percent);
-    bool volley_is_splitting = (GetRandomValue(0, 99) < GS->player.stats.shot_split_percent);
-    bool volley_is_frost = (GetRandomValue(0, 99) < GS->player.stats.shot_frost_percent);
-    bool volley_is_orbit = (GS->orbital_proj_count < GS->player.stats.max_orbitals);
     if (volley_is_splitting) {
       // double reload delay after a splitting shot
       GS->player.shot_progress -= FixNew(1, 0);
@@ -647,6 +680,21 @@ void GsSpawnNewProjs(GameScene* GS) {
         };
         GS->projs[p].despawn_timer += GS->projs[p].orbit.timer;
       }
+      if (volley_is_spike) {
+        GS->projs[p].orbit = (GsProjOrbit){
+            .timer = 8 * target_fps,
+            .cx = GS->player.x,
+            .cy = GS->player.y,
+            .radius = GS->player.stats.size * 2,
+            .target_radius = GS->player.stats.size * 2 + GetRandomValue(0, 60),
+            .angle = GetRandomValue(0, angle_factor - 1),
+            .rot_speed = 3,
+            .track_player_angle = true,
+            .track_player_angle_offset = GetRandomValue(-16, 16),
+        };
+        GS->projs[p].despawn_timer += GS->projs[p].orbit.timer;
+        GS->projs[p].is_spike = true;
+      }
 
       FixMove(&GS->projs[p].x, &GS->projs[p].y, FixNew(GS->player.stats.size, 0), GS->projs[p].move_angle);
       // printf("Spawned proj %d\n", i);
@@ -684,6 +732,8 @@ void GsSpawnSplitProjs(GameScene* GS, int p) {
 
 void GsUpdateProjs(GameScene* GS) {
   GS->orbital_proj_count = 0;
+  int prev_spike_proj_count = IntMax(1, GS->spike_proj_count);
+  GS->spike_proj_count = 0;
 
   // proj logic
   for (int p = 0; p < LENGTHOF(GS->projs); ++p) {
@@ -692,6 +742,15 @@ void GsUpdateProjs(GameScene* GS) {
     }
     if (GS->projs[p].orbit.timer > 0) {
       ++GS->orbital_proj_count;
+    }
+    if (GS->projs[p].is_spike) {
+      if (GS->projs[p].orbit.timer <= 0) {
+        GS->projs[p].is_spike = false;
+      }
+      // GS->projs[p].orbit.track_player_angle_offset = GS->spike_proj_count * angle_factor / prev_spike_proj_count;
+      // GS->projs[p].orbit.track_player_angle_offset += GS->ticks * 3 % angle_factor;
+      //  GS->projs[p].orbit.target_radius = GS->player.stats.size * 2 + prev_spike_proj_count;
+      ++GS->spike_proj_count;
     }
 
     // despawn timer
@@ -919,6 +978,18 @@ void GsUpdateTextFx(GameScene* GS) {
   }
 }
 
+void GsUpdateLineFx(GameScene* GS) {
+  for (int t = 0; t < LENGTHOF(GS->line_fx); ++t) {
+    if (!GS->line_fx[t].exists) {
+      continue;
+    }
+    --GS->line_fx[t].despawn_timer;
+    if (GS->line_fx[t].despawn_timer <= 0) {
+      GS->line_fx[t].exists = false;
+    }
+  }
+}
+
 void GsLevelUpPlayer(GameScene* GS) {
   GS->player.xp -= GsXpForLevelUp(GS);
   // GsSpawnPickup(GS, GS->player.x, GS->player.y - FixNew(60, 0));
@@ -944,6 +1015,15 @@ void GsUpdateXpOrbs(GameScene* GS) {
     if (GS->player.ticks_since_magnetism == 0 &&
         sqdist_to_player < IntSq(GS->player.stats.magnetism_dist)) {
       GS->xp_orbs[o].noticed_player = true;
+      // make line fx to each magnetized XP orb
+      // WIP
+      int t = GsGetLineFxSlot(GS);
+      GS->line_fx[t].x1 = GS->xp_orbs[o].x;
+      GS->line_fx[t].y1 = GS->xp_orbs[o].y;
+      GS->line_fx[t].x2 = GS->player.x;
+      GS->line_fx[t].y2 = GS->player.y;
+      GS->line_fx[t].despawn_timer = 8;
+      GS->line_fx[t].color = LIME;
     }
     if (sqdist_to_player < IntSq(GS->player.stats.size + GS->xp_orbs[o].xp / 2 + 12)) {
       GS->xp_orbs[o].noticed_player = true;
@@ -1033,11 +1113,16 @@ void GsUpdateOlPickItem(GameScene* GS) {
 void GsInit(GameScene* GS) {
   // for (int i = 0; i < ITEM_COUNT; ++i) GS->player.item_counts[i] = 1;
   // GS->player.item_counts[ITEM_ORBITALS_UP] = 8;
-  // GS->player.item_counts[ITEM_HOMING_POWER] = 80;
+  // GS->player.item_counts[ITEM_HOMING_POWER] = 8;
   // // GS->player.item_counts[ITEM_SHOT_SPEED_UP] = 12;
-  // GS->player.item_counts[ITEM_FROST_SHOT] = 12;
-  // GS->player.item_counts[ITEM_SPLIT_SHOT] = 12;
-  // GS->player.item_counts[ITEM_SIGHT_UP] = 12;
+  // GS->player.item_counts[ITEM_FROST_SHOT] = 4;
+  GS->player.item_counts[ITEM_MAGNETISM_UP] = 6;
+  GS->player.item_counts[ITEM_SPIKE_SHIELD] = 4;
+  GS->player.item_counts[ITEM_FIRE_RATE_UP] = 1;
+  // GS->player.item_counts[ITEM_SHOT_COUNT_UP] = 2;
+  // GS->player.item_counts[ITEM_PIERCE_UP] = 2;
+  // GS->player.item_counts[ITEM_HOMING_POWER] = 2;
+  GS->player.item_counts[ITEM_SIGHT_UP] = 1;
   // GS->player.item_counts[ITEM_PIERCE_UP] = 8;
   // GS->player.item_counts[ITEM_FIRE_RATE_UP] = 8;
   GsUpdatePlayerStats(GS, &GS->player.stats);
@@ -1058,6 +1143,7 @@ void GsUpdate(GameScene* GS) {
 
       GsUpdatePickups(GS);
       GsUpdateTextFx(GS);
+      GsUpdateLineFx(GS);
       GsUpdateXpOrbs(GS);
       GsUpdateCamera(GS);
       ++GS->ticks;
@@ -1066,6 +1152,12 @@ void GsUpdate(GameScene* GS) {
     case GS_OVERLAY_PICK_ITEM: {
       GsUpdateOlPickItem(GS);
       ++GS->ol_pick_item.ticks;
+    } break;
+
+    case GS_OVERLAY_STATS: {
+    } break;
+
+    case GS_OVERLAY_ITEMS: {
     } break;
 
     default: {

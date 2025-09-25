@@ -2,7 +2,7 @@
 
 const char* stat_names[STAT_COUNT + 1] = {
     [STAT_MAX_HP] = "Max HP",
-    [STAT_ACTIVE_REGEN_DELAY] = "Active Regen Delay",
+    [STAT_ACTIVE_REGEN_DELAY] = "Regen Delay",  // Active Regen Delay
     [STAT_SHOT_DAMAGE] = "Shot Damage",
     [STAT_MAX_MOVE_SPEED] = "Move Speed",
     [STAT_RELOAD_DELAY] = "Reload Delay",
@@ -27,6 +27,7 @@ const char* stat_names[STAT_COUNT + 1] = {
     [STAT_SHOT_SPLIT_PERCENT] = "Split %",
     [STAT_SHOT_FROST_PERCENT] = "Frost %",
     [STAT_MAX_ORBITALS] = "Orbital Count",
+    [STAT_SPIKE_COUNT] = "Spike Count",
     [STAT_COUNT] = "ERROR",
 };
 

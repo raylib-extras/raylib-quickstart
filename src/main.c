@@ -50,7 +50,12 @@ int main() {
       game_data = save_state;
 
     } else if (IsKeyPressed(KEY_F3)) {
-      show_stats = !show_stats;
+      // show_stats = !show_stats;
+      if (GD->GS.curr_overlay == GS_OVERLAY_NONE) {
+        GD->GS.curr_overlay = GS_OVERLAY_STATS;
+      } else if (GD->GS.curr_overlay == GS_OVERLAY_STATS) {
+        GD->GS.curr_overlay = GS_OVERLAY_NONE;
+      }
 
     } else if (IsKeyPressed(KEY_F4)) {
       window_scale = (window_scale % 6) + 1;
@@ -73,6 +78,14 @@ int main() {
       // GD->GS.player.xp = 100;
       ++GD->GS.player.level;
       ++GD->GS.player.upgrades_pending;
+
+    } else if (IsKeyPressed(KEY_F8)) {
+      // show_stats = !show_stats;
+      if (GD->GS.curr_overlay == GS_OVERLAY_NONE) {
+        GD->GS.curr_overlay = GS_OVERLAY_ITEMS;
+      } else if (GD->GS.curr_overlay == GS_OVERLAY_ITEMS) {
+        GD->GS.curr_overlay = GS_OVERLAY_NONE;
+      }
 
     } else if (IsKeyPressed(KEY_F9)) {
       for (int p = 0; p < LENGTHOF(GD->GS.pickups); ++p) {
@@ -106,6 +119,7 @@ int main() {
 
     PERF_EXPR("DRAW", GdDraw(GD));
 
+    // debug items owned text
     GameScene* GS = &GD->GS;
     for (int i = 0; i < ITEM_COUNT; ++i) {
       DrawPrintf(i * 12, 0, BLACK, "%d", GD->GS.player.item_counts[i]);
