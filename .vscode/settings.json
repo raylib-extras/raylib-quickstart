@@ -29,6 +29,8 @@
 		"bit": "c",
 		"functional": "c",
 		"numeric": "c",
-		"utility": "c"
-	}
+		"utility": "c",
+		"xutility": "c"
+	},
+	"C_Cpp.default.compilerPath": "cl.exe"
 }

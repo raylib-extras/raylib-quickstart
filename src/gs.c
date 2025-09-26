@@ -2,7 +2,7 @@
 
 const char* stat_names[STAT_COUNT + 1] = {
     [STAT_MAX_HP] = "Max HP",
-    [STAT_ACTIVE_REGEN_DELAY] = "Active Regen Delay",
+    [STAT_ACTIVE_REGEN_DELAY] = "Regen Delay",  // Active Regen Delay
     [STAT_SHOT_DAMAGE] = "Shot Damage",
     [STAT_MAX_MOVE_SPEED] = "Move Speed",
     [STAT_RELOAD_DELAY] = "Reload Delay",
@@ -15,7 +15,7 @@ const char* stat_names[STAT_COUNT + 1] = {
     [STAT_SIZE] = "Size",
     [STAT_TURN_SPEED] = "Turn Speed",
     [STAT_MAGNETISM_DIST] = "Magnetism Power",
-    [STAT_MAGNETISM_FREQUENCY] = "Magnetism Frequency",
+    [STAT_MAGNETISM_FREQUENCY] = "Magnetism Delay",
     [STAT_SHOT_HOMING_PERCENT] = "Homing %",
     [STAT_SHOT_HOMING_POWER] = "Homing Power",
     [STAT_VIEW_DISTANCE] = "View Distance",
@@ -27,6 +27,7 @@ const char* stat_names[STAT_COUNT + 1] = {
     [STAT_SHOT_SPLIT_PERCENT] = "Split %",
     [STAT_SHOT_FROST_PERCENT] = "Frost %",
     [STAT_MAX_ORBITALS] = "Orbital Count",
+    [STAT_SPIKE_COUNT] = "Spike Count",
     [STAT_COUNT] = "ERROR",
 };
 

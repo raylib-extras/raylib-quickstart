@@ -33,6 +33,7 @@ typedef enum GsPlayerStatType {
   STAT_SHOT_SPLIT_PERCENT,
   STAT_SHOT_FROST_PERCENT,
   STAT_MAX_ORBITALS,
+  STAT_SPIKE_COUNT,
   STAT_COUNT
 } GsPlayerStatType;
 
@@ -71,6 +72,7 @@ typedef union GsPlayerStats {
     int shot_frost_percent;
 
     int max_orbitals;
+    int max_spikes;
   };
 } GsPlayerStats;
 
@@ -201,6 +203,8 @@ typedef struct GsProj {
 
   int split_fragments;  // 0 for non-splitting shot
 
+  bool is_spike;
+
   uint8_t hit_shape_ids[16];
   uint8_t hit_shape_timers[16];
 } GsProj;
@@ -223,7 +227,22 @@ typedef struct GsTextFx {
   fixed_t y;
   int despawn_timer;
   char text[8];
+
+  Color color;
 } GsTextFx;
+
+typedef struct GsLineFx {
+  bool exists;
+
+  fixed_t x1;
+  fixed_t y1;
+
+  fixed_t x2;
+  fixed_t y2;
+  int despawn_timer;
+
+  Color color;
+} GsLineFx;
 
 typedef struct GsXpOrb {
   bool exists;
@@ -248,6 +267,8 @@ typedef struct GsCamera {
 typedef enum GsOverlayType {
   GS_OVERLAY_NONE,
   GS_OVERLAY_PICK_ITEM,
+  GS_OVERLAY_STATS,
+  GS_OVERLAY_ITEMS,
 } GsOverlayType;
 
 typedef struct GsOlPickItemChoice {
@@ -278,13 +299,15 @@ typedef struct GameScene {
   GsShape shapes[200];
   int shape_count;
 
-  GsProj projs[100];
+  GsProj projs[200];
   int orbital_proj_count;
+  int spike_proj_count;
 
   GsPickup pickups[40];
   int pickups_spawned;
 
   GsTextFx text_fx[40];
+  GsLineFx line_fx[40];
 
   GsXpOrb xp_orbs[80];
 
