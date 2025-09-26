@@ -1110,6 +1110,9 @@ void GsUpdateOlPickItem(GameScene* GS) {
   }
 }
 
+void GsUpdateOlStats(GameScene* GS) { return; }
+void GsUpdateOlItems(GameScene* GS) { return; }
+
 void GsInit(GameScene* GS) {
   // for (int i = 0; i < ITEM_COUNT; ++i) GS->player.item_counts[i] = 1;
   // GS->player.item_counts[ITEM_ORBITALS_UP] = 8;
@@ -1155,9 +1158,11 @@ void GsUpdate(GameScene* GS) {
     } break;
 
     case GS_OVERLAY_STATS: {
+      GsUpdateOlStats(GS);
     } break;
 
     case GS_OVERLAY_ITEMS: {
+      GsUpdateOlItems(GS);
     } break;
 
     default: {

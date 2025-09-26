@@ -121,10 +121,7 @@ int main() {
 
     // debug items owned text
     GameScene* GS = &GD->GS;
-    for (int i = 0; i < ITEM_COUNT; ++i) {
-      DrawPrintf(i * 12, 0, BLACK, "%d", GD->GS.player.item_counts[i]);
-    }
-    DrawPrintf(0, ft_height, BLACK, "%d pickups spawned", GD->GS.pickups_spawned);
+
     // DrawPrintf(0, 16, BLACK, "Lvl %d - XP %d/%d", GD->GS.player.level, GD->GS.player.xp, GsXpForLevelUp(GS));
     if (show_stats) {
       int l = 2;

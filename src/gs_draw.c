@@ -277,7 +277,7 @@ void GsDrawUi(GameScene* GS) {
   }
 }
 
-void GsDrawPickItemOverlay(GameScene* GS) {
+void GsDrawOlPickItem(GameScene* GS) {
   const int ol_x = render_w / 12;
   const int ol_y = render_h / 12;
   const int ol_w = render_w * 10 / 12;
@@ -334,7 +334,7 @@ void GsDrawPickItemOverlay(GameScene* GS) {
   DrawPrintf(ol_x + lh, ol_y + ol_h - lh * 3, GRAY, "W/S to select, \nSPACE to confirm");
 }
 
-void GsDrawStatScreen(GameScene* GS) {
+void GsDrawOlStats(GameScene* GS) {
   const int ol_x = render_w / 12;
   const int ol_y = render_h / 12;
   const int ol_w = render_w * 10 / 12;
@@ -357,7 +357,7 @@ void GsDrawStatScreen(GameScene* GS) {
   // DrawPrintf(0, 0, BLACK, "x: %d\ny: %d\nzoom: %d", GD->GS.camera.x, GD->GS.camera.y, GD->GS.camera.zoom);
 }
 
-void GsDrawItemsScreen(GameScene* GS) {
+void GsDrawOlItems(GameScene* GS) {
   const int ol_x = render_w / 12;
   const int ol_y = render_h / 12;
   const int ol_w = render_w * 10 / 12;
@@ -365,7 +365,7 @@ void GsDrawItemsScreen(GameScene* GS) {
   const int lh = ft_height;  // line height
   DrawRectangle(ol_x, ol_y, ol_w, ol_h, BROWN);
   DrawRectangle(ol_x + 3, ol_y + 3, ol_w - 6, ol_h - 6, BEIGE);
-  DrawPrintf(ol_x + lh, ol_y + lh, BLACK, "%d Items Owned", GS->player.items_collected);
+  DrawPrintf(ol_x + lh, ol_y + lh, BLACK, "Items Owned");
 
   int items_to_list = 0;
 
@@ -392,24 +392,24 @@ void GsDraw(GameScene* GS) {
   GsDrawPickups(GS);
   GsDrawXpOrbs(GS);
   GsDrawUi(GS);
-  GsDrawTextFx(GS);
   GsDrawLineFx(GS);
+  GsDrawTextFx(GS);
 
   switch (GS->curr_overlay) {
     case GS_OVERLAY_NONE: {
     } break;
 
     case GS_OVERLAY_PICK_ITEM: {
-      GsDrawPickItemOverlay(GS);
+      GsDrawOlPickItem(GS);
     } break;
 
     case GS_OVERLAY_STATS: {
-      GsDrawStatScreen(GS);
+      GsDrawOlStats(GS);
     } break;
 
       // wip
     case GS_OVERLAY_ITEMS: {
-      GsDrawItemsScreen(GS);
+      GsDrawOlItems(GS);
     } break;
 
     default: {
