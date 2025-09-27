@@ -35,6 +35,7 @@ typedef enum GsPlayerStatType {
   STAT_MAX_ORBITALS,
   STAT_SPIKE_COUNT,
   STAT_SHOT_FLAME_PERCENT,
+  STAT_SHOT_FLAME_POWER,
   STAT_COUNT
 } GsPlayerStatType;
 
@@ -75,6 +76,7 @@ typedef union GsPlayerStats {
     int max_orbitals;
     int max_spikes;
     int shot_flame_percent;
+    int shot_flame_power;
   };
 } GsPlayerStats;
 

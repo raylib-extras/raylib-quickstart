@@ -75,6 +75,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->shot_split_percent = 0;
   stats->shot_frost_percent = 0;
   stats->shot_flame_percent = 0;
+  stats->shot_flame_power = 0;
   stats->max_orbitals = 0;
   stats->max_spikes = 0;
   for (int i = 0; i < ITEM_COUNT; ++i) {
@@ -187,8 +188,10 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
         case ITEM_FLAME_SHOT:
           if (x == 0) {
             stats->shot_flame_percent = 8;
+            stats->shot_flame_power = 8;
           } else {
             stats->shot_flame_percent += 4;
+            stats->shot_flame_power += 4;
           }
           break;
 
@@ -222,7 +225,7 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   IntClamp(&stats->shot_split_fragments, 2, 12);
   IntClamp(&stats->shot_split_percent, 0, 100);
   IntClamp(&stats->shot_frost_percent, 0, 50);
-  IntClamp(&stats->shot_frost_percent, 0, 100);
+  IntClamp(&stats->shot_flame_percent, 0, 100);
   IntClamp(&stats->max_orbitals, 0, LENGTHOF(GS->projs) / 2);
   IntClamp(&stats->max_spikes, 0, LENGTHOF(GS->projs) / 2);
 }
@@ -367,10 +370,10 @@ void GsUpdateShapes(GameScene* GS) {
 
     // flame
     if (GS->shapes[s].flame_ticks > 0) {
-      if (GS->shapes[s].flame_ticks % 10 == 1) {
+      if (GS->shapes[s].flame_ticks % 30 == 1) {
         // apply a tick of burn
         // damage self
-        GS->shapes[s].hp -= GS->player.stats.shot_flame_percent;
+        GS->shapes[s].hp -= GS->player.stats.shot_flame_power;
         GS->shapes[s].ticks_since_damaged = 0;
         GS->shapes[s].grant_xp_on_despawn = true;
         // make text fx for shape dmg
@@ -700,7 +703,7 @@ void GsSpawnNewProjs(GameScene* GS) {
         GS->projs[p].move_speed *= 2;
       }
       if (volley_is_flame) {
-        GS->projs[p].flame_power = GS->player.stats.shot_flame_percent * 4;
+        GS->projs[p].flame_power = target_fps * 4;
       }
       if (volley_is_orbit) {
         GS->projs[p].orbit = (GsProjOrbit){
@@ -962,10 +965,12 @@ void GsUpdateProjs(GameScene* GS) {
       // damage the shape
       GS->shapes[s].hp -= GS->projs[p].damage;
       GS->shapes[s].ticks_since_damaged = 0;
-      GS->shapes[s].frost_ticks = IntMax(GS->shapes[s].frost_ticks, GS->projs[p].frost_power);
-      GS->shapes[s].flame_ticks = IntMax(GS->shapes[s].flame_ticks, GS->projs[p].flame_power);
       GS->shapes[s].kb_angle = GS->projs[p].move_angle;
       GS->shapes[s].kb_speed = FixMax(GS->shapes[s].kb_speed, GS->projs[p].kb * GS->shapes[s].max_move_speed / fixed_factor);
+
+      // apply frost and burn to the shape
+      GS->shapes[s].flame_ticks = IntMax(GS->shapes[s].flame_ticks, GS->projs[p].flame_power * 4);
+      GS->shapes[s].frost_ticks = IntMax(GS->shapes[s].frost_ticks, GS->projs[p].frost_power);
 
       // make text fx
       int t = GsGetTextFxSlot(GS);
@@ -1173,17 +1178,17 @@ void GsInit(GameScene* GS) {
   // GS->player.item_counts[ITEM_ORBITALS_UP] = 8;
   // GS->player.item_counts[ITEM_HOMING_POWER] = 8;
   // GS->player.item_counts[ITEM_SHOT_SPEED_UP] = 12;
-  // GS->player.item_counts[ITEM_FROST_SHOT] = 2;
-  // GS->player.item_counts[ITEM_FLAME_SHOT] = 24;
-  // GS->player.item_counts[ITEM_MAGNETISM_UP] = 6;
-  // GS->player.item_counts[ITEM_SPIKE_SHIELD] = 4;
-  // GS->player.item_counts[ITEM_FIRE_RATE_UP] = 7;
-  // GS->player.item_counts[ITEM_SHOT_COUNT_UP] = 2;
-  // GS->player.item_counts[ITEM_PIERCE_UP] = 2;
-  // GS->player.item_counts[ITEM_HOMING_POWER] = 2;
-  // GS->player.item_counts[ITEM_SIGHT_UP] = 3;
-  // GS->player.item_counts[ITEM_PIERCE_UP] = 30;
-  // GS->player.item_counts[ITEM_SPEED_UP] = 8;
+  GS->player.item_counts[ITEM_FROST_SHOT] = 40;
+  // GS->player.item_counts[ITEM_FLAME_SHOT] = 6;
+  //  GS->player.item_counts[ITEM_MAGNETISM_UP] = 6;
+  //  GS->player.item_counts[ITEM_SPIKE_SHIELD] = 4;
+  //  GS->player.item_counts[ITEM_FIRE_RATE_UP] = 7;
+  //  GS->player.item_counts[ITEM_SHOT_COUNT_UP] = 2;
+  //  GS->player.item_counts[ITEM_PIERCE_UP] = 2;
+  //  GS->player.item_counts[ITEM_HOMING_POWER] = 2;
+  //  GS->player.item_counts[ITEM_SIGHT_UP] = 3;
+  //  GS->player.item_counts[ITEM_PIERCE_UP] = 30;
+  //  GS->player.item_counts[ITEM_SPEED_UP] = 8;
   GsUpdatePlayerStats(GS, &GS->player.stats);
   GS->player.hp = GS->player.stats.max_hp;
   GS->camera.zoom = FixNew(0, 128);

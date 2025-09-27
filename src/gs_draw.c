@@ -95,19 +95,28 @@ void GsDrawShapes(GameScene* GS) {
     GetRenderCoords(GS, GS->shapes[i].x, GS->shapes[i].y, default_z, &rx, &ry);
     Vector2 render_pos = {rx, ry};
 
-    // frost background
-    if (GS->shapes[i].frost_ticks > 0 && GS->shapes[i].flame_ticks > 0) {
-      int frost_size = GetRenderLength(GS, GS->shapes[i].size - 6 + IntMin(10, GS->shapes[i].frost_ticks / 8), default_z);
-      DrawPoly(render_pos, 3, frost_size, GS->ticks * 4, ORANGE);
-      DrawPoly(render_pos, 3, frost_size, -GS->ticks * 4, SKYBLUE);
-    } else if (GS->shapes[i].frost_ticks > 0) {
-      int frost_size = GetRenderLength(GS, GS->shapes[i].size - 6 + IntMin(10, GS->shapes[i].frost_ticks / 8), default_z);
-      DrawPoly(render_pos, 3, frost_size, GS->ticks * 4, SKYBLUE);
-      DrawPoly(render_pos, 3, frost_size, -GS->ticks * 4, SKYBLUE);
-    } else if (GS->shapes[i].flame_ticks > 0) {
-      int flame_size = GetRenderLength(GS, GS->shapes[i].size - 6 + IntMin(10, GS->shapes[i].flame_ticks / 8), default_z);
-      DrawPoly(render_pos, 3, flame_size, GS->ticks * 4, ORANGE);
-      DrawPoly(render_pos, 3, flame_size, -GS->ticks * 4, ORANGE);
+    // frost or flame background
+    if (GS->shapes[i].frost_ticks > 0 || GS->shapes[i].flame_ticks > 0) {
+      bool show_frost = GS->shapes[i].frost_ticks > 0;
+      bool show_flame = GS->shapes[i].flame_ticks > 0;
+      Color colors[2];
+      if (show_frost && show_flame) {
+        colors[0] = SKYBLUE;
+        colors[1] = ORANGE;
+      } else if (show_frost) {
+        colors[0] = SKYBLUE;
+        colors[1] = SKYBLUE;
+      } else {
+        colors[0] = ORANGE;
+        colors[1] = ORANGE;
+      }
+
+      if (show_frost || show_flame) {
+        // draw
+        int fxsize = GetRenderLength(GS, GS->shapes[i].size - 6 + IntMin(10, GS->shapes[i].frost_ticks / 4) + IntMin(10, GS->shapes[i].flame_ticks / 4), default_z);
+        DrawPoly(render_pos, 3, fxsize, GS->ticks * 4, colors[0]);
+        DrawPoly(render_pos, 3, fxsize, -GS->ticks * 4, colors[1]);
+      }
     }
 
     // shape

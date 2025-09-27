@@ -21,8 +21,6 @@ https://creativecommons.org/publicdomain/zero/1.0/
 #include "resource_dir.h"  // utility header for SearchAndSetResourceDir
 
 int main() {
-  // splash damamge TBD
-
   SetTraceLogLevel(LOG_WARNING);
   SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
   InitWindow(window_w, window_h, "raygame");
