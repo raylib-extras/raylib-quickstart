@@ -22,6 +22,7 @@ typedef enum ItemType {
   ITEM_FROST_SHOT,
   ITEM_ORBITALS_UP,
   ITEM_SPIKE_SHIELD,
+  ITEM_FLAME_SHOT,
   ITEM_COUNT
 } ItemType;
 

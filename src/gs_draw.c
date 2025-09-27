@@ -48,10 +48,23 @@ void GsDrawProjs(GameScene* GS) {
         color = MAGENTA;
       }
     }
-    if (GS->projs[p].frost_power > 0) {
+    // if both flaming and frost, alternate blue and orange
+    if (GS->projs[p].frost_power > 0 && GS->projs[p].flame_power > 0) {
+      if (GS->projs[p].despawn_timer % 2 == 0) {
+        color = SKYBLUE;
+      } else {
+        color = ORANGE;
+      }
+    } else if (GS->projs[p].frost_power > 0) {
       color = SKYBLUE;
+    } else if (GS->projs[p].flame_power > 0) {
+      color = ORANGE;
     }
+
     int sides = 4;
+    if (GS->projs[p].frost_power > 0) {
+      sides = 10;
+    }
     if (GS->projs[p].split_fragments > 0) {
       sides = 5;
     }
@@ -83,10 +96,18 @@ void GsDrawShapes(GameScene* GS) {
     Vector2 render_pos = {rx, ry};
 
     // frost background
-    if (GS->shapes[i].frost_ticks > 0) {
+    if (GS->shapes[i].frost_ticks > 0 && GS->shapes[i].flame_ticks > 0) {
+      int frost_size = GetRenderLength(GS, GS->shapes[i].size - 6 + IntMin(10, GS->shapes[i].frost_ticks / 8), default_z);
+      DrawPoly(render_pos, 3, frost_size, GS->ticks * 4, ORANGE);
+      DrawPoly(render_pos, 3, frost_size, -GS->ticks * 4, SKYBLUE);
+    } else if (GS->shapes[i].frost_ticks > 0) {
       int frost_size = GetRenderLength(GS, GS->shapes[i].size - 6 + IntMin(10, GS->shapes[i].frost_ticks / 8), default_z);
       DrawPoly(render_pos, 3, frost_size, GS->ticks * 4, SKYBLUE);
       DrawPoly(render_pos, 3, frost_size, -GS->ticks * 4, SKYBLUE);
+    } else if (GS->shapes[i].flame_ticks > 0) {
+      int flame_size = GetRenderLength(GS, GS->shapes[i].size - 6 + IntMin(10, GS->shapes[i].flame_ticks / 8), default_z);
+      DrawPoly(render_pos, 3, flame_size, GS->ticks * 4, ORANGE);
+      DrawPoly(render_pos, 3, flame_size, -GS->ticks * 4, ORANGE);
     }
 
     // shape
