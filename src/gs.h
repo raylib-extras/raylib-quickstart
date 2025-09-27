@@ -34,6 +34,8 @@ typedef enum GsPlayerStatType {
   STAT_SHOT_FROST_PERCENT,
   STAT_MAX_ORBITALS,
   STAT_SPIKE_COUNT,
+  STAT_SHOT_FLAME_PERCENT,
+  STAT_SHOT_FLAME_POWER,
   STAT_COUNT
 } GsPlayerStatType;
 
@@ -73,6 +75,8 @@ typedef union GsPlayerStats {
 
     int max_orbitals;
     int max_spikes;
+    int shot_flame_percent;
+    int shot_flame_power;
   };
 } GsPlayerStats;
 
@@ -159,6 +163,7 @@ typedef struct GsShape {
   int i_frames;
 
   int frost_ticks;
+  int flame_ticks;
 
 } GsShape;
 
@@ -204,6 +209,8 @@ typedef struct GsProj {
   int split_fragments;  // 0 for non-splitting shot
 
   bool is_spike;
+
+  int flame_power;
 
   uint8_t hit_shape_ids[16];
   uint8_t hit_shape_timers[16];

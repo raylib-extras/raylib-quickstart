@@ -28,6 +28,8 @@ const char* stat_names[STAT_COUNT + 1] = {
     [STAT_SHOT_FROST_PERCENT] = "Frost %",
     [STAT_MAX_ORBITALS] = "Orbital Count",
     [STAT_SPIKE_COUNT] = "Spike Count",
+    [STAT_SHOT_FLAME_PERCENT] = "Flame %",
+    [STAT_SHOT_FLAME_POWER] = "Flame Damage",
     [STAT_COUNT] = "ERROR",
 };
 

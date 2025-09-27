@@ -223,5 +223,6 @@ void SpawnChildShapes(GameScene* GS, int parent) {
     SetShapeStats(GS, s);
     GS->shapes[s].hp = GS->shapes[s].max_hp / 2;
     GS->shapes[s].xp /= 2;
+    GS->shapes[s].flame_ticks = GS->shapes[parent].flame_ticks;
   }
 }

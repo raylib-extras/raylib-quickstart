@@ -48,10 +48,23 @@ void GsDrawProjs(GameScene* GS) {
         color = MAGENTA;
       }
     }
-    if (GS->projs[p].frost_power > 0) {
+    // if both flaming and frost, alternate blue and orange
+    if (GS->projs[p].frost_power > 0 && GS->projs[p].flame_power > 0) {
+      if (GS->projs[p].despawn_timer % 2 == 0) {
+        color = SKYBLUE;
+      } else {
+        color = ORANGE;
+      }
+    } else if (GS->projs[p].frost_power > 0) {
       color = SKYBLUE;
+    } else if (GS->projs[p].flame_power > 0) {
+      color = ORANGE;
     }
+
     int sides = 4;
+    if (GS->projs[p].frost_power > 0) {
+      sides = 10;
+    }
     if (GS->projs[p].split_fragments > 0) {
       sides = 5;
     }
@@ -82,11 +95,28 @@ void GsDrawShapes(GameScene* GS) {
     GetRenderCoords(GS, GS->shapes[i].x, GS->shapes[i].y, default_z, &rx, &ry);
     Vector2 render_pos = {rx, ry};
 
-    // frost background
-    if (GS->shapes[i].frost_ticks > 0) {
-      int frost_size = GetRenderLength(GS, GS->shapes[i].size - 6 + IntMin(10, GS->shapes[i].frost_ticks / 8), default_z);
-      DrawPoly(render_pos, 3, frost_size, GS->ticks * 4, SKYBLUE);
-      DrawPoly(render_pos, 3, frost_size, -GS->ticks * 4, SKYBLUE);
+    // frost or flame background
+    if (GS->shapes[i].frost_ticks > 0 || GS->shapes[i].flame_ticks > 0) {
+      bool show_frost = GS->shapes[i].frost_ticks > 0;
+      bool show_flame = GS->shapes[i].flame_ticks > 0;
+      Color colors[2];
+      if (show_frost && show_flame) {
+        colors[0] = SKYBLUE;
+        colors[1] = ORANGE;
+      } else if (show_frost) {
+        colors[0] = SKYBLUE;
+        colors[1] = SKYBLUE;
+      } else {
+        colors[0] = ORANGE;
+        colors[1] = ORANGE;
+      }
+
+      if (show_frost || show_flame) {
+        // draw
+        int fxsize = GetRenderLength(GS, GS->shapes[i].size - 6 + IntMin(10, GS->shapes[i].frost_ticks / 4) + IntMin(10, GS->shapes[i].flame_ticks / 4), default_z);
+        DrawPoly(render_pos, 3, fxsize, GS->ticks * 4, colors[0]);
+        DrawPoly(render_pos, 3, fxsize, -GS->ticks * 4, colors[1]);
+      }
     }
 
     // shape

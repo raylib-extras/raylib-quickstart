@@ -20,5 +20,6 @@ const char* const item_strs[] = {
     [ITEM_FROST_SHOT] = "Frost",
     [ITEM_ORBITALS_UP] = "Orbit",
     [ITEM_SPIKE_SHIELD] = "Spike",
+    [ITEM_FLAME_SHOT] = "Flame",
     [ITEM_COUNT] = "ERROR",
 };
