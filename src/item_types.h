@@ -23,6 +23,7 @@ typedef enum ItemType {
   ITEM_ORBITALS_UP,
   ITEM_SPIKE_SHIELD,
   ITEM_FLAME_SHOT,
+  ITEM_SPLASH_DAMAGE,
   ITEM_COUNT
 } ItemType;
 

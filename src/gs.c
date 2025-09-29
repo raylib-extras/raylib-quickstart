@@ -30,6 +30,8 @@ const char* stat_names[STAT_COUNT + 1] = {
     [STAT_SPIKE_COUNT] = "Spike Count",
     [STAT_SHOT_FLAME_PERCENT] = "Flame %",
     [STAT_SHOT_FLAME_POWER] = "Flame Damage",
+    [STAT_SPLASH_DAMAGE] = "Splash Damage",
+    [STAT_SPLASH_RADIUS] = "Splash Radius",
     [STAT_COUNT] = "ERROR",
 };
 

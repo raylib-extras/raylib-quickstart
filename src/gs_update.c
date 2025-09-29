@@ -78,6 +78,8 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
   stats->shot_flame_power = 0;
   stats->max_orbitals = 0;
   stats->max_spikes = 0;
+  stats->splash_damage = 0;
+  stats->splash_radius = 0;
   for (int i = 0; i < ITEM_COUNT; ++i) {
     for (int x = 0; x < GS->player.item_counts[i]; ++x) {
       switch (i) {
@@ -191,7 +193,16 @@ void GsUpdatePlayerStats(GameScene* GS, GsPlayerStats* stats) {
             stats->shot_flame_power = 8;
           } else {
             stats->shot_flame_percent += 4;
-            stats->shot_flame_power += 4;
+            stats->shot_flame_power += 8;
+          }
+          break;
+        case ITEM_SPLASH_DAMAGE:
+          if (x == 0) {
+            stats->splash_damage = 15;
+            stats->splash_radius = 15;
+          } else {
+            stats->splash_damage += 5;
+            stats->splash_radius += 5;
           }
           break;
 
@@ -666,6 +677,9 @@ void GsSpawnNewProjs(GameScene* GS) {
       }
       GS->projs[p].exists = true;
       GS->projs[p].pierce = GS->player.stats.shot_pierce;
+      GS->projs[p].splash_damage = GS->player.stats.splash_damage;
+      GS->projs[p].splash_radius = GS->player.stats.splash_radius;
+      GS->projs[p].ticks_since_last_hit = 1000000;
       GS->projs[p].x = GS->player.x;
       GS->projs[p].y = GS->player.y;
 
@@ -769,6 +783,25 @@ void GsSpawnSplitProjs(GameScene* GS, int p) {
   }
 }
 
+void damage_shape(GameScene* GS, int s, int p, int damage) {
+  // damage the shape
+  GS->shapes[s].hp -= damage;
+  GS->shapes[s].ticks_since_damaged = 0;
+  GS->shapes[s].kb_angle = GS->projs[p].move_angle;
+  GS->shapes[s].kb_speed = FixMax(GS->shapes[s].kb_speed, GS->projs[p].kb * GS->shapes[s].max_move_speed / fixed_factor);
+
+  // apply frost and burn to the shape
+  GS->shapes[s].flame_ticks = IntMax(GS->shapes[s].flame_ticks, GS->projs[p].flame_power * 4);
+  GS->shapes[s].frost_ticks = IntMax(GS->shapes[s].frost_ticks, GS->projs[p].frost_power);
+
+  // make text fx
+  int t = GsGetTextFxSlot(GS);
+  GS->text_fx[t].x = GS->shapes[s].x;
+  GS->text_fx[t].y = GS->shapes[s].y;
+  GS->text_fx[t].despawn_timer = 60;
+  snprintf(GS->text_fx[t].text, LENGTHOF(GS->text_fx[t].text), "-%d", damage);
+}
+
 void GsUpdateProjs(GameScene* GS) {
   GS->orbital_proj_count = 0;
   int prev_spike_proj_count = IntMax(1, GS->spike_proj_count);
@@ -779,6 +812,7 @@ void GsUpdateProjs(GameScene* GS) {
     if (!GS->projs[p].exists) {
       continue;
     }
+    GS->projs[p].ticks_since_last_hit += 1;
     if (GS->projs[p].orbit.timer > 0) {
       ++GS->orbital_proj_count;
     }
@@ -961,23 +995,33 @@ void GsUpdateProjs(GameScene* GS) {
       }
 
       hit_something = true;
+      GS->projs[p].ticks_since_last_hit = 0;
 
-      // damage the shape
-      GS->shapes[s].hp -= GS->projs[p].damage;
-      GS->shapes[s].ticks_since_damaged = 0;
-      GS->shapes[s].kb_angle = GS->projs[p].move_angle;
-      GS->shapes[s].kb_speed = FixMax(GS->shapes[s].kb_speed, GS->projs[p].kb * GS->shapes[s].max_move_speed / fixed_factor);
+      // damage the targeted shape
+      damage_shape(GS, s, p, GS->projs[p].damage);
 
-      // apply frost and burn to the shape
-      GS->shapes[s].flame_ticks = IntMax(GS->shapes[s].flame_ticks, GS->projs[p].flame_power * 4);
-      GS->shapes[s].frost_ticks = IntMax(GS->shapes[s].frost_ticks, GS->projs[p].frost_power);
-
-      // make text fx
-      int t = GsGetTextFxSlot(GS);
-      GS->text_fx[t].x = GS->shapes[s].x;
-      GS->text_fx[t].y = GS->shapes[s].y;
-      GS->text_fx[t].despawn_timer = 60;
-      snprintf(GS->text_fx[t].text, LENGTHOF(GS->text_fx[t].text), "-%d", GS->projs[p].damage);
+      // splash damage
+      if (GS->projs[p].splash_damage >= 0) {
+        // damage shapes in radius
+        for (int ss = 0; ss < LENGTHOF(GS->shapes); ++ss) {
+          if (ss == s) {  // don't hit the same guy twice
+            continue;
+          }
+          if (!GS->shapes[ss].exists) {
+            continue;
+          }
+          if (GS->shapes[ss].i_frames > 0) {
+            continue;
+          }
+          int sdx = abs(FixWhole(GS->shapes[ss].x) - FixWhole(GS->projs[p].x));
+          int sdy = abs(FixWhole(GS->shapes[ss].y) - FixWhole(GS->projs[p].y));
+          int ssqdist = IntSq(sdx) + IntSq(sdy);
+          if (ssqdist >= IntSq(GS->shapes[ss].size + GS->projs[p].splash_radius)) {
+            continue;
+          }
+          damage_shape(GS, ss, p, GS->projs[p].splash_damage);
+        }
+      }
 
       // do player dps tracking
       GS->player.dps += GS->projs[p].damage;
@@ -1178,7 +1222,7 @@ void GsInit(GameScene* GS) {
   // GS->player.item_counts[ITEM_ORBITALS_UP] = 8;
   // GS->player.item_counts[ITEM_HOMING_POWER] = 8;
   // GS->player.item_counts[ITEM_SHOT_SPEED_UP] = 12;
-  GS->player.item_counts[ITEM_FROST_SHOT] = 40;
+  // GS->player.item_counts[ITEM_FROST_SHOT] = 40;
   // GS->player.item_counts[ITEM_FLAME_SHOT] = 6;
   //  GS->player.item_counts[ITEM_MAGNETISM_UP] = 6;
   //  GS->player.item_counts[ITEM_SPIKE_SHIELD] = 4;
@@ -1186,9 +1230,10 @@ void GsInit(GameScene* GS) {
   //  GS->player.item_counts[ITEM_SHOT_COUNT_UP] = 2;
   //  GS->player.item_counts[ITEM_PIERCE_UP] = 2;
   //  GS->player.item_counts[ITEM_HOMING_POWER] = 2;
-  //  GS->player.item_counts[ITEM_SIGHT_UP] = 3;
+  // GS->player.item_counts[ITEM_SIGHT_UP] = 3;
   //  GS->player.item_counts[ITEM_PIERCE_UP] = 30;
   //  GS->player.item_counts[ITEM_SPEED_UP] = 8;
+  // GS->player.item_counts[ITEM_SPLASH_DAMAGE] = 1;
   GsUpdatePlayerStats(GS, &GS->player.stats);
   GS->player.hp = GS->player.stats.max_hp;
   GS->camera.zoom = FixNew(0, 128);
