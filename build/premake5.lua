@@ -14,6 +14,18 @@ newoption
     default = "opengl33"
 }
 
+newoption
+{
+    trigger = "backend",
+    value = "BACKEND_TYPE",
+    description = "Backend Platform to use",
+    allowed = {
+        { "glfw", "GLFW"},
+        { "rgfw", "RGFW"}
+    },
+    default = "glfw"
+}
+
 function download_progress(total, current)
     local ratio = current / total;
     ratio = math.min(math.max(ratio, 0), 1);
@@ -44,10 +56,10 @@ function build_externals()
 end
 
 function platform_defines()
-    filter {"configurations:Debug or Release"}
+     filter {"options:backend=glfw"}
         defines{"PLATFORM_DESKTOP"}
 
-    filter {"configurations:Debug_RGFW or Release_RGFW"}
+    filter {"options:backend=rgfw"}
         defines{"PLATFORM_DESKTOP_RGFW"}
 
     filter {"options:graphics=opengl43"}
@@ -108,18 +120,21 @@ end
 
 workspace (workspaceName)
     location "../"
-    configurations { "Debug", "Release", "Debug_RGFW", "Release_RGFW"}
+    configurations { "Debug", "Release"}
     platforms { "x64", "x86", "ARM64"}
 
     defaultplatform ("x64")
 
-    filter "configurations:Debug or Debug_RGFW"
+    filter "configurations:Debug"
         defines { "DEBUG" }
         symbols "On"
 
-    filter "configurations:Release or Release_RGFW"
+    filter "configurations:Release"
         defines { "NDEBUG" }
         optimize "On"
+
+    filter {"configurations:Release", "action:vs*"}
+       linktimeoptimization "On"
 
     filter { "platforms:x64" }
         architecture "x86_64"
@@ -142,11 +157,11 @@ if (downloadRaylib) then
         location "build_files/"
         targetdir "../bin/%{cfg.buildcfg}"
 
-        filter {"system:windows", "configurations:Release or Release_RGFW", "action:gmake*"}
+        filter {"system:windows", "configurations:Release", "action:gmake*"}
             kind "WindowedApp"
             buildoptions { "-Wl,--subsystem,windows" }
 
-        filter {"system:windows", "configurations:Release or Release_RGFW", "action:vs*"}
+        filter {"system:windows", "configurations:Release", "action:vs*"}
             kind "WindowedApp"
             entrypoint "mainCRTStartup"
 
