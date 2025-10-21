@@ -168,6 +168,8 @@ if (downloadRaylib) then
         filter "action:vs*"
             debugdir "$(SolutionDir)"
 
+        filter {"action:gmake*"} -- Uncoment if you need to force StaticLib
+--          buildoptions { "-static" }
         filter{}
 
         vpaths 
