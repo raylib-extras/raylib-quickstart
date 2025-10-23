@@ -9,7 +9,8 @@ newoption
         { "opengl33", "OpenGL 3.3"},
         { "opengl43", "OpenGL 4.3"},
         { "openges2", "OpenGL ES2"},
-        { "openges3", "OpenGL ES3"}
+        { "openges3", "OpenGL ES3"},
+        { "software", "OpenGL 1.1 Software Render"}
     },
     default = "opengl33"
 }
@@ -21,7 +22,8 @@ newoption
     description = "Backend Platform to use",
     allowed = {
         { "glfw", "GLFW"},
-        { "rgfw", "RGFW"}
+        { "rgfw", "RGFW"},
+        { "win32", "WIN32"},
     },
     default = "glfw"
 }
@@ -62,6 +64,9 @@ function platform_defines()
     filter {"options:backend=rgfw"}
         defines{"PLATFORM_DESKTOP_RGFW"}
 
+    filter {"options:backend=win32"}
+        defines{"PLATFORM_DESKTOP_WIN32"}
+
     filter {"options:graphics=opengl43"}
         defines{"GRAPHICS_API_OPENGL_43"}
 
@@ -79,6 +84,9 @@ function platform_defines()
 
     filter {"options:graphics=openges2"}
         defines{"GRAPHICS_API_OPENGL_ES2"}
+
+    filter {"options:graphics=software"}
+        defines{"GRAPHICS_API_OPENGL_11_SOFTWARE"}
 
     filter {"system:macosx"}
         disablewarnings {"deprecated-declarations"}
@@ -116,7 +124,6 @@ end
 if (os.isdir('external') == false) then
     os.mkdir('external')
 end
-
 
 workspace (workspaceName)
     location "../"
