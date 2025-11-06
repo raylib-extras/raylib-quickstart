@@ -28,6 +28,18 @@ newoption
     default = "glfw"
 }
 
+newoption
+{
+    trigger = "wayland",
+    value = "WAYLAND",
+    description = "build for wayland",
+    allowed = {
+        { "off", "Off"},
+        { "on", "On"}
+    },
+    default = "off"
+}
+
 function download_progress(total, current)
     local ratio = current / total;
     ratio = math.min(math.max(ratio, 0), 1);
@@ -237,6 +249,9 @@ if (downloadRaylib) then
 
         language "C"
         targetdir "../bin/%{cfg.buildcfg}"
+
+        filter {"options:wayland=on"}
+            defines {"GLFW_LINUX_ENABLE_WAYLAND=TRUE" }
 
         filter "action:vs*"
             defines{"_WINSOCK_DEPRECATED_NO_WARNINGS", "_CRT_SECURE_NO_WARNINGS"}
