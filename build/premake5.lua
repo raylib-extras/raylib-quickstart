@@ -158,7 +158,7 @@ workspace (workspaceName)
     filter { "platforms:x64" }
         architecture "x86_64"
 
-    filter { "platforms:Arm64" }
+    filter { "platforms:ARM64" }
         architecture "ARM64"
 
     filter {}
