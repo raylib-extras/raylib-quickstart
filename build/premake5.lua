@@ -202,8 +202,7 @@ if (downloadRaylib) then
         cppdialect "C++17"
 
         includedirs {raylib_dir .. "/src" }
-        includedirs {raylib_dir .."/src/external" }
-        includedirs { raylib_dir .."/src/external/glfw/include" }
+
         flags { "ShadowedVariables"}
         platform_defines()
 
