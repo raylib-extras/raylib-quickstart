@@ -14,11 +14,11 @@ Do not name your game project 'raylib', it will conflict with the raylib library
 # VSCode Users (all platforms)
 *Note* You must have a compiler toolchain installed in addition to vscode.
 
-* Download the quickstart
-* Rename the folder to your game name
-* Open the folder in VSCode
-* Run the build task ( CTRL+SHIFT+B or F5 )
-* You are good to go
+1. Download the quickstart
+2. Rename the folder to your game name
+3. Open the folder in VSCode
+4. Run the build task ( CTRL+SHIFT+B or F5 )
+5. You are good to go
 
 # Windows Users
 There are two compiler toolchains available for windows, MinGW-W64 (a free compiler using GCC), and Microsoft Visual Studio
@@ -75,6 +75,53 @@ Simply rename `src/main.c` to `src/main.cpp` and re-run the steps above and do a
 
 # Using your own code
 Simply remove `src/main.c` and replace it with your code, and re-run the steps above and do a clean build.
+
+# Adding External Libraries (e.g., tinyfiledialogs)
+
+Quickstart is intentionally minimal — it only includes what is required to compile and run a basic raylib project.  
+If you want to use extra libraries (like **tinyfiledialogs**, stb libs, audio libs, etc.), you must update your `premake5.lua` file and add the correct system dependencies yourself.
+
+This keeps the template lightweight and avoids forcing every user to include libraries they might never use.
+
+### Where to add dependencies
+External libraries must be added inside the correct platform filter in your `premake5.lua` file:
+
+```lua
+filter "system:windows"
+    defines{"_WIN32"}
+    links {"winmm", "gdi32", "opengl32"}
+    libdirs {"../bin/%{cfg.buildcfg}"}
+
+filter "system:linux"
+    links {"pthread", "m", "dl", "rt", "X11"}
+
+filter "system:macosx"
+    links {
+        "OpenGL.framework",
+        "Cocoa.framework",
+        "IOKit.framework",
+        "CoreFoundation.framework",
+        "CoreAudio.framework",
+        "CoreVideo.framework",
+        "AudioToolbox.framework"
+    }
+```
+### Example: tinyfiledialogs on Windows
+tinyfiledialogs requires extra Windows system libraries.
+To use it, add them inside your Windows filter:
+```
+filter "system:windows"
+    links {
+        "Comdlg32",
+        "User32",
+        "Ole32",
+        "Shell32"
+    }
+```
+
+### Cross-platform reminder
+If you add a library, make sure to add its required dependencies for all platforms you plan to support (Windows, Linux, MacOS).
+Every library documents what each OS needs.
 
 # Building for other OpenGL targets
 If you need to build for a different OpenGL version than the default (OpenGL 3.3) you can specify an OpenGL version in your premake command line. Just modify the bat file or add the following to your command line
