@@ -76,53 +76,6 @@ Simply rename `src/main.c` to `src/main.cpp` and re-run the steps above and do a
 # Using your own code
 Simply remove `src/main.c` and replace it with your code, and re-run the steps above and do a clean build.
 
-# Adding External Libraries (e.g., tinyfiledialogs)
-
-Quickstart is intentionally minimal — it only includes what is required to compile and run a basic raylib project.  
-If you want to use extra libraries (like **tinyfiledialogs**, stb libs, audio libs, etc.), you must update your `premake5.lua` file and add the correct system dependencies yourself.
-
-This keeps the template lightweight and avoids forcing every user to include libraries they might never use.
-
-### Where to add dependencies
-External libraries must be added inside the correct platform filter in your `premake5.lua` file:
-
-```lua
-filter "system:windows"
-    defines{"_WIN32"}
-    links {"winmm", "gdi32", "opengl32"}
-    libdirs {"../bin/%{cfg.buildcfg}"}
-
-filter "system:linux"
-    links {"pthread", "m", "dl", "rt", "X11"}
-
-filter "system:macosx"
-    links {
-        "OpenGL.framework",
-        "Cocoa.framework",
-        "IOKit.framework",
-        "CoreFoundation.framework",
-        "CoreAudio.framework",
-        "CoreVideo.framework",
-        "AudioToolbox.framework"
-    }
-```
-### Example: tinyfiledialogs on Windows
-tinyfiledialogs requires extra Windows system libraries.
-To use it, add them inside your Windows filter:
-```
-filter "system:windows"
-    links {
-        "Comdlg32",
-        "User32",
-        "Ole32",
-        "Shell32"
-    }
-```
-
-### Cross-platform reminder
-If you add a library, make sure to add its required dependencies for all platforms you plan to support (Windows, Linux, MacOS).
-Every library documents what each OS needs.
-
 # Building for other OpenGL targets
 If you need to build for a different OpenGL version than the default (OpenGL 3.3) you can specify an OpenGL version in your premake command line. Just modify the bat file or add the following to your command line
 
@@ -140,6 +93,34 @@ If you need to build for a different OpenGL version than the default (OpenGL 3.3
 
 ## For OpenGLES 3.0
 `--graphics=opengles3`
+
+# Adding External Libraries 
+
+Quickstart is intentionally minimal — it only includes what is required to compile and run a basic raylib project.  
+If you want to use extra libraries, you can add them to the `build/premake5.lua` file yourself using the links function.
+
+You can find the documentation for the links function here https://premake.github.io/docs/links/
+
+### Example: adding the required libraries for tinyfiledialogs on Windows
+tinyfiledialogs requires extra Windows system libraries.
+The premake file uses filters to define options that are platform specific
+https://premake.github.io/docs/Filters/
+
+Using the windows filter adds these libraries only to the windows build.
+```
+filter "system:windows"
+    links {
+        "Comdlg32",
+        "User32",
+        "Ole32",
+        "Shell32"
+    }
+```
+
+### Cross-platform reminder
+If you add a library, make sure to add its required dependencies for all platforms you plan to support (Windows, Linux, MacOS).
+Different libraries will have different dependencies on different platforms.
+
 
 # License
 Copyright (c) 2020-2025 Jeffery Myers
