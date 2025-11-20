@@ -103,19 +103,13 @@ function platform_defines()
     filter {"system:macosx"}
         disablewarnings {"deprecated-declarations"}
 
-    filter {"system:linux"}
+    filter {"system:linux", "options:wayland=off"}
         defines {"_GLFW_X11"}
-        defines {"_GNU_SOURCE"}
--- This is necessary, otherwise compilation will fail since
--- there is no CLOCK_MONOTOMIC. raylib claims to have a workaround
--- to compile under c99 without -D_GNU_SOURCE, but it didn't seem
--- to work. raylib's Makefile also adds this flag, probably why it went
--- unnoticed for so long.
--- It compiles under c11 without -D_GNU_SOURCE, because c11 requires
--- to have CLOCK_MONOTOMIC
--- See: https://github.com/raysan5/raylib/issues/2729
 
-    filter{}
+    filter {"system:linux", "options:wayland=on"}
+        defines {"_GLFW_WAYLAND"}
+
+    filter {}
 end
 
 -- if you don't want to download raylib, then set this to false, and set the raylib dir to where you want raylib to be pulled from, must be full sources.
@@ -231,7 +225,13 @@ if (downloadRaylib) then
             libdirs {"../bin/%{cfg.buildcfg}"}
 
         filter "system:linux"
-            links {"pthread", "m", "dl", "rt", "X11"}
+            links {"pthread", "m", "dl", "rt"}
+
+        filter {"system:linux", "options:wayland=off"}
+            links {"X11"}
+
+        filter {"system:linux", "options:wayland=on"}
+            links {"wayland-client", "wayland-cursor", "wayland-egl", "xkbcommon"}
 
         filter "system:macosx"
             links {"OpenGL.framework", "Cocoa.framework", "IOKit.framework", "CoreFoundation.framework", "CoreAudio.framework", "CoreVideo.framework", "AudioToolbox.framework"}
@@ -248,6 +248,7 @@ if (downloadRaylib) then
 
         language "C"
         targetdir "../bin/%{cfg.buildcfg}"
+
 
         filter {"options:wayland=on"}
             defines {"GLFW_LINUX_ENABLE_WAYLAND=TRUE" }
