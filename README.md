@@ -23,9 +23,10 @@ Do not name your game project 'raylib', it will conflict with the raylib library
 # Windows Users
 There are two compiler toolchains available for windows, MinGW-W64 (a free compiler using GCC), and Microsoft Visual Studio
 ## Using MinGW-W64
+* Rename the folder to your game name
 * Double click the `build-MinGW-W64.bat` file
 * CD into the folder in your terminal
-  * if you are usiing the W64devkit and have not added it to your system path environment variable, you must use the W64devkit.exe terminal, not CMD.exe
+  * if you are using the W64devkit and have not added it to your system path environment variable, you must use the W64devkit.exe terminal, not CMD.exe
   * If you want to use cmd.exe or any other terminal, please make sure that gcc/mingw-W64 is in your path environment variable.
 * run `make`
 * You are good to go
@@ -45,12 +46,14 @@ To your path environment variable so that the compiler that came with raylib can
 DO NOT INSTALL ANOTHER MinGW-W64 from another source such as msys2, you don't need it.
 
 ## Microsoft Visual Studio
+* Rename the folder to your game name
 * Run `build-VisualStudio2022.bat`
 * double click the `.sln` file that is generated
 * develop your game
 * you are good to go
 
 # Linux Users
+* Rename the folder to your game name
 * CD into the build folder
 * run `./premake5 gmake`
 * CD back to the root
@@ -58,6 +61,7 @@ DO NOT INSTALL ANOTHER MinGW-W64 from another source such as msys2, you don't ne
 * you are good to go
 
 # MacOS Users
+* Rename the folder to your game name
 * CD into the build folder
 * run `./premake5.osx gmake`
 * CD back to the root
