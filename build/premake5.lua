@@ -1,3 +1,6 @@
+-- Export Compile Commands module for clangd support
+require "ecc/ecc"
+
 newoption
 {
     trigger = "graphics",
