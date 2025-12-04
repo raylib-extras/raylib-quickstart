@@ -95,7 +95,30 @@
             "osx": {
                 "command": "premake5.osx"
             },
-            "group": "build"
+            "group": "build",
+            "dependsOn": ["Generate compile_commands.json"]
+        },
+        {
+            "label": "Generate compile_commands.json",
+            "type": "process",
+            "command": "./premake5",
+            "options": {
+                "cwd": "${workspaceFolder}/build/"
+            },
+            "args": [
+                "ecc"
+            ],
+            "windows": {
+                "command": "./premake5.exe"
+            },
+            "linux": {
+                "command": "./premake5"
+            },
+            "osx": {
+                "command": "premake5.osx"
+            },
+            "group": "build",
+            "problemMatcher": []
         }
     ]
 }
