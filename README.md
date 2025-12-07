@@ -1,15 +1,17 @@
 # Raylib-Quickstart
 A simple cross platform template for setting up a project with the bleeding edge raylib code.
-Works with C or C++.
+Works with C or C++. To get started, download the quickstart repository manually, or clone it using:
+'''
+git clone https://github.com/raylib-extras/raylib-quickstart.git <custom-name-for-your-project-here>
+'''
+# Naming projects
+Give the custom name to your game project in the placeholder. Do not name your game project 'raylib', it will conflict with the raylib library.
 
 ## Supported Platforms
 Quickstart supports the main 3 desktop platforms:
 * Windows
 * Linux
 * MacOS
-
-# Naming projects
-Do not name your game project 'raylib', it will conflict with the raylib library.
 
 # VSCode Users (all platforms)
 *Note* You must have a compiler toolchain installed in addition to vscode.
@@ -34,7 +36,7 @@ There are two compiler toolchains available for windows, MinGW-W64 (a free compi
 ### Note on MinGW-64 versions
 Make sure you have a modern version of MinGW-W64 (not mingw).
 The best place to get it is from the W64devkit from
-https://github.com/skeeto/w64devkit/releases
+(https://github.com/skeeto/w64devkit/releases)
 or the version installed with the raylib installer
 #### If you have installed raylib from the installer
 Make sure you have added the path
