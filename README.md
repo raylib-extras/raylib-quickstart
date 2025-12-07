@@ -2,7 +2,7 @@
 A simple cross platform template for setting up a project with the bleeding edge raylib code.
 Works with C or C++. To get started, download the quickstart repository manually, or clone it using:
 ```
-git clone https://github.com/raylib-extras/raylib-quickstart.git <custom-name-for-your-project-here>
+git clone https://github.com/raylib-extras/raylib-quickstart.git [custom-name-for-your-project-here]
 ```
 # Naming projects
 * Replace the placeholder with your desired project name when running the git clone command above.
