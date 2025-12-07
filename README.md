@@ -5,7 +5,7 @@ Works with C or C++. To get started, download the quickstart repository manually
 git clone https://github.com/raylib-extras/raylib-quickstart.git <custom-name-for-your-project-here>
 ```
 # Naming projects
-* Give the custom name to your game project in the placeholder.
+* Replace the placeholder with your desired project name when running the git clone command above.
 * __Do not name your game project 'raylib', it will conflict with the raylib library.__
 * If you have used custom game name with __git clone__, there is no need to rename it again.
 
