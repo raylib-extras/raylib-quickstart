@@ -7,6 +7,7 @@ git clone https://github.com/raylib-extras/raylib-quickstart.git <custom-name-fo
 # Naming projects
 * Give the custom name to your game project in the placeholder.
 * __Do not name your game project 'raylib', it will conflict with the raylib library.__
+* If you have used custom game name with __git clone__, there is no need to rename it again.
 
 ## Supported Platforms
 Quickstart supports the main 3 desktop platforms:
