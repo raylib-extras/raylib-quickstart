@@ -2,14 +2,35 @@
 A simple cross platform template for setting up a project with the bleeding edge raylib code.
 Works with C or C++.
 
+# Basic Setup
+Download this repository to get started.
+
+You can download the zip file of the repository from the Green Code button on github. This is the simplest way to get the template to start from.
+Once you have downloaded the template, rename it to your project name.
+
+or
+
+Clone the repository with git, form the url
+```
+https://github.com/raylib-extras/raylib-quickstart.git
+```
+
+If you are using a command line git client you can use the command below to download and rename the template in one step
+```
+git clone https://github.com/raylib-extras/raylib-quickstart.git [name-for-your-project-here]
+```
+
+# Naming projects
+* Replace the placeholder with your desired project name when running the git clone command above.
+* __Do not name your game project 'raylib', it will conflict with the raylib library.__
+* If you have used custom game name with __git clone__, there is no need to rename it again.
+
+
 ## Supported Platforms
 Quickstart supports the main 3 desktop platforms:
 * Windows
 * Linux
 * MacOS
-
-# Naming projects
-Do not name your game project 'raylib', it will conflict with the raylib library.
 
 # VSCode Users (all platforms)
 *Note* You must have a compiler toolchain installed in addition to vscode.
@@ -35,7 +56,9 @@ There are two compiler toolchains available for windows, MinGW-W64 (a free compi
 Make sure you have a modern version of MinGW-W64 (not mingw).
 The best place to get it is from the W64devkit from
 https://github.com/skeeto/w64devkit/releases
+
 or the version installed with the raylib installer
+
 #### If you have installed raylib from the installer
 Make sure you have added the path
 
