@@ -10,7 +10,7 @@ Once you have downloaded the template, rename it to your project name.
 
 or
 
-Clone the repository with git, form the url
+Clone the repository with git, from the url
 ```
 https://github.com/raylib-extras/raylib-quickstart.git
 ```
