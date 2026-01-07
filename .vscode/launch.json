@@ -8,7 +8,6 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/Debug/${workspaceFolderBasename}.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -23,7 +22,8 @@
               }
             ],
             "windows": {
-              "miDebuggerPath": "gdb.exe",
+              "program": "${workspaceFolder}/bin/Debug/${workspaceFolderBasename}.exe",
+              "miDebuggerPath": "gdb.exe"
             },
             "osx": {
               "program": "${workspaceFolder}/bin/Debug/${workspaceFolderBasename}",
@@ -39,7 +39,6 @@
             "name": "Debug NoPremake",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/Debug/${workspaceFolderBasename}.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -54,7 +53,8 @@
               }
             ],
             "windows": {
-              "miDebuggerPath": "gdb.exe",
+              "program": "${workspaceFolder}/bin/Debug/${workspaceFolderBasename}.exe",
+              "miDebuggerPath": "gdb.exe"
             },
             "osx": {
               "program": "${workspaceFolder}/bin/Debug/${workspaceFolderBasename}",
@@ -75,7 +75,6 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
-            "program": "${workspaceFolder}/bin/Release/${workspaceFolderBasename}.exe",
             "MIMode": "gdb",
             "windows": {
               "program": "${workspaceFolder}/bin/Release/${workspaceFolderBasename}.exe",

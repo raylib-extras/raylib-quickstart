@@ -405,3 +405,4 @@ Makefile
 *.swp
 *.swo
 *.swn
+/build/compile_commands.json
