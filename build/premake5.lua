@@ -192,13 +192,15 @@ if (downloadRaylib) then
         {
             ["Header Files/*"] = { "../include/**.h",  "../include/**.hpp", "../src/**.h", "../src/**.hpp"},
             ["Source Files/*"] = {"../src/**.c", "src/**.cpp"},
-            ["Windows Resource Files/*"] = {"../src/**.rc", "src/**.ico"},
+            ["Windows Resource Files/*"] = {"../src/**.rc", "../src/**.ico"},
+            ["Game Resource Files/*"] = {"../resources/**"},
         }
         
         files {"../src/**.c", "../src/**.cpp", "../src/**.h", "../src/**.hpp", "../include/**.h", "../include/**.hpp"}
         
         filter {"system:windows", "action:vs*"}
             files {"../src/*.rc", "../src/*.ico"}
+            files {"../resources/**"}
 
         filter{}
         
