@@ -121,6 +121,13 @@ If you need to build for a different OpenGL version than the default (OpenGL 3.3
 ## For OpenGLES 3.0
 `--graphics=opengles3`
 
+## For Software Rendering
+`--graphics=software`
+
+*Note*
+Sofware rendering does not work with glfw, use Win32 or SDL platforms
+`--backend=win32`
+
 # Adding External Libraries 
 
 Quickstart is intentionally minimal — it only includes what is required to compile and run a basic raylib project.  
