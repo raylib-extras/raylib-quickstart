@@ -170,7 +170,7 @@ if (downloadRaylib) then
 
     project (workspaceName)
         kind "ConsoleApp"
-        location "build_files/"
+        location "../"
         targetdir "../bin/%{cfg.buildcfg}"
 
         filter {"system:windows", "configurations:Release", "action:gmake*"}
@@ -249,7 +249,7 @@ if (downloadRaylib) then
     
         platform_defines()
 
-        location "build_files/"
+        location "../"
 
         language "C"
         targetdir "../bin/%{cfg.buildcfg}"
