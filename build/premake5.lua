@@ -101,7 +101,7 @@ function platform_defines()
         defines{"GRAPHICS_API_OPENGL_ES2"}
 
     filter {"options:graphics=software"}
-        defines{"GRAPHICS_API_OPENGL_11_SOFTWARE"}
+        defines{"GRAPHICS_API_OPENGL_SOFTWARE"}
 
     filter {"system:macosx"}
         disablewarnings {"deprecated-declarations"}
