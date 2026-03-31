@@ -64,7 +64,10 @@
                     "config=release_arm64"
                 ],
             },
-            "group": "build",
+             "group": {
+                "kind": "build",
+                "isDefault": false
+            },
             "problemMatcher": [
                 "$gcc"
             ],
@@ -90,7 +93,10 @@
                     "clean"
                 ],
             },
-            "group": "build",
+             "group": {
+                "kind": "build",
+                "isDefault": false
+            },
             "problemMatcher": [
                 "$gcc"
             ],

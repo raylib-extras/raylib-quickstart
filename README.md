@@ -68,10 +68,10 @@ To your path environment variable so that the compiler that came with raylib can
 
 DO NOT INSTALL ANOTHER MinGW-W64 from another source such as msys2, you don't need it.
 
-## Microsoft Visual Studio
+## Microsoft Visual Studio 2026
 * Rename the folder to your game name
-* Run `build-VisualStudio2022.bat`
-* double click the `.sln` file that is generated
+* Run `build-VisualStudio2026.bat`
+* double click the `.slnx` file that is generated
 * develop your game
 * you are good to go
 
