@@ -239,7 +239,7 @@ if (downloadRaylib) then
             links {"wayland-client", "wayland-cursor", "wayland-egl", "xkbcommon"}
 
         filter "system:macosx"
-            links {"OpenGL.framework", "Cocoa.framework", "IOKit.framework", "CoreFoundation.framework", "CoreAudio.framework", "CoreVideo.framework", "AudioToolbox.framework"}
+            links {"OpenGL.framework", "Cocoa.framework", "IOKit.framework", "CoreFoundation.framework", "CoreAudio.framework", "CoreVideo.framework", "AudioToolbox.framework", "QuartzCore.framework"}
 
         filter{}
         
