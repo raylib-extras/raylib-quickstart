@@ -262,25 +262,38 @@ if (downloadRaylib) then
             prebuildcommands {
                 "@echo Generating Wayland protocols...",
                 -- Core Wayland & Shell
-                "@wayland-scanner client-header ../" .. raylib_dir .. "/src/external/glfw/deps/wayland/wayland.xml ../" .. raylib_dir .. "/src/wayland-client-protocol.h",
-                "@wayland-scanner client-header ../" .. raylib_dir .. "/src/external/glfw/deps/wayland/xdg-shell.xml ../" .. raylib_dir .. "/src/xdg-shell-client-protocol.h",
-                "@wayland-scanner client-header ../" .. raylib_dir .. "/src/external/glfw/deps/wayland/xdg-decoration-unstable-v1.xml ../" .. raylib_dir .. "/src/xdg-decoration-unstable-v1-client-protocol.h",
+                "@wayland-scanner client-header build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/wayland.xml build/" .. raylib_dir .. "/src/wayland-client-protocol.h",
+                "@wayland-scanner private-code build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/wayland.xml build/" .. raylib_dir .. "/src/wayland-client-protocol-code.h",
+
+                "@wayland-scanner client-header build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/xdg-shell.xml build/" .. raylib_dir .. "/src/xdg-shell-client-protocol.h",
+                "@wayland-scanner private-code build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/xdg-shell.xml build/" .. raylib_dir .. "/src/xdg-shell-client-protocol-code.h",
+
+                "@wayland-scanner client-header build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/xdg-decoration-unstable-v1.xml build/" .. raylib_dir .. "/src/xdg-decoration-unstable-v1-client-protocol.h",
+                "@wayland-scanner private-code build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/xdg-decoration-unstable-v1.xml build/" .. raylib_dir .. "/src/xdg-decoration-unstable-v1-client-protocol-code.h",
 
                 -- Viewporter
-                "@wayland-scanner client-header ../" .. raylib_dir .. "/src/external/glfw/deps/wayland/viewporter.xml ../" .. raylib_dir .. "/src/viewporter-client-protocol.h",
+                "@wayland-scanner client-header build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/viewporter.xml build/" .. raylib_dir .. "/src/viewporter-client-protocol.h",
+                "@wayland-scanner private-code build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/viewporter.xml build/" .. raylib_dir .. "/src/viewporter-client-protocol-code.h",
 
                 -- Relative Pointer
-                "@wayland-scanner client-header ../" .. raylib_dir .. "/src/external/glfw/deps/wayland/relative-pointer-unstable-v1.xml ../" .. raylib_dir .. "/src/relative-pointer-unstable-v1-client-protocol.h",
+                "@wayland-scanner client-header build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/relative-pointer-unstable-v1.xml build/" .. raylib_dir .. "/src/relative-pointer-unstable-v1-client-protocol.h",
+                "@wayland-scanner private-code build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/relative-pointer-unstable-v1.xml build/" .. raylib_dir .. "/src/relative-pointer-unstable-v1-client-protocol-code.h",
+
                 -- Pointer Constraints
-                "@wayland-scanner client-header ../" .. raylib_dir .. "/src/external/glfw/deps/wayland/pointer-constraints-unstable-v1.xml ../" .. raylib_dir .. "/src/pointer-constraints-unstable-v1-client-protocol.h",
+                "@wayland-scanner client-header build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/pointer-constraints-unstable-v1.xml build/" .. raylib_dir .. "/src/pointer-constraints-unstable-v1-client-protocol.h",
+                "@wayland-scanner private-code build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/pointer-constraints-unstable-v1.xml build/" .. raylib_dir .. "/src/pointer-constraints-unstable-v1-client-protocol-code.h",
 
                 -- Fractional Scale
-                "@wayland-scanner client-header ../" .. raylib_dir .. "/src/external/glfw/deps/wayland/fractional-scale-v1.xml ../" .. raylib_dir .. "/src/fractional-scale-v1-client-protocol.h",
+                "@wayland-scanner client-header build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/fractional-scale-v1.xml build/" .. raylib_dir .. "/src/fractional-scale-v1-client-protocol.h",
+                "@wayland-scanner private-code build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/fractional-scale-v1.xml build/" .. raylib_dir .. "/src/fractional-scale-v1-client-protocol-code.h",
 
                 -- XDG Activation
-                "@wayland-scanner client-header ../" .. raylib_dir .. "/src/external/glfw/deps/wayland/xdg-activation-v1.xml ../" .. raylib_dir .. "/src/xdg-activation-v1-client-protocol.h",
+                "@wayland-scanner client-header build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/xdg-activation-v1.xml build/" .. raylib_dir .. "/src/xdg-activation-v1-client-protocol.h",
+                "@wayland-scanner private-code build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/xdg-activation-v1.xml build/" .. raylib_dir .. "/src/xdg-activation-v1-client-protocol-code.h",
+
                 -- Idle Inhibit
-                "@wayland-scanner client-header ../" .. raylib_dir .. "/src/external/glfw/deps/wayland/idle-inhibit-unstable-v1.xml ../" .. raylib_dir .. "/src/idle-inhibit-unstable-v1-client-protocol.h",
+                "@wayland-scanner client-header build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/idle-inhibit-unstable-v1.xml build/" .. raylib_dir .. "/src/idle-inhibit-unstable-v1-client-protocol.h",
+                "@wayland-scanner private-code build/" .. raylib_dir .. "/src/external/glfw/deps/wayland/idle-inhibit-unstable-v1.xml build/" .. raylib_dir .. "/src/idle-inhibit-unstable-v1-client-protocol-code.h",
             }
         filter {}
 
